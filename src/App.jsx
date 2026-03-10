@@ -123,8 +123,6 @@ export default function App() {
   const [currentView, setCurrentView] = useState('shop'); 
   const [selectedProduct, setSelectedProduct] = useState(null); 
   const [showInline3D, setShowInline3D] = useState(false); 
-  
-  // === STATE MỚI: THEO DÕI SẢN PHẨM NÀO ĐANG ĐƯỢC THỬ 3D TẠI GRID CÙNG LÚC ===
   const [activeGrid3D, setActiveGrid3D] = useState(null); 
 
   const [email, setEmail] = useState('');
@@ -279,7 +277,6 @@ export default function App() {
     setIsPlaying(!isPlaying);
   };
 
-  // HÀM XỬ LÝ KHI BẤM THỬ 3D TẠI TRANG CHI TIẾT
   const handleInlineEquip = (item) => {
     setEquippingItem(item.id);
     setTimeout(() => {
@@ -289,13 +286,12 @@ export default function App() {
     }, 1500);
   };
 
-  // === HÀM XỬ LÝ KHI BẤM THỬ 3D TẠI MÀN HÌNH LƯỚI (GRID) ===
   const handleGridEquip = (item, e) => {
-    e.stopPropagation(); // Không mở trang chi tiết
+    e.stopPropagation(); 
     setEquippingItem(item.id);
     setTimeout(() => {
       setEquippedShirtUrl(item.fileUrl); 
-      setActiveGrid3D(item.id); // Ghi nhận ID sản phẩm đang mở 3D
+      setActiveGrid3D(item.id); 
       setEquippingItem(null);
     }, 1500);
   };
@@ -309,7 +305,6 @@ export default function App() {
       }
       return [...prevCart, { ...item, quantity: 1 }];
     });
-    
     setToastMsg(`Đã thêm vào giỏ hàng!`);
     setTimeout(() => setToastMsg(''), 2500);
   };
@@ -379,23 +374,41 @@ export default function App() {
       <input type="file" ref={modelInputRef} onChange={(e) => handleFileUpload(e, 'model')} accept=".glb,.gltf" className="hidden" />
       
       {toastMsg && (
-        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/80 backdrop-blur-md text-white px-8 py-6 rounded-xl flex flex-col items-center justify-center z-[2000] shadow-2xl animate-fade-in pointer-events-none">
-           <FiCheckCircle className="text-5xl text-emerald-400 mb-3"/>
-           <p className="font-bold text-lg">{toastMsg}</p>
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/80 backdrop-blur-md text-white px-6 py-4 md:px-8 md:py-6 rounded-xl flex flex-col items-center justify-center z-[2000] shadow-2xl animate-fade-in pointer-events-none">
+           <FiCheckCircle className="text-4xl md:text-5xl text-emerald-400 mb-2 md:mb-3"/>
+           <p className="font-bold text-base md:text-lg">{toastMsg}</p>
         </div>
       )}
 
       {(currentView === 'shop' || currentView === 'productDetail') && (
         <div className="absolute inset-0 z-40 overflow-y-auto bg-slate-50 custom-scrollbar flex flex-col animate-fade-in">
           
+          {/* HEADER RESPONSIVE ĐIỆN THOẠI */}
           <div className="bg-sky-500 shadow-sm flex-shrink-0 relative z-50">
-             <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-3">
-                <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white cursor-pointer" onClick={() => {setCurrentView('shop'); setShowInline3D(false); setActiveGrid3D(null);}}>Trimi</h1>
-                <div className="flex-grow max-w-lg mx-6 flex bg-white rounded shadow-sm h-10 overflow-hidden">
+             <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between px-4 py-3 gap-3 md:gap-0">
+                
+                {/* Trên Mobile: Logo và Nút bấm nằm cùng 1 dòng */}
+                <div className="flex justify-between items-center w-full md:w-auto">
+                   <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-white cursor-pointer" onClick={() => {setCurrentView('shop'); setShowInline3D(false); setActiveGrid3D(null);}}>Trimi</h1>
+                   
+                   {/* Khối User Action cho Mobile hiển thị */}
+                   <div className="flex md:hidden items-center gap-4 text-white">
+                      <div className="relative p-1 cursor-pointer" onClick={() => setIsCartOpen(true)}>
+                        <FiShoppingCart className="text-2xl"/>
+                        {cartItemCount > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white w-4 h-4 flex items-center justify-center text-[10px] font-black rounded-full shadow-md border border-sky-500">{cartItemCount}</span>}
+                      </div>
+                      <button onClick={handleLogout}><FiLogOut className="text-xl"/></button>
+                   </div>
+                </div>
+
+                {/* Thanh tìm kiếm - Tràn viền trên Mobile, vừa vặn trên PC */}
+                <div className="flex-grow w-full md:w-auto md:max-w-lg md:mx-6 flex bg-white rounded shadow-sm h-10 overflow-hidden">
                    <input type="text" placeholder="Tìm kiếm trang phục, phụ kiện..." className="w-full px-4 text-sm outline-none text-slate-700"/>
                    <button className="bg-sky-50 px-4 text-sky-600 hover:bg-sky-100 transition border-l border-slate-200"><FiSearch className="text-lg"/></button>
                 </div>
-                <div className="flex gap-6 items-center text-sm font-medium text-white">
+
+                {/* Khối User Action cho PC */}
+                <div className="hidden md:flex gap-6 items-center text-sm font-medium text-white">
                    <div className="flex items-center gap-1.5 cursor-pointer hover:text-sky-100" onClick={() => setCurrentView('tryon')}>
                       <FiUser className="text-2xl"/>
                       <div className="flex flex-col leading-tight">
@@ -413,6 +426,7 @@ export default function App() {
                           </span>
                         )}
                       </div>
+                      <span className="font-bold hidden md:block">Giỏ hàng</span>
                    </div>
 
                    <button onClick={handleLogout} className="text-white/80 hover:text-white ml-2 border-l border-white/20 pl-4" title="Đăng xuất"><FiLogOut className="text-xl"/></button>
@@ -420,7 +434,7 @@ export default function App() {
              </div>
           </div>
           
-          <div className="bg-white border-b border-slate-200 text-slate-600 text-xs md:text-sm flex gap-6 px-4 py-2.5 max-w-7xl mx-auto w-full shadow-sm flex-shrink-0">
+          <div className="bg-white border-b border-slate-200 text-slate-600 text-xs md:text-sm flex gap-6 px-4 py-2.5 max-w-7xl mx-auto w-full shadow-sm flex-shrink-0 overflow-x-auto whitespace-nowrap custom-scrollbar">
             <button className="font-bold flex items-center gap-1 hover:text-sky-500"><FiMenu/> Danh mục</button>
             <button className="hover:text-sky-500">Bán chạy nhất</button>
             <button className="hover:text-sky-500 font-semibold text-sky-600" onClick={() => setCurrentView('tryon')}>Trải nghiệm 3D</button>
@@ -432,14 +446,11 @@ export default function App() {
               {isLoadingShop ? (
                 <div className="flex justify-center py-32"><FiRefreshCcw className="text-4xl text-sky-500 animate-spin" /></div>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
                   {clothingItems.map((item) => (
                     <div key={item.id} className="bg-white border border-slate-200 rounded-sm transition-all group hover:shadow-md flex flex-col overflow-hidden cursor-pointer" onClick={() => { setSelectedProduct(item); setCurrentView('productDetail'); setShowInline3D(false); setActiveGrid3D(null);}}>
                       
-                      {/* KHUNG ẢNH HOẶC CANVAS 3D TRONG GRID */}
                       <div className="w-full aspect-[4/5] bg-white relative overflow-hidden flex items-center justify-center p-2 group/image">
-                         
-                         {/* Nếu sản phẩm này đang được mở 3D */}
                          {activeGrid3D === item.id ? (
                            <div className="w-full h-full absolute inset-0 cursor-move z-10" onClick={(e) => e.stopPropagation()}>
                               <CanvasErrorBoundary>
@@ -456,28 +467,26 @@ export default function App() {
                                    <OrbitControls makeDefault enablePan={false} enableZoom={false} autoRotate={true} autoRotateSpeed={2.0} minDistance={3} maxDistance={25} target={[0, 0, 0]} />
                                 </Canvas>
                               </CanvasErrorBoundary>
-                              <button onClick={(e) => { e.stopPropagation(); setActiveGrid3D(null); setEquippedShirtUrl(null); }} className="absolute top-2 right-2 bg-slate-100 p-1.5 rounded-full text-slate-500 shadow-sm hover:text-red-500 z-20"><FiX className="text-sm"/></button>
+                              <button onClick={(e) => { e.stopPropagation(); setActiveGrid3D(null); setEquippedShirtUrl(null); }} className="absolute top-1 right-1 bg-slate-100 p-1.5 rounded-full text-slate-500 shadow-sm hover:text-red-500 z-20"><FiX className="text-xs"/></button>
                            </div>
                          ) : (
-                           // Nếu chưa mở 3D thì hiện ảnh bình thường
                            <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain group-hover/image:scale-105 transition-transform duration-300" />
                          )}
                          
-                         {/* Nút Thử 3D TẠI GRID (chỉ hiện khi chưa mở 3D) */}
                          {activeGrid3D !== item.id && (
-                           <button onClick={(e) => handleGridEquip(item, e)} className="absolute bottom-2 right-2 bg-slate-800/90 backdrop-blur text-white py-1.5 px-3 rounded text-[10px] font-bold shadow-md hover:bg-black transition-all flex items-center gap-1 z-10">
-                             <FiCpu className="text-[12px] text-sky-400"/> Thử 3D
+                           <button onClick={(e) => handleGridEquip(item, e)} className="absolute bottom-2 right-2 bg-slate-800/90 backdrop-blur text-white px-2 py-1 md:px-3 md:py-1.5 rounded text-[9px] md:text-[10px] font-bold shadow-md hover:bg-black transition-all flex items-center gap-1 z-10">
+                             <FiCpu className="text-[10px] md:text-[12px] text-sky-400"/> Thử 3D
                            </button>
                          )}
 
                          {equippingItem === item.id && <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-20"><FiCpu className="text-3xl text-sky-500 animate-spin" /></div>}
                       </div>
 
-                      <div className="p-3 flex flex-col flex-grow border-t border-slate-100">
-                        <h3 className="text-slate-800 text-xs font-medium mb-1 line-clamp-2">{item.name}</h3>
-                        <span className="text-base font-bold text-sky-600 mb-2 mt-auto">{item.price}</span>
-                        <button onClick={(e) => handleAddToCart(item, e)} className="w-full bg-white text-sky-600 border border-sky-300 py-1.5 rounded text-xs font-bold hover:bg-sky-50 transition-all flex justify-center items-center gap-1">
-                          <FiShoppingCart className="text-sm"/> Thêm vào giỏ
+                      <div className="p-2 md:p-3 flex flex-col flex-grow border-t border-slate-100">
+                        <h3 className="text-slate-800 text-[11px] md:text-xs font-medium mb-1 line-clamp-2">{item.name}</h3>
+                        <span className="text-sm md:text-base font-bold text-sky-600 mb-2 mt-auto">{item.price}</span>
+                        <button onClick={(e) => handleAddToCart(item, e)} className="w-full bg-white text-sky-600 border border-sky-300 py-1.5 rounded text-[10px] md:text-xs font-bold hover:bg-sky-50 transition-all flex justify-center items-center gap-1">
+                          <FiShoppingCart className="text-xs md:text-sm"/> Thêm vào giỏ
                         </button>
                       </div>
                     </div>
@@ -492,7 +501,7 @@ export default function App() {
             <div className="flex-grow max-w-6xl mx-auto w-full px-4 py-6 pb-20 animate-fade-in-up">
               <div className="text-sm text-slate-500 mb-4 flex items-center gap-2"><button onClick={() => {setCurrentView('shop'); setShowInline3D(false);}} className="hover:text-sky-500 font-medium flex items-center"><FiCornerUpLeft className="mr-1"/> Trở về</button><span>/</span><span className="truncate">{selectedProduct.name}</span></div>
 
-              <div className="bg-white rounded-sm shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-8">
+              <div className="bg-white rounded-sm shadow-sm border border-slate-200 p-4 md:p-6 flex flex-col md:flex-row gap-6 md:gap-8">
                 
                 <div className="w-full md:w-5/12 aspect-[3/4] bg-white border border-slate-200 rounded-md relative overflow-hidden flex items-center justify-center shadow-inner">
                   {equippingItem === selectedProduct.id && <div className="absolute inset-0 bg-white/70 z-20 flex flex-col items-center justify-center"><FiCpu className="text-4xl text-sky-500 animate-spin mb-2"/><span className="font-bold text-sky-600 text-sm">Đang mặc đồ...</span></div>}
@@ -521,22 +530,28 @@ export default function App() {
                 </div>
 
                 <div className="w-full md:w-7/12 flex flex-col">
-                  <h1 className="text-2xl font-medium text-slate-800 mb-3">{selectedProduct.name}</h1>
-                  <div className="bg-slate-50 p-4 rounded-sm mb-6"><div className="text-3xl font-black text-sky-600">{selectedProduct.price}</div></div>
-                  <div className="flex-grow border-t border-slate-100 pt-4 mb-6">
-                    <p className="text-sm text-slate-500 mb-2">Mô tả:</p>
-                    <p className="text-sm text-slate-700">{selectedProduct.description}</p>
+                  <h1 className="text-xl md:text-2xl font-medium text-slate-800 mb-3">{selectedProduct.name}</h1>
+                  <div className="flex items-center text-sm gap-4 mb-4 border-b border-slate-100 pb-3"><span className="text-amber-500 font-bold flex items-center gap-1 border-r border-slate-300 pr-4">{selectedProduct.rating} <FiStar className="fill-current"/><FiStar className="fill-current"/><FiStar className="fill-current"/><FiStar className="fill-current"/><FiStar className="text-slate-300"/></span><span className="text-slate-600"><span className="font-bold border-b border-slate-600">{selectedProduct.reviews}</span> Đánh Giá</span></div>
+                  <div className="bg-slate-50 p-4 rounded-sm mb-6 flex items-center gap-4">
+                    <div className="text-2xl md:text-3xl font-black text-sky-600">{selectedProduct.price}</div>
+                    <div className="bg-sky-100 text-sky-600 text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase">Freeship Extra</div>
                   </div>
-                  <div className="flex gap-3 mt-auto">
-                    
-                    <button onClick={(e) => handleAddToCart(selectedProduct, e)} className="flex-1 bg-sky-50 text-sky-600 border border-sky-500 py-3 rounded-sm font-semibold text-sm hover:bg-sky-100 flex items-center justify-center gap-2">
+                  <div className="text-sm text-slate-600 mb-6 space-y-4">
+                    <div className="flex gap-4"><span className="w-20 md:w-24 text-slate-500 flex-shrink-0">Vận chuyển</span><div className="flex items-start gap-2"><FiTruck className="text-lg text-emerald-500 mt-0.5"/><div><p className="font-medium text-slate-700">Miễn phí vận chuyển</p><p className="text-xs text-slate-500">Nhận hàng trong 3-5 ngày</p></div></div></div>
+                    <div className="flex gap-4"><span className="w-20 md:w-24 text-slate-500 flex-shrink-0">Bảo vệ</span><div className="flex items-center gap-2 text-slate-700"><FiShield className="text-lg text-sky-500"/> Đổi trả miễn phí 15 ngày</div></div>
+                  </div>
+                  <div className="flex-grow border-t border-slate-100 pt-4 mb-6">
+                    <p className="text-sm text-slate-500 mb-2">Mô tả sản phẩm:</p>
+                    <p className="text-sm text-slate-700 line-clamp-4">{selectedProduct.description}</p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3 mt-auto">
+                    <button onClick={(e) => handleAddToCart(selectedProduct, e)} className="w-full sm:w-1/2 bg-sky-50 text-sky-600 border border-sky-500 py-3 rounded-sm font-semibold text-sm hover:bg-sky-100 flex items-center justify-center gap-2">
                       <FiShoppingCart className="text-lg"/> Thêm Giỏ Hàng
                     </button>
-                    
                     {!showInline3D ? (
-                      <button onClick={() => handleInlineEquip(selectedProduct)} className="flex-1 bg-slate-800 text-white py-3 rounded-sm font-bold text-sm hover:bg-slate-900 flex items-center justify-center gap-2 shadow-lg"><FiCpu className="text-lg text-sky-400"/> THỬ 3D NGAY</button>
+                      <button onClick={() => handleInlineEquip(selectedProduct)} className="w-full sm:w-1/2 bg-slate-800 text-white py-3 rounded-sm font-bold text-sm hover:bg-slate-900 flex items-center justify-center gap-2 shadow-lg"><FiCpu className="text-lg text-sky-400"/> THỬ 3D NGAY</button>
                     ) : (
-                      <button onClick={() => {setShowInline3D(false); setEquippedShirtUrl(null);}} className="flex-1 bg-red-50 text-red-500 border border-red-200 py-3 rounded-sm font-bold text-sm hover:bg-red-100 flex items-center justify-center gap-2"><FiX className="text-lg"/> TẮT 3D</button>
+                      <button onClick={() => {setShowInline3D(false); setEquippedShirtUrl(null);}} className="w-full sm:w-1/2 bg-red-50 text-red-500 border border-red-200 py-3 rounded-sm font-bold text-sm hover:bg-red-100 flex items-center justify-center gap-2"><FiX className="text-lg"/> TẮT 3D</button>
                     )}
                   </div>
                 </div>
@@ -546,17 +561,15 @@ export default function App() {
         </div>
       )}
 
-      {/* =======================================================
-          SIDEBAR GIỎ HÀNG CHUẨN SHOPEE (Lớp phủ cao nhất z-[1000])
-          ======================================================= */}
+      {/* SIDEBAR GIỎ HÀNG */}
       {isCartOpen && (
         <div className="fixed inset-0 z-[1000] flex justify-end pointer-events-auto">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setIsCartOpen(false)}></div>
           <div className="relative w-full max-w-md bg-slate-50 h-full shadow-2xl flex flex-col border-l border-slate-200 animate-fade-in-right">
             
-            <div className="flex justify-between items-center p-5 border-b border-slate-200 bg-white shadow-sm">
-              <h2 className="text-lg font-black text-slate-800 flex items-center gap-2">
-                <FiShoppingCart className="text-sky-500 text-2xl"/> Giỏ hàng của bạn
+            <div className="flex justify-between items-center p-4 md:p-5 border-b border-slate-200 bg-white shadow-sm">
+              <h2 className="text-base md:text-lg font-black text-slate-800 flex items-center gap-2">
+                <FiShoppingCart className="text-sky-500 text-xl md:text-2xl"/> Giỏ hàng của bạn
               </h2>
               <button onClick={() => setIsCartOpen(false)} className="text-slate-400 hover:text-red-500 p-2"><FiX className="text-xl"/></button>
             </div>
@@ -571,22 +584,22 @@ export default function App() {
               ) : (
                 cart.map((item, index) => (
                   <div key={`${item.id}-${index}`} className="flex gap-4 bg-white p-3 rounded-lg border border-slate-200 shadow-sm relative pr-10">
-                    <div className="w-20 h-20 bg-slate-50 rounded p-1 flex-shrink-0 border border-slate-100">
+                    <div className="w-16 h-16 md:w-20 md:h-20 bg-slate-50 rounded p-1 flex-shrink-0 border border-slate-100">
                       <img src={item.imageUrl} className="w-full h-full object-contain" alt=""/>
                     </div>
                     <div className="flex-1 flex flex-col justify-between py-1">
-                      <h4 className="text-sm font-semibold text-slate-800 line-clamp-2 leading-snug pr-4">{item.name}</h4>
+                      <h4 className="text-xs md:text-sm font-semibold text-slate-800 line-clamp-2 leading-snug pr-4">{item.name}</h4>
                       <p className="text-sky-600 font-bold text-sm mt-1">{item.price}</p>
-                      <div className="flex items-center justify-between mt-3">
+                      <div className="flex items-center justify-between mt-2 md:mt-3">
                         <div className="flex items-center border border-slate-300 rounded overflow-hidden">
-                          <button onClick={() => updateCartQuantity(item.id, -1)} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition-colors">-</button>
-                          <span className="px-4 text-xs font-bold text-slate-800 border-x border-slate-300">{item.quantity}</span>
-                          <button onClick={() => updateCartQuantity(item.id, 1)} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition-colors">+</button>
+                          <button onClick={() => updateCartQuantity(item.id, -1)} className="px-2 md:px-3 py-0.5 md:py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition-colors">-</button>
+                          <span className="px-3 md:px-4 text-xs font-bold text-slate-800 border-x border-slate-300">{item.quantity}</span>
+                          <button onClick={() => updateCartQuantity(item.id, 1)} className="px-2 md:px-3 py-0.5 md:py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition-colors">+</button>
                         </div>
                       </div>
                     </div>
-                    <button onClick={() => removeFromCart(item.id)} className="absolute top-1/2 -translate-y-1/2 right-3 text-slate-300 hover:text-red-500 p-2 hover:bg-red-50 rounded-full transition-colors" title="Xóa sản phẩm">
-                      <FiTrash2 className="text-lg"/>
+                    <button onClick={() => removeFromCart(item.id)} className="absolute top-1/2 -translate-y-1/2 right-2 md:right-3 text-slate-300 hover:text-red-500 p-2 hover:bg-red-50 rounded-full transition-colors" title="Xóa sản phẩm">
+                      <FiTrash2 className="text-base md:text-lg"/>
                     </button>
                   </div>
                 ))
@@ -594,12 +607,12 @@ export default function App() {
             </div>
             
             {cart.length > 0 && (
-              <div className="p-6 border-t border-slate-200 bg-white shadow-[0_-10px_30px_rgba(0,0,0,0.05)] z-10">
+              <div className="p-4 md:p-6 border-t border-slate-200 bg-white shadow-[0_-10px_30px_rgba(0,0,0,0.05)] z-10">
                 <div className="flex justify-between items-end mb-4">
-                  <span className="text-slate-500 font-semibold text-sm">Tổng ({cartItemCount} sản phẩm):</span>
-                  <span className="text-2xl font-black text-sky-600">${cartTotal}</span>
+                  <span className="text-slate-500 font-semibold text-xs md:text-sm">Tổng ({cartItemCount} sản phẩm):</span>
+                  <span className="text-xl md:text-2xl font-black text-sky-600">${cartTotal}</span>
                 </div>
-                <button onClick={() => { alert(`Thanh toán thành công đơn hàng $${cartTotal}!`); setCart([]); setIsCartOpen(false); }} className="w-full bg-sky-500 hover:bg-sky-600 text-white py-3.5 rounded font-bold text-sm shadow-md transition-all">
+                <button onClick={() => { alert(`Thanh toán thành công đơn hàng $${cartTotal}!`); setCart([]); setIsCartOpen(false); }} className="w-full bg-sky-500 hover:bg-sky-600 text-white py-3 md:py-3.5 rounded font-bold text-sm shadow-md transition-all">
                   MUA HÀNG NGAY
                 </button>
               </div>
@@ -628,58 +641,58 @@ export default function App() {
         </div>
       )}
 
-      {/* LỚP UI CHO PHÒNG THỬ ĐỒ FULL MÀN HÌNH */}
+      {/* LỚP UI CHO PHÒNG THỬ ĐỒ FULL MÀN HÌNH - ĐÃ THU NHỎ NÚT VÀ ĐẨY LÊN TRÊN ĐỂ KHÔNG CHE ĐẦU TRÊN MOBILE */}
       {currentView === 'tryon' && (
         <div className="absolute inset-0 z-10 pointer-events-none">
-          <div className="absolute top-6 left-6 pointer-events-auto z-40">
-             <button onClick={() => setCurrentView('shop')} className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-md font-bold text-xs hover:text-sky-500 shadow-sm flex items-center gap-2"><FiCornerUpLeft/> Quay lại Sàn mua sắm</button>
+          <div className="absolute top-4 left-4 md:top-6 md:left-6 pointer-events-auto z-40">
+             <button onClick={() => setCurrentView('shop')} className="px-3 py-2 md:px-5 md:py-2.5 bg-white border border-slate-200 text-slate-700 rounded-md font-bold text-[10px] md:text-xs hover:text-sky-500 shadow-sm flex items-center gap-1 md:gap-2">
+               <FiCornerUpLeft/> 
+               <span className="hidden md:block">Quay lại Sàn mua sắm</span>
+               <span className="md:hidden">Quay lại</span>
+             </button>
           </div>
 
-          <div className="absolute top-20 left-6 pointer-events-auto flex flex-col gap-3 z-40">
-            <button onClick={() => { setShowAdjust(!showAdjust); setShowWardrobe(false); }} className={`w-11 h-11 rounded-md border flex items-center justify-center text-lg shadow-sm ${showAdjust ? 'border-sky-500 text-sky-500 bg-slate-50' : 'border-slate-200 text-slate-600 bg-white hover:bg-slate-50'}`}><FiSliders /></button>
-            <button onClick={() => { setShowWardrobe(!showWardrobe); setShowAdjust(false); }} className={`w-11 h-11 rounded-md border flex items-center justify-center text-lg shadow-sm ${showWardrobe ? 'border-sky-500 text-sky-500 bg-slate-50' : 'border-slate-200 text-slate-600 bg-white hover:bg-slate-50'}`}><BiCloset /></button>
+          <div className="absolute top-16 left-4 md:top-20 md:left-6 pointer-events-auto flex flex-col gap-2 md:gap-3 z-40">
+            <button onClick={() => { setShowAdjust(!showAdjust); setShowWardrobe(false); }} className={`w-9 h-9 md:w-11 md:h-11 rounded-md border flex items-center justify-center text-base md:text-lg shadow-sm ${showAdjust ? 'border-sky-500 text-sky-500 bg-slate-50' : 'border-slate-200 text-slate-600 bg-white hover:bg-slate-50'}`}><FiSliders /></button>
+            <button onClick={() => { setShowWardrobe(!showWardrobe); setShowAdjust(false); }} className={`w-9 h-9 md:w-11 md:h-11 rounded-md border flex items-center justify-center text-base md:text-lg shadow-sm ${showWardrobe ? 'border-sky-500 text-sky-500 bg-slate-50' : 'border-slate-200 text-slate-600 bg-white hover:bg-slate-50'}`}><BiCloset /></button>
           </div>
 
           {showAdjust && (
-            <div className="absolute top-20 left-20 w-64 bg-white p-5 rounded-md border border-slate-200 pointer-events-auto z-50 shadow-lg">
-              <h3 className="text-slate-800 font-bold text-sm mb-4 flex items-center gap-2"><FiSliders className="text-sky-500"/> Căn chỉnh</h3>
-              <div className="mb-4"><label className="text-slate-600 text-xs mb-1.5 block">Kích cỡ người: {manualScale.toFixed(2)}x</label><input type="range" min="0.5" max="2" step="0.05" value={manualScale} onChange={(e) => setManualScale(parseFloat(e.target.value))} className="w-full accent-sky-500 h-1.5" /></div>
-              <div className="mb-4"><label className="text-slate-600 text-xs mb-1.5 block">Độ cao sàn (Y): {manualOffsetY.toFixed(2)}</label><input type="range" min="-2" max="2" step="0.05" value={manualOffsetY} onChange={(e) => setManualOffsetY(parseFloat(e.target.value))} className="w-full accent-sky-500 h-1.5" /></div>
-              <div className="mb-6 pt-3 border-t border-slate-100">
-                 <label className="text-slate-600 text-xs mb-1.5 block font-medium">Khớp cỡ áo: {shirtScale.toFixed(2)}x</label>
-                 <input type="range" min="0.5" max="2" step="0.05" value={shirtScale} onChange={(e) => setShirtScale(parseFloat(e.target.value))} className="w-full accent-emerald-500 h-1.5" />
-              </div>
-              <button onClick={() => {controlsRef.current?.reset(); setManualScale(1); setManualOffsetY(0); setShirtScale(1)}} className="w-full py-2 bg-slate-100 text-slate-600 rounded-md font-semibold text-xs border border-slate-200">Đặt lại (1x, 0.0)</button>
+            <div className="absolute top-16 left-16 md:top-20 md:left-20 w-56 md:w-64 bg-white p-4 md:p-5 rounded-md border border-slate-200 pointer-events-auto z-50 shadow-lg">
+              <h3 className="text-slate-800 font-bold text-xs md:text-sm mb-4 flex items-center gap-2"><FiSliders className="text-sky-500"/> Căn chỉnh</h3>
+              <div className="mb-4"><label className="text-slate-600 text-[10px] md:text-xs mb-1.5 block">Kích cỡ người: {manualScale.toFixed(2)}x</label><input type="range" min="0.5" max="2" step="0.05" value={manualScale} onChange={(e) => setManualScale(parseFloat(e.target.value))} className="w-full accent-sky-500 h-1.5" /></div>
+              <div className="mb-4"><label className="text-slate-600 text-[10px] md:text-xs mb-1.5 block">Độ cao sàn (Y): {manualOffsetY.toFixed(2)}</label><input type="range" min="-2" max="2" step="0.05" value={manualOffsetY} onChange={(e) => setManualOffsetY(parseFloat(e.target.value))} className="w-full accent-sky-500 h-1.5" /></div>
+              <button onClick={() => {controlsRef.current?.reset(); setManualScale(1); setManualOffsetY(0); setShirtScale(1)}} className="w-full py-1.5 md:py-2 bg-slate-100 text-slate-600 rounded-md font-semibold text-[10px] md:text-xs border border-slate-200">Đặt lại (1x, 0.0)</button>
             </div>
           )}
 
           {showWardrobe && (
-            <div className="absolute top-0 left-20 w-[340px] h-full bg-white/95 backdrop-blur-md pointer-events-auto p-5 overflow-y-auto border-r border-slate-200 custom-scrollbar z-50 shadow-2xl">
-              <div className="flex justify-between items-center mb-6 pt-4 border-b border-slate-100 pb-3">
-                 <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2"><BiCloset className="text-sky-500"/> Tủ đồ 3D cá nhân</h2>
+            <div className="absolute top-0 left-16 md:left-20 w-64 md:w-[340px] h-full bg-white/95 backdrop-blur-md pointer-events-auto p-4 md:p-5 overflow-y-auto border-r border-slate-200 custom-scrollbar z-50 shadow-2xl">
+              <div className="flex justify-between items-center mb-4 md:mb-6 pt-2 md:pt-4 border-b border-slate-100 pb-2 md:pb-3">
+                 <h2 className="text-sm md:text-lg font-bold text-slate-800 flex items-center gap-2"><BiCloset className="text-sky-500"/> Tủ đồ 3D cá nhân</h2>
                  {equippedShirtUrl && (
-                    <button onClick={() => setEquippedShirtUrl(null)} className="text-[10px] bg-red-50 text-red-500 px-3 py-1 rounded-md border border-red-100 hover:bg-red-50 hover:text-white transition-all font-bold">Cởi đồ</button>
+                    <button onClick={() => setEquippedShirtUrl(null)} className="text-[9px] md:text-[10px] bg-red-50 text-red-500 px-2 py-1 md:px-3 md:py-1 rounded-md border border-red-100 hover:bg-red-500 hover:text-white transition-all font-bold">Cởi đồ</button>
                  )}
               </div>
-              <div className="grid grid-cols-2 gap-3 pb-20">
+              <div className="grid grid-cols-2 gap-2 md:gap-3 pb-20">
                 {clothingItems.map((item) => (
-                  <div key={item.id} onClick={() => {setEquippedShirtUrl(item.fileUrl)}} className="bg-white border border-slate-200 rounded-md p-2 hover:border-sky-500 cursor-pointer transition-all group shadow-sm">
-                    <div className="w-full aspect-[4/5] rounded-sm mb-2 overflow-hidden bg-white"><img src={item.imageUrl} className="w-full h-full object-contain p-1" alt=""/></div>
-                    <h3 className="text-slate-700 text-[10px] font-bold truncate">{item.name}</h3>
+                  <div key={item.id} onClick={() => {setEquippedShirtUrl(item.fileUrl)}} className="bg-white border border-slate-200 rounded-md p-1 md:p-2 hover:border-sky-500 cursor-pointer transition-all group shadow-sm">
+                    <div className="w-full aspect-[4/5] rounded-sm mb-1 md:mb-2 overflow-hidden bg-white"><img src={item.imageUrl} className="w-full h-full object-contain p-1" alt=""/></div>
+                    <h3 className="text-slate-700 text-[9px] md:text-[10px] font-bold truncate">{item.name}</h3>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          <div className="absolute top-6 right-6 pointer-events-auto flex flex-col items-end z-40">
-            <button onClick={() => setShowMenu(!showMenu)} className={`w-11 h-11 rounded-md border flex items-center justify-center text-xl shadow-sm ${showMenu ? 'border-sky-500 text-sky-500 bg-slate-50' : 'border-slate-200 text-slate-600 bg-white hover:bg-slate-50'}`}><FiMenu /></button>
+          <div className="absolute top-4 right-4 md:top-6 md:right-6 pointer-events-auto flex flex-col items-end z-40">
+            <button onClick={() => setShowMenu(!showMenu)} className={`w-9 h-9 md:w-11 md:h-11 rounded-md border flex items-center justify-center text-lg md:text-xl shadow-sm ${showMenu ? 'border-sky-500 text-sky-500 bg-slate-50' : 'border-slate-200 text-slate-600 bg-white hover:bg-slate-50'}`}><FiMenu /></button>
             {showMenu && (
-              <div className="mt-2 w-64 bg-white rounded-md border border-slate-200 p-1 shadow-lg flex flex-col">
-                <button onClick={() => modelInputRef.current.click()} className="flex items-center gap-2 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded text-xs font-medium"><FiUpload className="text-sm text-emerald-500"/> Đổi Base Model</button>
+              <div className="mt-2 w-56 md:w-64 bg-white rounded-md border border-slate-200 p-1 shadow-lg flex flex-col">
+                <button onClick={() => modelInputRef.current.click()} className="flex items-center gap-2 px-2 py-1.5 md:px-3 md:py-2 text-slate-600 hover:bg-slate-50 rounded text-[10px] md:text-xs font-medium"><FiUpload className="text-sm text-emerald-500"/> Đổi Base Model</button>
                 <div className="flex border border-slate-100 rounded mx-1 my-1 overflow-hidden">
-                  <button onClick={() => audioInputRef.current.click()} className="flex-1 flex items-center justify-center gap-2 px-2 py-2 text-slate-600 hover:bg-slate-50 text-xs font-medium border-r border-slate-100"><FiUpload className="text-sm text-pink-500"/> Đổi Nhạc</button>
-                  <button onClick={toggleMusic} className={`flex-1 flex items-center justify-center gap-2 px-2 py-2 text-slate-600 hover:bg-slate-50 text-xs font-medium ${isPlaying ? 'text-sky-600 font-bold' : ''}`}>
+                  <button onClick={() => audioInputRef.current.click()} className="flex-1 flex items-center justify-center gap-1 md:gap-2 px-1 py-1.5 md:px-2 md:py-2 text-slate-600 hover:bg-slate-50 text-[10px] md:text-xs font-medium border-r border-slate-100"><FiUpload className="text-sm text-pink-500"/> Đổi Nhạc</button>
+                  <button onClick={toggleMusic} className={`flex-1 flex items-center justify-center gap-1 md:gap-2 px-1 py-1.5 md:px-2 md:py-2 text-slate-600 hover:bg-slate-50 text-[10px] md:text-xs font-medium ${isPlaying ? 'text-sky-600 font-bold' : ''}`}>
                     {isPlaying ? <FiPlayCircle className="text-sm animate-pulse"/> : <FiMusic className="text-sm"/>} {isPlaying ? 'Đang phát' : 'Bật/Tắt'}
                   </button>
                 </div>
