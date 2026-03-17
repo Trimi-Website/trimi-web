@@ -16,55 +16,47 @@ import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPass
 import { doc, getDoc, setDoc, collection, getDocs, onSnapshot, arrayUnion } from 'firebase/firestore';
 
 // ==========================================
-// SIÊU TỪ ĐIỂN ĐA NGÔN NGỮ (DỊCH TỪ A-Z)
+// BỘ NÉN ẢNH CHỐNG LỖI FIREBASE (MAX 1MB)
+// ==========================================
+const compressImage = (file, callback) => {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const MAX_WIDTH = 1200; 
+      const scaleSize = MAX_WIDTH / img.width;
+      canvas.width = scaleSize < 1 ? MAX_WIDTH : img.width;
+      canvas.height = scaleSize < 1 ? img.height * scaleSize : img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      callback(canvas.toDataURL('image/jpeg', 0.6)); 
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+// ==========================================
+// TỪ ĐIỂN ĐA NGÔN NGỮ (i18n)
 // ==========================================
 const dict = {
-  VI: { 
-    home: "Trang chủ", shop: "Cửa hàng", men: "Nam", women: "Nữ", collection: "Bộ sưu tập", login: "Đăng nhập", search: "Tìm kiếm trang phục...", cart: "Giỏ hàng", account: "Tài khoản", logout: "Đăng xuất", adminMenu: "Quản Trị Kho", 
-    sloganTitle: "Đậm chất riêng.", sloganDesc: "Chúng tôi tin rằng thời trang không chỉ là áo quần, mà là ngôn ngữ không lời để thể hiện cá tính thực sự của bạn.", explore: "Khám phá ngay", newCol: "New Collection 2026", heroTitle: "Thời trang phong cách,\nđậm chất riêng.", heroDesc: "Khám phá hàng trăm mẫu áo thun, áo khoác và phụ kiện chất lượng cao với mức giá không thể tuyệt vời hơn.", 
-    addToCart: "THÊM VÀO GIỎ HÀNG", desc: "Mô tả chi tiết", ship: "Giao hàng miễn phí toàn quốc", return: "Đổi trả miễn phí 30 ngày", myOrders: "Đơn hàng của tôi", wishlist: "Sản phẩm yêu thích", noOrders: "Chưa có đơn hàng nào", noOrdersDesc: "Khi bạn mua sắm, danh sách hóa đơn sẽ hiển thị tại đây.", total: "Tổng thanh toán", checkout: "Thanh Toán Ngay", emptyCart: "Giỏ hàng của bạn đang trống.", startShop: "Mua sắm ngay",
-    f_prod: "Sản phẩm", f_all: "Tất cả sản phẩm", f_men: "Thời trang Nam", f_women: "Thời trang Nữ", f_acc: "Phụ kiện", f_sup: "Hỗ trợ khách hàng", f_track: "Theo dõi đơn hàng", f_ret: "Chính sách đổi trả", f_ship: "Chính sách giao hàng", f_size: "Hướng dẫn chọn size", f_serv: "Dịch vụ", f_print: "In ấn theo yêu cầu", f_b2b: "Khách hàng doanh nghiệp", f_gift: "Thẻ quà tặng", f_about: "Về Trimi", f_story: "Câu chuyện thương hiệu", f_career: "Tuyển dụng", f_contact: "Liên hệ chúng tôi", f_priv: "Chính sách bảo mật", f_term: "Điều khoản dịch vụ",
-    chatHelp: "Trạm hỗ trợ Trimi", chatHow: "👋 Chúng tôi có thể giúp gì cho bạn?", chatWithUs: "Chat Với Chúng Tôi", sendMsg: "Gửi tin nhắn", replyFast: "Phản hồi ngay lập tức", faqs: "Câu hỏi thường gặp", faqAcc: "Tài khoản của tôi", faqBill: "Thanh toán & Đơn hàng", faqShip: "Vận chuyển", chatInput: "Nhập tin nhắn...",
-    roleCustomer: "Khách hàng", roleVerified: "Thành viên", roleAdmin: "Quản trị viên", changeCover: "Đổi ảnh bìa",
-    adminDashboard: "Trạm Quản Trị", adminAdd: "Đăng Sản Phẩm Mới", adminUsers: "Dữ liệu Khách hàng", adminNoData: "Chưa có dữ liệu", adminImg: "Hình ảnh", adminName: "Tên sản phẩm", adminPrice: "Giá bán", adminAction: "Hành động", adminDel: "Xóa Bỏ", adminCare: "Chăm Sóc Khách Hàng (Real-time)", adminWait: "Chưa có khách hàng", online: "Đang trực tuyến", offline: "Ngoại tuyến"
-  },
-  EN: { 
-    home: "Home", shop: "Shop", men: "Men", women: "Women", collection: "Collections", login: "Login", search: "Search clothes...", cart: "Cart", account: "Account", logout: "Logout", adminMenu: "Admin Panel", 
-    sloganTitle: "Your Unique Vibe.", sloganDesc: "We believe fashion is not just clothing, but a silent language to express your true self.", explore: "Explore Now", newCol: "New Collection 2026", heroTitle: "Stylish fashion,\nunique vibe.", heroDesc: "Discover hundreds of high-quality t-shirts, jackets and accessories at unbeatable prices.", 
-    addToCart: "ADD TO CART", desc: "Description", ship: "Free Nationwide Shipping", return: "30-Day Free Returns", myOrders: "My Orders", wishlist: "Wishlist", noOrders: "No orders yet", noOrdersDesc: "When you shop, your invoices will appear here.", total: "Total", checkout: "Checkout Now", emptyCart: "Your cart is empty.", startShop: "Start Shopping",
-    f_prod: "Products", f_all: "All Products", f_men: "Men's Fashion", f_women: "Women's Fashion", f_acc: "Accessories", f_sup: "Customer Support", f_track: "Track Order", f_ret: "Return Policy", f_ship: "Shipping Policy", f_size: "Size Guide", f_serv: "Services", f_print: "Print on Demand", f_b2b: "Corporate Clients", f_gift: "Gift Cards", f_about: "About Trimi", f_story: "Brand Story", f_career: "Careers", f_contact: "Contact Us", f_priv: "Privacy Policy", f_term: "Terms of Service",
-    chatHelp: "Trimi Help Center", chatHow: "👋 How can we help you today?", chatWithUs: "Chat With Us", sendMsg: "Send a message", replyFast: "Instant reply", faqs: "FAQs", faqAcc: "My Account", faqBill: "Billing & Orders", faqShip: "Shipping", chatInput: "Type a message...",
-    roleCustomer: "Customer", roleVerified: "Member", roleAdmin: "Admin", changeCover: "Change Cover",
-    adminDashboard: "Admin Dashboard", adminAdd: "Add New Product", adminUsers: "Customer Data", adminNoData: "No data", adminImg: "Image", adminName: "Product Name", adminPrice: "Price", adminAction: "Action", adminDel: "Delete", adminCare: "Customer Care (Real-time)", adminWait: "No customers yet", online: "Online", offline: "Offline"
-  },
-  KO: { 
-    home: "홈", shop: "가게", men: "남성", women: "여성", collection: "컬렉션", login: "로그인", search: "의류 검색...", cart: "장바구니", account: "계정", logout: "로그아웃", adminMenu: "관리자 패널", 
-    sloganTitle: "나만의 스타일.", sloganDesc: "우리는 패션이 단순한 옷이 아니라 진정한 개성을 표현하는 침묵의 언어라고 믿습니다.", explore: "지금 탐색하기", newCol: "2026 새로운 컬렉션", heroTitle: "스타일리시한 패션,\n독특한 분위기.", heroDesc: "탁월한 가격에 수백 가지의 고품질 티셔츠, 재킷 및 액세서리를 발견하세요.", 
-    addToCart: "장바구니에 추가", desc: "세부 정보", ship: "전국 무료 배송", return: "30일 무료 반품", myOrders: "내 주문", wishlist: "위시리스트", noOrders: "아직 주문이 없습니다", noOrdersDesc: "쇼핑을 하면 여기에 송장이 표시됩니다.", total: "총액", checkout: "결제하기", emptyCart: "장바구니가 비어 있습니다.", startShop: "쇼핑 시작",
-    f_prod: "제품", f_all: "모든 제품", f_men: "남성 패션", f_women: "여성 패션", f_acc: "액세서리", f_sup: "고객 지원", f_track: "주문 배송조회", f_ret: "반품 정책", f_ship: "배송 정보", f_size: "사이즈 가이드", f_serv: "서비스", f_print: "맞춤형 인쇄", f_b2b: "기업 고객", f_gift: "기프트 카드", f_about: "Trimi 소개", f_story: "브랜드 스토리", f_career: "채용", f_contact: "문의하기", f_priv: "개인정보 보호정책", f_term: "서비스 약관",
-    chatHelp: "Trimi 도움말 센터", chatHow: "👋 무엇을 도와드릴까요?", chatWithUs: "우리와 채팅", sendMsg: "메시지 보내기", replyFast: "즉각적인 답변", faqs: "자주 묻는 질문", faqAcc: "내 계정", faqBill: "결제 및 주문", faqShip: "배송", chatInput: "메시지 입력...",
-    roleCustomer: "고객", roleVerified: "회원", roleAdmin: "관리자", changeCover: "커버 변경",
-    adminDashboard: "관리자 대시보드", adminAdd: "새 제품 추가", adminUsers: "고객 데이터", adminNoData: "데이터 없음", adminImg: "이미지", adminName: "제품 이름", adminPrice: "가격", adminAction: "동작", adminDel: "삭제", adminCare: "고객 관리 (실시간)", adminWait: "아직 고객이 없습니다", online: "온라인", offline: "오프라인"
-  },
-  JA: { 
-    home: "ホーム", shop: "ショップ", men: "メンズ", women: "レディース", collection: "コレクション", login: "ログイン", search: "衣類を検索...", cart: "カート", account: "アカウント", logout: "ログアウト", adminMenu: "管理パネル", 
-    sloganTitle: "独自のスタイル。", sloganDesc: "ファッションは単なる服ではなく、本当の個性を表現する沈黙の言語だと私たちは信じています。", explore: "今すぐ探索", newCol: "新コレクション 2026", heroTitle: "スタイリッシュなファッション、\n独特の雰囲気。", heroDesc: "高品質のTシャツ、ジャケット、アクセサリーを破格の価格で発見してください。", 
-    addToCart: "カートに追加", desc: "説明", ship: "全国送料無料", return: "30日間無料返品", myOrders: "私の注文", wishlist: "ウィッシュリスト", noOrders: "まだ注文はありません", noOrdersDesc: "買い物をすると、ここに請求書が表示されます。", total: "合計", checkout: "チェックアウト", emptyCart: "カートは空です。", startShop: "買い物を始める",
-    f_prod: "製品", f_all: "すべての製品", f_men: "メンズファッション", f_women: "レディースファッション", f_acc: "アクセサリー", f_sup: "顧客サポート", f_track: "注文状況の確認", f_ret: "返品ポリシー", f_ship: "配送情報", f_size: "サイズガイド", f_serv: "サービス", f_print: "オンデマンド印刷", f_b2b: "企業のお客様", f_gift: "ギフトカード", f_about: "Trimiについて", f_story: "ブランドストーリー", f_career: "採用情報", f_contact: "お問い合わせ", f_priv: "プライバシーポリシー", f_term: "利用規約",
-    chatHelp: "Trimiヘルプセンター", chatHow: "👋 今日はどのようなご用件ですか？", chatWithUs: "チャットする", sendMsg: "メッセージを送る", replyFast: "即時返信", faqs: "よくある質問", faqAcc: "マイアカウント", faqBill: "請求と注文", faqShip: "配送", chatInput: "メッセージを入力...",
-    roleCustomer: "お客様", roleVerified: "メンバー", roleAdmin: "管理者", changeCover: "カバーを変更",
-    adminDashboard: "管理ダッシュボード", adminAdd: "新製品の追加", adminUsers: "顧客データ", adminNoData: "データなし", adminImg: "画像", adminName: "製品名", adminPrice: "価格", adminAction: "アクション", adminDel: "削除", adminCare: "カスタマーケア（リアルタイム）", adminWait: "まだ顧客はいません", online: "オンライン", offline: "オフライン"
-  },
-  ZH: { 
-    home: "首页", shop: "商店", men: "男装", women: "女装", collection: "收藏", login: "登录", search: "搜索衣服...", cart: "购物车", account: "帐户", logout: "登出", adminMenu: "管理面板", 
-    sloganTitle: "独特的风格。", sloganDesc: "我们相信时尚不仅是衣服，更是表达你真实个性的无声语言。", explore: "立即探索", newCol: "2026 新系列", heroTitle: "时尚的风格，\n独特的氛围。", heroDesc: "以无与伦比的价格发现数百款高品质的T恤、夹克和配饰。", 
-    addToCart: "加入购物车", desc: "详细描述", ship: "全国免费送货", return: "30天免费退货", myOrders: "我的订单", wishlist: "心愿单", noOrders: "暂无订单", noOrdersDesc: "当您购物时，您的发票将显示在这里。", total: "总计", checkout: "立即结账", emptyCart: "您的购物车是空的。", startShop: "开始购物",
-    f_prod: "产品", f_all: "所有产品", f_men: "男士时尚", f_women: "女士时尚", f_acc: "配件", f_sup: "客户支持", f_track: "跟踪订单", f_ret: "退货政策", f_ship: "运输政策", f_size: "尺码指南", f_serv: "服务", f_print: "按需打印", f_b2b: "企业客户", f_gift: "礼品卡", f_about: "关于 Trimi", f_story: "品牌故事", f_career: "招聘", f_contact: "联系我们", f_priv: "隐私政策", f_term: "服务条款",
-    chatHelp: "Trimi 帮助中心", chatHow: "👋 今天我们能怎么帮助您？", chatWithUs: "与我们聊天", sendMsg: "发送消息", replyFast: "即刻回复", faqs: "常见问题", faqAcc: "我的帐户", faqBill: "账单与订单", faqShip: "运输", chatInput: "输入消息...",
-    roleCustomer: "顾客", roleVerified: "会员", roleAdmin: "管理员", changeCover: "更改封面",
-    adminDashboard: "管理仪表板", adminAdd: "添加新产品", adminUsers: "客户数据", adminNoData: "没有数据", adminImg: "图像", adminName: "产品名称", adminPrice: "价格", adminAction: "行动", adminDel: "删除", adminCare: "客户服务（实时）", adminWait: "暂无客户", online: "在线", offline: "离线"
-  }
+  VI: { home: "Trang chủ", shop: "Cửa hàng", men: "Nam", women: "Nữ", collection: "Bộ sưu tập", login: "Đăng nhập", search: "Tìm kiếm trang phục...", cart: "Giỏ hàng", account: "Tài khoản", logout: "Đăng xuất", adminMenu: "Quản Trị Kho", sloganTitle: "Đậm chất riêng.", sloganDesc: "Chúng tôi tin rằng thời trang không chỉ là áo quần, mà là ngôn ngữ không lời để thể hiện cá tính thực sự của bạn.", explore: "Khám phá ngay", newCol: "New Collection 2026", heroTitle: "Thời trang phong cách,\nđậm chất riêng.", heroDesc: "Khám phá hàng trăm mẫu áo thun, áo khoác và phụ kiện chất lượng cao với mức giá không thể tuyệt vời hơn.", addToCart: "THÊM VÀO GIỎ HÀNG", desc: "Mô tả chi tiết", ship: "Giao hàng miễn phí toàn quốc", return: "Đổi trả miễn phí 30 ngày", myOrders: "Đơn hàng của tôi", wishlist: "Sản phẩm yêu thích", noOrders: "Chưa có đơn hàng nào", noOrdersDesc: "Khi bạn mua sắm, danh sách hóa đơn sẽ hiển thị tại đây.", total: "Tổng thanh toán", checkout: "Thanh Toán Ngay", emptyCart: "Giỏ hàng của bạn đang trống.", startShop: "Mua sắm ngay", f_prod: "Sản phẩm", f_all: "Tất cả sản phẩm", f_men: "Thời trang Nam", f_women: "Thời trang Nữ", f_acc: "Phụ kiện", f_sup: "Hỗ trợ khách hàng", f_track: "Theo dõi đơn hàng", f_ret: "Chính sách đổi trả", f_ship: "Chính sách giao hàng", f_size: "Hướng dẫn chọn size", f_serv: "Dịch vụ", f_print: "In ấn theo yêu cầu", f_b2b: "Khách hàng doanh nghiệp", f_gift: "Thẻ quà tặng", f_about: "Về Trimi", f_story: "Câu chuyện thương hiệu", f_career: "Tuyển dụng", f_contact: "Liên hệ chúng tôi", f_priv: "Chính sách bảo mật", f_term: "Điều khoản dịch vụ", chatHelp: "Trạm hỗ trợ Trimi", chatHow: "👋 Chúng tôi có thể giúp gì cho bạn?", chatWithUs: "Chat Với Chúng Tôi", sendMsg: "Gửi tin nhắn", replyFast: "Phản hồi ngay lập tức", faqs: "Câu hỏi thường gặp", faqAcc: "Tài khoản của tôi", faqBill: "Thanh toán & Đơn hàng", faqShip: "Vận chuyển", chatInput: "Nhập tin nhắn...", roleCustomer: "Khách hàng", roleVerified: "Thành viên", roleAdmin: "Quản trị viên", changeCover: "Đổi ảnh bìa", adminDashboard: "Trạm Quản Trị", adminAdd: "Đăng Sản Phẩm Mới", adminUsers: "Dữ liệu Khách hàng", adminNoData: "Chưa có dữ liệu", adminImg: "Hình ảnh", adminName: "Tên sản phẩm", adminPrice: "Giá bán", adminAction: "Hành động", adminDel: "Xóa Bỏ", adminCare: "Chăm Sóc Khách Hàng (Real-time)", adminWait: "Chưa có khách hàng", online: "Đang trực tuyến", offline: "Ngoại tuyến", adminInbox: "Hộp thư khách hàng" },
+  EN: { home: "Home", shop: "Shop", men: "Men", women: "Women", collection: "Collections", login: "Login", search: "Search clothes...", cart: "Cart", account: "Account", logout: "Logout", adminMenu: "Admin Panel", sloganTitle: "Your Unique Vibe.", sloganDesc: "We believe fashion is not just clothing, but a silent language to express your true self.", explore: "Explore Now", newCol: "New Collection 2026", heroTitle: "Stylish fashion,\nunique vibe.", heroDesc: "Discover hundreds of high-quality t-shirts, jackets and accessories at unbeatable prices.", addToCart: "ADD TO CART", desc: "Description", ship: "Free Nationwide Shipping", return: "30-Day Free Returns", myOrders: "My Orders", wishlist: "Wishlist", noOrders: "No orders yet", noOrdersDesc: "When you shop, your invoices will appear here.", total: "Total", checkout: "Checkout Now", emptyCart: "Your cart is empty.", startShop: "Start Shopping", f_prod: "Products", f_all: "All Products", f_men: "Men's Fashion", f_women: "Women's Fashion", f_acc: "Accessories", f_sup: "Customer Support", f_track: "Track Order", f_ret: "Return Policy", f_ship: "Shipping Policy", f_size: "Size Guide", f_serv: "Services", f_print: "Print on Demand", f_b2b: "Corporate Clients", f_gift: "Gift Cards", f_about: "About Trimi", f_story: "Brand Story", f_career: "Careers", f_contact: "Contact Us", f_priv: "Privacy Policy", f_term: "Terms of Service", chatHelp: "Trimi Help Center", chatHow: "👋 How can we help you today?", chatWithUs: "Chat With Us", sendMsg: "Send a message", replyFast: "Instant reply", faqs: "FAQs", faqAcc: "My Account", faqBill: "Billing & Orders", faqShip: "Shipping", chatInput: "Type a message...", roleCustomer: "Customer", roleVerified: "Member", roleAdmin: "Admin", changeCover: "Change Cover", adminDashboard: "Admin Dashboard", adminAdd: "Add New Product", adminUsers: "Customer Data", adminNoData: "No data", adminImg: "Image", adminName: "Product Name", adminPrice: "Price", adminAction: "Action", adminDel: "Delete", adminCare: "Customer Care (Real-time)", adminWait: "No customers yet", online: "Online", offline: "Offline", adminInbox: "Customer Inbox" },
+  KO: { home: "홈", shop: "가게", men: "남성", women: "여성", collection: "컬렉션", login: "로그인", search: "의류 검색...", cart: "장바구니", account: "계정", logout: "로그아웃", adminMenu: "관리자 패널", sloganTitle: "나만의 스타일.", sloganDesc: "우리는 패션이 단순한 옷이 아니라 진정한 개성을 표현하는 침묵의 언어라고 믿습니다.", explore: "지금 탐색하기", newCol: "2026 새로운 컬렉션", heroTitle: "스타일리시한 패션,\n독특한 분위기.", heroDesc: "탁월한 가격에 수백 가지의 고품질 티셔츠, 재킷 및 액세서리를 발견하세요.", addToCart: "장바구니에 추가", desc: "세부 정보", ship: "전국 무료 배송", return: "30일 무료 반품", myOrders: "내 주문", wishlist: "위시리스트", noOrders: "아직 주문이 없습니다", noOrdersDesc: "쇼핑을 하면 여기에 송장이 표시됩니다.", total: "총액", checkout: "결제하기", emptyCart: "장바구니가 비어 있습니다.", startShop: "쇼핑 시작", f_prod: "제품", f_all: "모든 제품", f_men: "남성 패션", f_women: "여성 패션", f_acc: "액세서리", f_sup: "고객 지원", f_track: "주문 배송조회", f_ret: "반품 정책", f_ship: "배송 정보", f_size: "사이즈 가이드", f_serv: "서비스", f_print: "맞춤형 인쇄", f_b2b: "기업 고객", f_gift: "기프트 카드", f_about: "Trimi 소개", f_story: "브랜드 스토리", f_career: "채용", f_contact: "문의하기", f_priv: "개인정보 보호정책", f_term: "서비스 약관", chatHelp: "Trimi 도움말 센터", chatHow: "👋 무엇을 도와드릴까요?", chatWithUs: "우리와 채팅", sendMsg: "메시지 보내기", replyFast: "즉각적인 답변", faqs: "자주 묻는 질문", faqAcc: "내 계정", faqBill: "결제 및 주문", faqShip: "배송", chatInput: "메시지 입력...", roleCustomer: "고객", roleVerified: "회원", roleAdmin: "관리자", changeCover: "커버 변경", adminDashboard: "관리자 대시보드", adminAdd: "새 제품 추가", adminUsers: "고객 데이터", adminNoData: "데이터 없음", adminImg: "이미지", adminName: "제품 이름", adminPrice: "가격", adminAction: "동작", adminDel: "삭제", adminCare: "고객 관리", adminWait: "고객이 없습니다", online: "온라인", offline: "오프라인", adminInbox: "고객받은 편지함" },
+  JA: { home: "ホーム", shop: "ショップ", men: "メンズ", women: "レディース", collection: "コレクション", login: "ログイン", search: "衣類を検索...", cart: "カート", account: "アカウント", logout: "ログアウト", adminMenu: "管理パネル", sloganTitle: "独自のスタイル。", sloganDesc: "ファッションは単なる服ではなく、本当の個性を表現する沈黙の言語だと私たちは信じています。", explore: "今すぐ探索", newCol: "新コレクション 2026", heroTitle: "スタイリッシュなファッション、\n独特の雰囲気。", heroDesc: "高品質のTシャツ、ジャケット、アクセサリーを破格の価格で発見してください。", addToCart: "カートに追加", desc: "説明", ship: "全国送料無料", return: "30日間無料返品", myOrders: "私の注文", wishlist: "ウィッシュリスト", noOrders: "まだ注文はありません", noOrdersDesc: "買い物をすると、ここに請求書が表示されます。", total: "合計", checkout: "チェックアウト", emptyCart: "カートは空です。", startShop: "買い物を始める", f_prod: "製品", f_all: "すべての製品", f_men: "メンズファッション", f_women: "レディースファッション", f_acc: "アクセサリー", f_sup: "顧客サポート", f_track: "注文状況の確認", f_ret: "返品ポリシー", f_ship: "配送情報", f_size: "サイズガイド", f_serv: "サービス", f_print: "オンデマンド印刷", f_b2b: "企業のお客様", f_gift: "ギフトカード", f_about: "Trimiについて", f_story: "ブランドストーリー", f_career: "採用情報", f_contact: "お問い合わせ", f_priv: "プライバシーポリシー", f_term: "利用規約", chatHelp: "Trimiヘルプセンター", chatHow: "👋 今日はどのようなご用件ですか？", chatWithUs: "チャットする", sendMsg: "メッセージを送る", replyFast: "即時返信", faqs: "よくある質問", faqAcc: "マイアカウント", faqBill: "請求と注文", faqShip: "配送", chatInput: "メッセージを入力...", roleCustomer: "お客様", roleVerified: "メンバー", roleAdmin: "管理者", changeCover: "カバーを変更", adminDashboard: "管理ダッシュボード", adminAdd: "新製品の追加", adminUsers: "顧客データ", adminNoData: "データなし", adminImg: "画像", adminName: "製品名", adminPrice: "価格", adminAction: "アクション", adminDel: "削除", adminCare: "カスタマーケア", adminWait: "顧客はいません", online: "オンライン", offline: "オフライン", adminInbox: "顧客の受信トレイ" },
+  ZH: { home: "首页", shop: "商店", men: "男装", women: "女装", collection: "收藏", login: "登录", search: "搜索衣服...", cart: "购物车", account: "帐户", logout: "登出", adminMenu: "管理面板", sloganTitle: "独特的风格。", sloganDesc: "我们相信时尚不仅是衣服，更是表达你真实个性的无声语言。", explore: "立即探索", newCol: "2026 新系列", heroTitle: "时尚的风格，\n独特的氛围。", heroDesc: "以无与伦比的价格发现数百款高品质的T恤、夹克和配饰。", addToCart: "加入购物车", desc: "详细描述", ship: "全国免费送货", return: "30天免费退货", myOrders: "我的订单", wishlist: "心愿单", noOrders: "暂无订单", noOrdersDesc: "当您购物时，您的发票将显示在这里。", total: "总计", checkout: "立即结账", emptyCart: "您的购物车是空的。", startShop: "开始购物", f_prod: "产品", f_all: "所有产品", f_men: "男士时尚", f_women: "女士时尚", f_acc: "配件", f_sup: "客户支持", f_track: "跟踪订单", f_ret: "退货政策", f_ship: "运输政策", f_size: "尺码指南", f_serv: "服务", f_print: "按需打印", f_b2b: "企业客户", f_gift: "礼品卡", f_about: "关于 Trimi", f_story: "品牌故事", f_career: "招聘", f_contact: "联系我们", f_priv: "隐私政策", f_term: "服务条款", chatHelp: "Trimi 帮助中心", chatHow: "👋 今天我们能怎么帮助您？", chatWithUs: "与我们聊天", sendMsg: "发送消息", replyFast: "即刻回复", faqs: "常见问题", faqAcc: "我的帐户", faqBill: "账单与订单", faqShip: "运输", chatInput: "输入消息...", roleCustomer: "顾客", roleVerified: "会员", roleAdmin: "管理员", changeCover: "更改封面", adminDashboard: "管理仪表板", adminAdd: "添加新产品", adminUsers: "客户数据", adminNoData: "没有数据", adminImg: "图像", adminName: "产品名称", adminPrice: "价格", adminAction: "行动", adminDel: "删除", adminCare: "客户服务", adminWait: "暂无客户", online: "在线", offline: "离线", adminInbox: "客户收件箱" },
+  FR: { home: "Accueil", shop: "Boutique", men: "Hommes", women: "Femmes", collection: "Collections", login: "Connexion", search: "Rechercher...", cart: "Panier", account: "Compte", logout: "Déconnexion", adminMenu: "Panneau Admin", sloganTitle: "Style unique.", sloganDesc: "Nous croyons que la mode n'est pas seulement des vêtements.", explore: "Explorer", newCol: "Nouvelle Collection", heroTitle: "Mode élégante,\nambiance unique.", heroDesc: "Découvrez des t-shirts de haute qualité à des prix imbattables.", addToCart: "AJOUTER", desc: "Description", ship: "Livraison Gratuite", return: "Retours 30 Jours", myOrders: "Mes Commandes", wishlist: "Favoris", noOrders: "Aucune commande", noOrdersDesc: "Vos factures apparaîtront ici.", total: "Total", checkout: "Payer", emptyCart: "Panier vide.", startShop: "Acheter", f_prod: "Produits", f_all: "Tous les produits", f_men: "Mode Homme", f_women: "Mode Femme", f_acc: "Accessoires", f_sup: "Support", f_track: "Suivre la commande", f_ret: "Retours", f_ship: "Livraison", f_size: "Guide des tailles", f_serv: "Services", f_print: "Impression", f_b2b: "B2B", f_gift: "Cartes Cadeaux", f_about: "À propos", f_story: "Histoire", f_career: "Carrières", f_contact: "Contact", f_priv: "Confidentialité", f_term: "Conditions", chatHelp: "Centre d'aide", chatHow: "👋 Comment vous aider?", chatWithUs: "Discuter", sendMsg: "Envoyer un message", replyFast: "Réponse instantanée", faqs: "FAQs", faqAcc: "Mon Compte", faqBill: "Facturation", faqShip: "Livraison", chatInput: "Taper un message...", roleCustomer: "Client", roleVerified: "Membre", roleAdmin: "Admin", changeCover: "Changer la couverture", adminDashboard: "Tableau de bord", adminAdd: "Ajouter", adminUsers: "Clients", adminNoData: "Aucune donnée", adminImg: "Image", adminName: "Nom", adminPrice: "Prix", adminAction: "Action", adminDel: "Supprimer", adminCare: "Service Client", adminWait: "Aucun client", online: "En ligne", offline: "Hors ligne", adminInbox: "Boîte de réception" },
+  IT: { home: "Home", shop: "Negozio", men: "Uomo", women: "Donna", collection: "Collezioni", login: "Accedi", search: "Cerca abiti...", cart: "Carrello", account: "Account", logout: "Esci", adminMenu: "Admin", sloganTitle: "Stile Unico.", sloganDesc: "La moda è un linguaggio silenzioso per esprimere la tua personalità.", explore: "Esplora Ora", newCol: "Nuova Collezione", heroTitle: "Moda elegante,\natmosfera unica.", heroDesc: "Scopri accessori di alta qualità a prezzi imbattibili.", addToCart: "AGGIUNGI", desc: "Descrizione", ship: "Spedizione Gratuita", return: "Resi 30 Giorni", myOrders: "I Miei Ordini", wishlist: "Desideri", noOrders: "Nessun ordine", noOrdersDesc: "Le tue fatture appariranno qui.", total: "Totale", checkout: "Paga Ora", emptyCart: "Carrello vuoto.", startShop: "Acquista", f_prod: "Prodotti", f_all: "Tutti i prodotti", f_men: "Uomo", f_women: "Donna", f_acc: "Accessori", f_sup: "Supporto", f_track: "Traccia Ordine", f_ret: "Resi", f_ship: "Spedizione", f_size: "Guida Taglie", f_serv: "Servizi", f_print: "Stampa", f_b2b: "Clienti Aziendali", f_gift: "Gift Cards", f_about: "Chi Siamo", f_story: "Storia", f_career: "Carriere", f_contact: "Contatti", f_priv: "Privacy", f_term: "Termini", chatHelp: "Centro Assistenza", chatHow: "👋 Come possiamo aiutarti?", chatWithUs: "Chatta con noi", sendMsg: "Invia messaggio", replyFast: "Risposta veloce", faqs: "FAQs", faqAcc: "Account", faqBill: "Fatturazione", faqShip: "Spedizione", chatInput: "Scrivi messaggio...", roleCustomer: "Cliente", roleVerified: "Membro", roleAdmin: "Admin", changeCover: "Cambia Copertina", adminDashboard: "Dashboard Admin", adminAdd: "Aggiungi", adminUsers: "Clienti", adminNoData: "Nessun dato", adminImg: "Immagine", adminName: "Nome", adminPrice: "Prezzo", adminAction: "Azione", adminDel: "Elimina", adminCare: "Assistenza", adminWait: "Nessun cliente", online: "Online", offline: "Offline", adminInbox: "Posta in arrivo" },
+  RU: { home: "Главная", shop: "Магазин", men: "Мужчины", women: "Женщины", collection: "Коллекции", login: "Войти", search: "Поиск одежды...", cart: "Корзина", account: "Аккаунт", logout: "Выйти", adminMenu: "Админ", sloganTitle: "Уникальный стиль.", sloganDesc: "Мода - это безмолвный язык для выражения вашей личности.", explore: "Исследовать", newCol: "Новая коллекция", heroTitle: "Стильная мода,\nуникальная атмосфера.", heroDesc: "Откройте для себя высококачественные футболки и аксессуары.", addToCart: "В КОРЗИНУ", desc: "Описание", ship: "Бесплатная доставка", return: "Возврат 30 дней", myOrders: "Мои заказы", wishlist: "Избранное", noOrders: "Нет заказов", noOrdersDesc: "Здесь будут ваши счета.", total: "Итого", checkout: "Оформить", emptyCart: "Корзина пуста.", startShop: "Начать покупки", f_prod: "Товары", f_all: "Все товары", f_men: "Мужчинам", f_women: "Женщинам", f_acc: "Аксессуары", f_sup: "Поддержка", f_track: "Отследить заказ", f_ret: "Возврат", f_ship: "Доставка", f_size: "Размеры", f_serv: "Услуги", f_print: "Печать", f_b2b: "B2B", f_gift: "Подарочные карты", f_about: "О нас", f_story: "История", f_career: "Карьера", f_contact: "Контакты", f_priv: "Конфиденциальность", f_term: "Условия", chatHelp: "Центр помощи", chatHow: "👋 Как мы можем помочь?", chatWithUs: "Чат с нами", sendMsg: "Отправить сообщение", replyFast: "Быстрый ответ", faqs: "Частые вопросы", faqAcc: "Аккаунт", faqBill: "Оплата", faqShip: "Доставка", chatInput: "Введите сообщение...", roleCustomer: "Клиент", roleVerified: "Участник", roleAdmin: "Админ", changeCover: "Изменить обложку", adminDashboard: "Панель", adminAdd: "Добавить", adminUsers: "Клиенты", adminNoData: "Нет данных", adminImg: "Фото", adminName: "Название", adminPrice: "Цена", adminAction: "Действие", adminDel: "Удалить", adminCare: "Поддержка", adminWait: "Нет клиентов", online: "Онлайн", offline: "Офлайн", adminInbox: "Входящие" }
 };
+
+const defaultLookbookData = [
+  { id: 1, title: 'Men Collection', img: 'https://images.unsplash.com/photo-1520975954732-57dd22299614?q=80&w=800&auto=format&fit=crop' },
+  { id: 2, title: 'Streetwear', img: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=800&auto=format&fit=crop' },
+  { id: 3, title: 'Accessories', img: 'https://images.unsplash.com/photo-1509319117193-57bab727e09d?q=80&w=800&auto=format&fit=crop' },
+  { id: 4, title: 'New Arrivals', img: 'https://images.unsplash.com/photo-1529139574466-a303027c028b?q=80&w=800&auto=format&fit=crop' },
+];
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -102,7 +94,8 @@ export default function App() {
   const languages = [
     { code: 'VI', label: 'Tiếng Việt' }, { code: 'EN', label: 'English' },
     { code: 'KO', label: '한국어' }, { code: 'JA', label: '日本語' },
-    { code: 'ZH', label: '中文' }
+    { code: 'ZH', label: '中文' }, { code: 'FR', label: 'Français' },
+    { code: 'IT', label: 'Italiano' }, { code: 'RU', label: 'Русский' }
   ];
   const t = (key) => dict[lang]?.[key] || dict['VI'][key] || key;
 
@@ -112,36 +105,56 @@ export default function App() {
   const [isChatBoxOpen, setIsChatBoxOpen] = useState(false);
   const [chatInput, setChatInput] = useState('');
   const [chatMessages, setChatMessages] = useState([]);
+  const [hasUnreadUser, setHasUnreadUser] = useState(false);
+
   const [adminChatUser, setAdminChatUser] = useState(null); 
   const [adminChatInput, setAdminChatInput] = useState('');
 
-  const chatEndRef = useRef(null);
-  const adminChatEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
+  const adminChatContainerRef = useRef(null);
 
-  // BANNER & LOOKBOOK CONFIG
+  // === BANNER & LOOKBOOK INIT SYNCHRONOUSLY (XÓA CHỚP ẢNH 1 GIÂY) ===
   const [isEditingBanner, setIsEditingBanner] = useState(false);
-  const [bannerConfig, setBannerConfig] = useState({ x: 0, y: 0, scale: 1 });
-  const [bannerImage, setBannerImage] = useState(() => localStorage.getItem('trimi_banner_img') || '/banner.png');
+  
+  const [bannerConfig, setBannerConfig] = useState(() => {
+    const saved = localStorage.getItem('trimi_banner');
+    return saved ? JSON.parse(saved) : { x: 0, y: 0, scale: 1 };
+  });
+  
+  const [bannerImage, setBannerImage] = useState(() => {
+    return localStorage.getItem('trimi_banner_img') || '/banner.png';
+  });
+  
+  const [lookbook, setLookbook] = useState(() => {
+    const saved = localStorage.getItem('trimi_lookbook');
+    return saved ? JSON.parse(saved) : defaultLookbook;
+  });
+
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-  const defaultLookbook = [
-    { id: 1, title: 'Men Collection', img: 'https://images.unsplash.com/photo-1520975954732-57dd22299614?q=80&w=800&auto=format&fit=crop' },
-    { id: 2, title: 'Streetwear', img: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=800&auto=format&fit=crop' },
-    { id: 3, title: 'Accessories', img: 'https://images.unsplash.com/photo-1509319117193-57bab727e09d?q=80&w=800&auto=format&fit=crop' },
-    { id: 4, title: 'New Arrivals', img: 'https://images.unsplash.com/photo-1529139574466-a303027c028b?q=80&w=800&auto=format&fit=crop' },
-  ];
-  const [lookbook, setLookbook] = useState(defaultLookbook);
-
-  // ÉP CUỘN TRANG
+  // ÉP CUỘN TRANG (GHI ĐÈ CSS CŨ) VÀ TIÊM FAVICON (ICON TRÌNH DUYỆT)
   useEffect(() => {
     document.body.style.overflow = 'auto';
     document.documentElement.style.overflow = 'auto';
+
+    let appleLink = document.querySelector("link[rel='apple-touch-icon']");
+    if (!appleLink) {
+      appleLink = document.createElement('link');
+      appleLink.rel = 'apple-touch-icon';
+      document.head.appendChild(appleLink);
+    }
+    appleLink.href = '/apple-touch-icon.png';
   }, []);
 
-  // AUTO SCROLL CHAT
-  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [chatMessages, isChatBoxOpen]);
-  useEffect(() => { adminChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [adminChatUser?.messages]);
+  // FIX LỖI NHẢY TRANG KHI CUỘN CHAT
+  useEffect(() => {
+    if(chatContainerRef.current) chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+  }, [chatMessages, isChatBoxOpen]);
+
+  useEffect(() => {
+    if(adminChatContainerRef.current) adminChatContainerRef.current.scrollTop = adminChatContainerRef.current.scrollHeight;
+  }, [adminChatUser?.messages]);
 
   // LOAD PRODUCTS
   useEffect(() => {
@@ -160,7 +173,7 @@ export default function App() {
     fetchProducts();
   }, []);
 
-  // LOAD GLOBAL CONFIG
+  // LOAD GLOBAL CONFIG TỪ CLOUD ĐỂ ĐỒNG BỘ MỌI MÁY
   useEffect(() => {
     const fetchGlobalConfig = async () => {
       try {
@@ -216,7 +229,8 @@ export default function App() {
         setAvatarUrl('');
         setCoverUrl('');
         setNickname('');
-        setChatMessages([]); // Reset chat khi đăng xuất
+        setChatMessages([]); 
+        setHasUnreadUser(false);
       }
     });
     return () => unsubscribe();
@@ -238,14 +252,13 @@ export default function App() {
     }
   }, [isAdmin, currentView]);
 
-  // === ĐỌC TIN NHẮN REAL-TIME CỦA USER ===
+  // === ĐỌC TIN NHẮN REAL-TIME CỦA USER & BÁO TIN MỚI ===
   useEffect(() => {
     if (!user || isAdmin) return;
-    const unsub = onSnapshot(doc(db, 'chats', user.uid), (docSnap) => {
+    const unsub = onSnapshot(doc(db, 'users', user.uid), (docSnap) => {
       if (docSnap.exists()) {
         setChatMessages(docSnap.data().messages || []);
-      } else {
-        setChatMessages([{ sender: 'bot', text: 'Xin chào! Trimi có thể giúp gì cho bạn? 😊', timestamp: Date.now() }]);
+        setHasUnreadUser(docSnap.data().hasUnreadUser || false);
       }
     });
     return () => unsub();
@@ -254,7 +267,7 @@ export default function App() {
   // === ĐỌC TIN NHẮN REAL-TIME KHI ADMIN BẤM VÀO MỘT USER ===
   useEffect(() => {
     if (!isAdmin || !adminChatUser) return;
-    const unsub = onSnapshot(doc(db, 'chats', adminChatUser.uid), (docSnap) => {
+    const unsub = onSnapshot(doc(db, 'users', adminChatUser.uid), (docSnap) => {
       if (docSnap.exists()) {
         setAdminChatUser(prev => ({ ...prev, messages: docSnap.data().messages || [] }));
       }
@@ -262,23 +275,43 @@ export default function App() {
     return () => unsub();
   }, [isAdmin, adminChatUser?.uid]);
 
-  // === GỬI TIN NHẮN TỪ KHÁCH HÀNG ===
+  const totalAdminUnread = usersList.filter(u => u.hasUnreadAdmin).length;
+
+  const openUserChat = async () => {
+    setIsChatBoxOpen(true);
+    setIsHelpOpen(false);
+    if (user) {
+      setHasUnreadUser(false);
+      await setDoc(doc(db, 'users', user.uid), { hasUnreadUser: false }, { merge: true }).catch(()=>{});
+    }
+  };
+
+  const openAdminChatWithUser = async (u) => {
+    setAdminChatUser(u);
+    await setDoc(doc(db, 'users', u.uid), { hasUnreadAdmin: false }, { merge: true }).catch(()=>{});
+  };
+
   const handleUserSendMessage = async () => {
     if(!chatInput.trim() || !user) return;
     const newMessage = { sender: 'user', text: chatInput, timestamp: Date.now() };
     setChatInput('');
     try {
-      await setDoc(doc(db, 'chats', user.uid), { messages: arrayUnion(newMessage), lastUpdated: Date.now(), userEmail: user.email, nickname: nickname }, { merge: true });
+      await setDoc(doc(db, 'users', user.uid), { 
+        messages: arrayUnion(newMessage), lastUpdated: Date.now(), userEmail: user.email, nickname: nickname,
+        hasUnreadAdmin: true 
+      }, { merge: true });
     } catch(e) { showToast("Lỗi gửi tin nhắn"); }
   };
 
-  // === GỬI TIN NHẮN TỪ ADMIN ===
   const handleAdminSendMessage = async () => {
     if(!adminChatInput.trim() || !adminChatUser) return;
     const newMessage = { sender: 'bot', text: adminChatInput, timestamp: Date.now() };
     setAdminChatInput('');
     try {
-      await setDoc(doc(db, 'chats', adminChatUser.uid), { messages: arrayUnion(newMessage), lastUpdated: Date.now() }, { merge: true });
+      await setDoc(doc(db, 'users', adminChatUser.uid), { 
+        messages: arrayUnion(newMessage), lastUpdated: Date.now(),
+        hasUnreadUser: true 
+      }, { merge: true });
     } catch(e) { showToast("Lỗi gửi tin nhắn"); }
   };
 
@@ -325,46 +358,40 @@ export default function App() {
   const handleProfileUpload = (e, type) => {
     const file = e.target.files[0];
     if (!file || !user) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = reader.result;
-      if(type === 'avatar') { setAvatarUrl(base64String); localStorage.setItem(`trimi_avatar_${user.uid}`, base64String); }
-      if(type === 'cover') { setCoverUrl(base64String); localStorage.setItem(`trimi_cover_${user.uid}`, base64String); }
+    compressImage(file, async (compressedBase64) => {
+      if(type === 'avatar') { setAvatarUrl(compressedBase64); localStorage.setItem(`trimi_avatar_${user.uid}`, compressedBase64); }
+      if(type === 'cover') { setCoverUrl(compressedBase64); localStorage.setItem(`trimi_cover_${user.uid}`, compressedBase64); }
       showToast('Đã lưu ảnh cá nhân!');
-    };
-    reader.readAsDataURL(file);
+    });
   };
 
+  // === FIX LỖI CLOUD BẰNG COMPRESS ẢNH ===
   const handleLookbookUpload = (e, index) => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64String = reader.result;
+    compressImage(file, async (compressedBase64) => {
       const updatedLookbook = [...lookbook];
-      updatedLookbook[index].img = base64String;
+      updatedLookbook[index].img = compressedBase64;
       setLookbook(updatedLookbook);
+      localStorage.setItem('trimi_lookbook', JSON.stringify(updatedLookbook)); // Update local immediately
       try {
         await setDoc(doc(db, "config", "storefront"), { lookbook: updatedLookbook }, { merge: true });
         showToast('Đã cập nhật trang chủ cho tất cả người dùng!');
-      } catch (err) { showToast('Lỗi! Vui lòng dùng ảnh nhẹ hơn.'); }
-    };
-    reader.readAsDataURL(file);
+      } catch (err) { showToast('Lỗi tải lên Cloud!'); }
+    });
   };
 
   const handleBannerImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64String = reader.result;
-      setBannerImage(base64String);
+    compressImage(file, async (compressedBase64) => {
+      setBannerImage(compressedBase64);
+      localStorage.setItem('trimi_banner_img', compressedBase64); // Update local immediately
       try {
-        await setDoc(doc(db, "config", "storefront"), { bannerImage: base64String }, { merge: true });
-        showToast('Đã tải ảnh Banner lên máy chủ!');
-      } catch(err) { showToast('Ảnh quá nặng.'); }
-    };
-    reader.readAsDataURL(file);
+        await setDoc(doc(db, "config", "storefront"), { bannerImage: compressedBase64 }, { merge: true });
+        showToast('Đã đổi ảnh Banner thành công!');
+      } catch(err) { showToast('Lỗi tải lên Cloud!'); }
+    });
   };
 
   const handleBannerMouseDown = (e) => {
@@ -385,6 +412,7 @@ export default function App() {
   };
   const handleSaveBanner = async () => {
     setIsEditingBanner(false);
+    localStorage.setItem('trimi_banner', JSON.stringify(bannerConfig)); // Update local immediately
     try {
       await setDoc(doc(db, "config", "storefront"), { bannerConfig: bannerConfig }, { merge: true });
       showToast('Đã lưu cấu hình Banner cho toàn thế giới!');
@@ -411,12 +439,12 @@ export default function App() {
   const handleDeleteProduct = (id) => {
     if(window.confirm("Xóa sản phẩm này khỏi hệ thống?")) {
       setLocalProducts(localProducts.filter(p => p.id !== id));
-      showToast('Đã xóa sản phẩm!');
+      showToast(t('adminDel') + '!');
     }
   };
 
   const handleSubmitNewProduct = () => {
-    if (!newProd.name || !newProd.price || !newProd.imagePreview) return alert("Điền đủ Tên, Giá và Ảnh!");
+    if (!newProd.name || !newProd.price || !newProd.imagePreview) return alert("Vui lòng điền đủ thông tin!");
     const product = { id: Date.now().toString(), name: newProd.name, price: parseFloat(newProd.price), rating: 5.0, reviews: 0, imageUrl: newProd.imagePreview, description: newProd.desc || 'Sản phẩm chính hãng.' };
     setLocalProducts([product, ...localProducts]);
     setShowAddModal(false);
@@ -425,7 +453,6 @@ export default function App() {
   };
 
   const fakeColorSpheres = ['from-white to-slate-300', 'from-zinc-700 to-black', 'from-amber-200 to-amber-600', 'from-sky-300 to-sky-600'];
-  const surveyRoles = ["Tín đồ Thời trang", "Thiết kế viên", "Sinh viên", "Chủ doanh nghiệp", "Khác"];
 
   return (
     <>
@@ -438,12 +465,12 @@ export default function App() {
       <div className="min-h-screen w-full bg-[#f8fafc] text-slate-900 font-sans flex flex-col relative">
         
         {/* ==============================================
-            BONG BÓNG CHAT (HIỂN THỊ VỚI TẤT CẢ MỌI NGƯỜI)
+            BONG BÓNG CHAT VÀ THÔNG BÁO TIN NHẮN MỚI
             ============================================== */}
         <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-[9000] flex flex-col items-end">
           
-          {/* Menu Trợ giúp */}
-          {isHelpOpen && !isChatBoxOpen && (
+          {/* MENU TRỢ GIÚP (KHÁCH) */}
+          {!isAdmin && isHelpOpen && !isChatBoxOpen && (
             <div className="bg-white w-[340px] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] mb-4 overflow-hidden border border-slate-200 animate-fade-in-up origin-bottom-right">
               <div className="bg-slate-900 text-white p-5 pr-4 flex justify-between items-start">
                 <div>
@@ -454,14 +481,16 @@ export default function App() {
               </div>
               <div className="p-4 border-b border-slate-100">
                  <p className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mb-3">{t('chatWithUs')}</p>
-                 <div onClick={() => requireLogin(() => { setIsChatBoxOpen(true); setIsHelpOpen(false); })} className="flex items-center gap-3 bg-white border border-slate-200 p-3 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer shadow-sm group">
+                 <div onClick={() => requireLogin(openUserChat)} className="flex items-center gap-3 bg-white border border-slate-200 p-3 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer shadow-sm group relative">
                     <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0 border border-slate-200 overflow-hidden group-hover:bg-slate-900 group-hover:text-white transition-colors">
                       {avatarUrl ? <img src={avatarUrl} className="w-full h-full object-cover"/> : <FiUser className="text-xl"/>}
                     </div>
                     <div>
-                      <span className="font-bold text-slate-800 text-sm block">{t('sendMsg')}</span>
+                      <span className="font-bold text-slate-800 text-sm block">{t('chatAdmin')}</span>
                       <span className="text-xs text-slate-500">{t('replyFast')}</span>
                     </div>
+                    {/* BÁO TIN MỚI TRONG MENU */}
+                    {hasUnreadUser && <div className="absolute top-1/2 -translate-y-1/2 right-4 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>}
                  </div>
               </div>
               <div className="p-4">
@@ -478,8 +507,35 @@ export default function App() {
             </div>
           )}
 
-          {/* GIAO DIỆN CHAT CÁ NHÂN */}
-          {isChatBoxOpen && (
+          {/* HỘP THƯ CHAT CHO ADMIN (NỔI) */}
+          {isAdmin && isHelpOpen && !adminChatUser && (
+            <div className="bg-white w-[340px] h-[480px] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] mb-4 overflow-hidden border border-slate-200 animate-fade-in-up origin-bottom-right flex flex-col">
+              <div className="bg-slate-900 text-white p-4 flex justify-between items-center rounded-t-2xl shadow-md z-10">
+                <h3 className="font-bold">{t('adminInbox')}</h3>
+                <button onClick={() => setIsHelpOpen(false)} className="text-slate-400 hover:text-white p-1"><FiX className="text-xl"/></button>
+              </div>
+              <div className="flex-grow p-2 overflow-y-auto custom-scrollbar">
+                {usersList.length === 0 ? <p className="text-center text-slate-400 text-sm mt-4">{t('adminWait')}</p> : 
+                  usersList.map(u => (
+                    <div key={u.uid} onClick={() => openAdminChatWithUser(u)} className="flex items-center gap-3 p-3 hover:bg-slate-50 cursor-pointer rounded-xl border-b border-slate-100 last:border-0 relative">
+                      <div className="relative">
+                        <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-slate-600">{u.nickname?.charAt(0).toUpperCase() || 'U'}</div>
+                        <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${u.isOnline ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
+                      </div>
+                      <div className="flex-col flex flex-grow">
+                        <span className="text-sm font-bold text-slate-800">{u.nickname || u.email?.split('@')[0]}</span>
+                        <span className="text-xs text-slate-500">{u.isOnline ? t('online') : t('offline')}</span>
+                      </div>
+                      {/* BÁO TIN MỚI CHO ADMIN */}
+                      {u.hasUnreadAdmin && <div className="w-3 h-3 bg-red-500 rounded-full mr-2 shadow-sm animate-pulse"></div>}
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {/* GIAO DIỆN CHAT CỦA KHÁCH HÀNG */}
+          {!isAdmin && isChatBoxOpen && (
             <div className="bg-white w-[340px] h-[480px] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] mb-4 overflow-hidden border border-slate-200 animate-fade-in-up origin-bottom-right flex flex-col">
               <div className="bg-slate-900 text-white p-4 flex justify-between items-center rounded-t-2xl shadow-md z-10">
                 <button onClick={() => { setIsChatBoxOpen(false); setIsHelpOpen(true); }} className="text-slate-300 hover:text-white flex items-center gap-2 font-bold text-sm">
@@ -487,10 +543,8 @@ export default function App() {
                 </button>
                 <button onClick={() => setIsChatBoxOpen(false)} className="text-slate-400 hover:text-white p-1"><FiX className="text-xl"/></button>
               </div>
-              
-              <div className="flex-grow bg-slate-50 p-4 overflow-y-auto flex flex-col gap-4 custom-scrollbar">
+              <div ref={chatContainerRef} className="flex-grow bg-slate-50 p-4 overflow-y-auto flex flex-col gap-4 custom-scrollbar">
                 <div className="flex justify-center mb-2"><span className="text-xs text-slate-400 font-medium bg-white px-3 py-1 rounded-full border border-slate-100">Hôm nay</span></div>
-                
                 {chatMessages.map((msg, idx) => (
                   <div key={idx} className={`flex gap-3 max-w-[85%] ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`}>
                     {msg.sender === 'bot' && (
@@ -501,28 +555,57 @@ export default function App() {
                     </div>
                   </div>
                 ))}
-                <div ref={chatEndRef} />
               </div>
-
               <div className="p-3 bg-white border-t border-slate-100 flex items-center gap-2">
-                 <input 
-                   type="text" 
-                   value={chatInput}
-                   onChange={e => setChatInput(e.target.value)}
-                   onKeyPress={e => e.key === 'Enter' && handleUserSendMessage()}
-                   placeholder={t('chatInput')} 
-                   className="flex-grow bg-slate-100 text-slate-800 rounded-full px-4 py-2.5 text-sm outline-none focus:ring-1 focus:ring-slate-300"
-                 />
-                 <button onClick={handleUserSendMessage} className={`p-2.5 rounded-full flex items-center justify-center transition-colors ${chatInput.trim() ? 'bg-sky-500 text-white shadow-md' : 'bg-slate-100 text-slate-400'}`}>
-                   <FiSend/>
-                 </button>
+                 <input type="text" value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleUserSendMessage()} placeholder={t('sendMsg')} className="flex-grow bg-slate-100 text-slate-800 rounded-full px-4 py-2.5 text-sm outline-none focus:ring-1 focus:ring-slate-300" />
+                 <button onClick={handleUserSendMessage} className={`p-2.5 rounded-full flex items-center justify-center transition-colors ${chatInput.trim() ? 'bg-sky-500 text-white shadow-md' : 'bg-slate-100 text-slate-400'}`}><FiSend/></button>
               </div>
             </div>
           )}
 
-          {!isChatBoxOpen && (
-            <button onClick={() => setIsHelpOpen(!isHelpOpen)} className="w-14 h-14 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-2xl hover:bg-black hover:scale-105 transition-all">
+          {/* GIAO DIỆN CHAT CỦA ADMIN (TRONG BUBBLE) */}
+          {isAdmin && isHelpOpen && adminChatUser && (
+            <div className="bg-white w-[340px] h-[480px] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] mb-4 overflow-hidden border border-slate-200 animate-fade-in-up origin-bottom-right flex flex-col">
+              <div className="bg-slate-900 text-white p-4 flex justify-between items-center rounded-t-2xl shadow-md z-10">
+                <button onClick={() => setAdminChatUser(null)} className="text-slate-300 hover:text-white flex items-center gap-2 font-bold text-sm">
+                  <FiCornerUpLeft/> Quay lại
+                </button>
+                <div className="flex items-center gap-2">
+                   <div className={`w-2.5 h-2.5 rounded-full ${adminChatUser.isOnline ? 'bg-emerald-500' : 'bg-slate-500'}`}></div>
+                   <span className="text-sm font-bold truncate max-w-[120px]">{adminChatUser.nickname || adminChatUser.email?.split('@')[0]}</span>
+                </div>
+              </div>
+              <div ref={adminChatContainerRef} className="flex-grow bg-slate-50 p-4 overflow-y-auto flex flex-col gap-4 custom-scrollbar">
+                {(!adminChatUser.messages || adminChatUser.messages.length === 0) ? (
+                  <p className="text-center text-sm text-slate-400 mt-10">Chưa có tin nhắn nào.</p>
+                ) : (
+                  adminChatUser.messages.map((msg, idx) => (
+                    <div key={idx} className={`flex gap-3 max-w-[85%] ${msg.sender === 'bot' ? 'ml-auto flex-row-reverse' : ''}`}>
+                      {msg.sender === 'user' && (
+                        <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0 font-bold">{adminChatUser.email?.charAt(0).toUpperCase()}</div>
+                      )}
+                      <div className={`p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.sender === 'bot' ? 'bg-sky-500 text-white rounded-tr-sm' : 'bg-white text-slate-800 rounded-tl-sm border border-slate-100'}`}>
+                        {msg.text}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="p-3 bg-white border-t border-slate-100 flex items-center gap-2">
+                 <input type="text" value={adminChatInput} onChange={e => setAdminChatInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleAdminSendMessage()} placeholder="Trả lời khách..." className="flex-grow bg-slate-100 text-slate-800 rounded-full px-4 py-2.5 text-sm outline-none focus:ring-1 focus:ring-sky-500" />
+                 <button onClick={handleAdminSendMessage} className={`p-2.5 rounded-full flex items-center justify-center transition-colors ${adminChatInput.trim() ? 'bg-sky-500 text-white shadow-md' : 'bg-slate-100 text-slate-400'}`}><FiSend/></button>
+              </div>
+            </div>
+          )}
+
+          {/* NÚT BONG BÓNG MẶC ĐỊNH */}
+          {(!isChatBoxOpen && (!isAdmin || (!isHelpOpen && !adminChatUser))) && (
+            <button onClick={() => setIsHelpOpen(!isHelpOpen)} className="relative w-14 h-14 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-2xl hover:bg-black hover:scale-105 transition-all">
                {isHelpOpen ? <FiX className="text-2xl" /> : <FiMessageCircle className="text-2xl" />}
+               
+               {/* CHUÔNG BÁO SỐ LƯỢNG TIN NHẮN */}
+               {!isAdmin && hasUnreadUser && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white animate-bounce">1</span>}
+               {isAdmin && totalAdminUnread > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white animate-bounce">{totalAdminUnread}</span>}
             </button>
           )}
         </div>
@@ -568,7 +651,6 @@ export default function App() {
               </div>
 
               <div className="hidden md:flex gap-5 items-center text-sm font-semibold text-slate-700 pt-2">
-                 
                  {/* BỘ CHUYỂN ĐỔI NGÔN NGỮ */}
                  <div className="relative">
                    <button onClick={() => setShowLangMenu(!showLangMenu)} className="flex items-center gap-1.5 font-bold text-slate-500 hover:text-slate-900 transition-colors bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
@@ -614,7 +696,7 @@ export default function App() {
 
         <main className="flex-grow flex flex-col">
 
-          {/* TRANG CHỦ */}
+          {/* TRANG CHỦ MỘC MẠC */}
           {currentView === 'home' && (
             <div className="w-full flex flex-col animate-fade-in">
                <div className="w-full h-[70vh] md:h-[80vh] flex flex-col md:flex-row">
@@ -654,6 +736,7 @@ export default function App() {
           {currentView === 'shop' && (
             <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 py-8 md:py-10 animate-fade-in">
               <div className="bg-[#eef5fc] rounded-[32px] p-8 md:p-12 mb-10 border border-blue-50 flex flex-col md:flex-row items-center justify-between shadow-sm overflow-hidden relative min-h-[320px]">
+                
                 <div className="max-w-xl relative z-10 pointer-events-none whitespace-pre-line">
                   <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 inline-block">{t('newCol')}</span>
                   <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-4 leading-tight">{t('heroTitle')}</h2>
@@ -662,22 +745,38 @@ export default function App() {
                 
                 {isAdmin && !isEditingBanner && (
                   <button onClick={() => setIsEditingBanner(true)} className="absolute top-4 right-4 z-30 bg-white/90 backdrop-blur text-slate-900 p-2 px-3 rounded-lg shadow-sm border border-slate-200 hover:text-sky-600 text-xs font-bold flex items-center gap-2 transition-colors">
-                    <FiEdit3/> Chỉnh Banner
+                    <FiEdit3/> Chỉnh Banner (Canva Mode)
                   </button>
                 )}
 
-                <div className={`absolute right-0 bottom-0 top-0 w-full md:w-1/2 items-center justify-center flex transition-all ${isEditingBanner ? 'z-20 border-4 border-dashed border-sky-400 bg-sky-50/30 cursor-move' : 'pointer-events-none z-0'}`} onMouseDown={handleBannerMouseDown} onMouseMove={handleBannerMouseMove} onMouseUp={handleBannerMouseUp} onMouseLeave={handleBannerMouseUp} onWheel={handleBannerWheel}>
-                  <img src={bannerImage} alt="Banner" draggable={false} className={`h-[90%] w-auto object-contain drop-shadow-2xl ${isEditingBanner ? 'opacity-100' : 'opacity-90'}`} style={{ transform: `translate(${bannerConfig.x}px, ${bannerConfig.y}px) scale(${bannerConfig.scale})` }} onError={(e) => { e.target.onerror = null; e.target.src = "https://fakestoreapi.com/img/71YXzeOuslL._AC_UY879_.jpg"; e.target.className = "h-[80%] w-auto object-contain mix-blend-multiply opacity-50 drop-shadow-xl" }} />
+                <div 
+                  className={`absolute right-0 bottom-0 top-0 w-full md:w-1/2 items-center justify-center flex transition-all ${isEditingBanner ? 'z-20 border-4 border-dashed border-sky-400 bg-sky-50/30 cursor-move' : 'pointer-events-none z-0'}`}
+                  onMouseDown={handleBannerMouseDown}
+                  onMouseMove={handleBannerMouseMove}
+                  onMouseUp={handleBannerMouseUp}
+                  onMouseLeave={handleBannerMouseUp}
+                  onWheel={handleBannerWheel}
+                >
+                  <img 
+                    src={bannerImage} 
+                    alt="Banner" 
+                    draggable={false} 
+                    className={`h-[90%] w-auto object-contain drop-shadow-2xl ${isEditingBanner ? 'opacity-100' : 'opacity-90'}`} 
+                    style={{ transform: `translate(${bannerConfig.x}px, ${bannerConfig.y}px) scale(${bannerConfig.scale})` }}
+                    onError={(e) => { e.target.onerror = null; e.target.src = "https://fakestoreapi.com/img/71YXzeOuslL._AC_UY879_.jpg"; e.target.className = "h-[80%] w-auto object-contain mix-blend-multiply opacity-50 drop-shadow-xl" }} 
+                  />
                   
                   {isEditingBanner && (
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white p-2 px-4 rounded-full shadow-2xl flex items-center gap-4 cursor-default animate-fade-in-up" onMouseDown={e => e.stopPropagation()}>
                       <FiMove className="text-xl text-slate-400"/>
-                      <span className="text-xs font-bold text-slate-300 whitespace-nowrap hidden sm:inline">Kéo & Cuộn</span>
+                      <span className="text-xs font-bold text-slate-300 whitespace-nowrap hidden sm:inline">Kéo & Cuộn chuột</span>
                       <div className="w-px h-6 bg-slate-700 mx-1"></div>
+                      
                       <label className="bg-slate-700 hover:bg-slate-600 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-1 cursor-pointer transition-colors whitespace-nowrap">
                          <FiCamera/> Đổi ảnh
                          <input type="file" accept="image/*" className="hidden" onChange={handleBannerImageUpload} />
                       </label>
+
                       <button onClick={handleSaveBanner} className="bg-sky-500 hover:bg-sky-600 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-1 transition-colors"><FiSave/> Lưu</button>
                     </div>
                   )}
@@ -793,7 +892,7 @@ export default function App() {
                       </h2>
                     ) : (
                       <div className="flex items-center gap-3 mb-2">
-                        <input type="text" value={tempName} onChange={e => setTempName(e.target.value)} className="border-b-2 border-sky-500 text-3xl md:text-4xl font-black text-slate-900 outline-none bg-transparent w-64 md:w-80" autoFocus placeholder="Nhập tên..."/>
+                        <input type="text" value={tempName} onChange={e => setTempName(e.target.value)} className="border-b-2 border-sky-500 text-3xl md:text-4xl font-black text-slate-900 outline-none bg-transparent w-64 md:w-80" autoFocus placeholder="Nhập biệt danh..."/>
                         <button onClick={handleSaveName} className="bg-slate-900 text-white p-2 rounded-full hover:bg-sky-500 shadow-md transition-colors"><FiCheckCircle className="text-lg"/></button>
                         <button onClick={() => setIsEditingName(false)} className="bg-slate-100 text-slate-500 p-2 rounded-full hover:bg-red-500 hover:text-white shadow-md transition-colors"><FiX className="text-lg"/></button>
                       </div>
@@ -822,123 +921,50 @@ export default function App() {
             </div>
           )}
 
-          {/* QUẢN TRỊ ADMIN VÀ TỔNG ĐÀI CHAT */}
+          {/* QUẢN TRỊ ADMIN */}
           {currentView === 'admin' && isAdmin && (
-            <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 py-8 md:py-12 animate-fade-in flex flex-col lg:flex-row gap-8">
-              
-              <div className={`flex-1 ${adminChatUser ? 'hidden lg:block' : 'block'}`}>
+            <div className="max-w-6xl mx-auto w-full px-4 py-8 md:py-12 animate-fade-in flex flex-col gap-8">
+              <div>
                 <div className="text-xs font-bold text-slate-400 mb-6 tracking-wider uppercase flex items-center gap-2">
-                  <button onClick={() => setCurrentView('profile')} className="hover:text-slate-800 transition-colors flex items-center gap-1"><FiCornerUpLeft/> Tài khoản</button>
+                  <button onClick={() => setCurrentView('profile')} className="hover:text-slate-800 transition-colors flex items-center gap-1"><FiCornerUpLeft/> {t('account')}</button>
                   <span>/</span><span className="text-slate-800 truncate">{t('adminMenu')}</span>
                 </div>
-                
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                    <h2 className="text-3xl md:text-4xl font-black text-slate-900 flex items-center gap-3"><FiArchive className="text-slate-900"/> {t('adminDashboard')}</h2>
                    <button onClick={() => setShowAddModal(true)} className="bg-sky-500 text-white px-6 py-3.5 rounded-full font-bold flex items-center justify-center gap-2 hover:bg-sky-600 transition-colors shadow-lg shadow-sky-500/20">
                      <FiPlus className="text-xl"/> {t('adminAdd')}
                    </button>
                 </div>
-
-                <div className="bg-white border border-slate-200 rounded-[32px] p-6 md:p-8 mb-8 shadow-sm">
-                  <h3 className="text-lg font-black text-slate-900 mb-4 flex items-center gap-2"><FiMessageCircle className="text-sky-500"/> {t('adminCare')}</h3>
-                  <div className="flex flex-col gap-3">
-                    {usersList.length === 0 ? <p className="text-sm text-slate-400 font-medium">{t('adminWait')}</p> : 
-                      usersList.map(u => (
-                        <div key={u.uid} onClick={() => setAdminChatUser(u)} className={`px-4 py-3 rounded-2xl text-sm border flex items-center justify-between cursor-pointer transition-all hover:bg-slate-50 ${adminChatUser?.uid === u.uid ? 'border-sky-500 bg-sky-50' : 'border-slate-100 bg-white'}`}>
-                          <div className="flex items-center gap-3">
-                            <div className="relative">
-                              <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center font-black text-slate-500 text-lg">
-                                {u.nickname ? u.nickname.charAt(0).toUpperCase() : u.email?.charAt(0).toUpperCase()}
-                              </div>
-                              <div className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white ${u.isOnline ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="font-black text-slate-800">{u.nickname || u.email?.split('@')[0]}</span>
-                              <span className="text-xs text-slate-500 font-medium">{u.isOnline ? t('online') : t('offline')}</span>
-                            </div>
-                          </div>
-                          <div className="text-sky-600 bg-sky-100 p-2 rounded-full"><FiMessageCircle/></div>
-                        </div>
-                      ))
-                    }
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
-                  <div className="overflow-x-auto custom-scrollbar">
-                    <table className="w-full text-left border-collapse min-w-[600px]">
-                      <thead>
-                        <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-widest font-black border-b border-slate-200">
-                          <th className="p-5 pl-8">{t('adminImg')}</th>
-                          <th className="p-5">{t('adminName')}</th>
-                          <th className="p-5">{t('adminPrice')}</th>
-                          <th className="p-5 text-right pr-8">{t('adminAction')}</th>
+              </div>
+              
+              <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto custom-scrollbar">
+                  <table className="w-full text-left border-collapse min-w-[600px]">
+                    <thead>
+                      <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-widest font-black border-b border-slate-200">
+                        <th className="p-5 pl-8">{t('adminImg')}</th>
+                        <th className="p-5">{t('adminName')}</th>
+                        <th className="p-5">{t('adminPrice')}</th>
+                        <th className="p-5 text-right pr-8">{t('adminAction')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {localProducts.map((item) => (
+                        <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                          <td className="p-5 pl-8">
+                            <div className="w-16 h-16 bg-white border border-slate-200 rounded-2xl p-1 shadow-sm"><img src={item.imageUrl} className="w-full h-full object-contain mix-blend-multiply" alt=""/></div>
+                          </td>
+                          <td className="p-5 font-bold text-base text-slate-800 max-w-[250px] truncate">{item.name}</td>
+                          <td className="p-5 font-black text-slate-900 text-lg">${item.price}</td>
+                          <td className="p-5 text-right pr-8">
+                            <button onClick={() => handleDeleteProduct(item.id)} className="text-red-500 bg-red-50 hover:bg-red-500 hover:text-white px-5 py-2.5 rounded-full transition-colors font-bold text-xs flex items-center gap-2 ml-auto"><FiTrash2 className="text-sm"/> {t('adminDel')}</button>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {localProducts.map((item) => (
-                          <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                            <td className="p-5 pl-8">
-                              <div className="w-16 h-16 bg-white border border-slate-200 rounded-2xl p-1 shadow-sm"><img src={item.imageUrl} className="w-full h-full object-contain mix-blend-multiply" alt=""/></div>
-                            </td>
-                            <td className="p-5 font-bold text-base text-slate-800 max-w-[250px] truncate">{item.name}</td>
-                            <td className="p-5 font-black text-slate-900 text-lg">${item.price}</td>
-                            <td className="p-5 text-right pr-8">
-                              <button onClick={() => handleDeleteProduct(item.id)} className="text-red-500 bg-red-50 hover:bg-red-500 hover:text-white px-5 py-2.5 rounded-full transition-colors font-bold text-xs flex items-center gap-2 ml-auto"><FiTrash2 className="text-sm"/> {t('adminDel')}</button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-
-              {/* Giao diện Chat của Admin */}
-              {adminChatUser && (
-                <div className="w-full lg:w-[400px] h-[700px] bg-white rounded-[32px] shadow-xl border border-slate-200 flex flex-col overflow-hidden animate-fade-in sticky top-24">
-                  <div className="bg-slate-900 text-white p-5 flex items-center justify-between shadow-md z-10">
-                    <div className="flex items-center gap-3">
-                      <div className="relative">
-                         <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center font-black text-white text-lg">
-                           {adminChatUser.nickname ? adminChatUser.nickname.charAt(0).toUpperCase() : adminChatUser.email?.charAt(0).toUpperCase()}
-                         </div>
-                         <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-slate-900 ${adminChatUser.isOnline ? 'bg-emerald-500' : 'bg-slate-400'}`}></div>
-                      </div>
-                      <div>
-                        <h4 className="font-bold">{adminChatUser.nickname || adminChatUser.email?.split('@')[0]}</h4>
-                        <p className="text-xs text-slate-300">{adminChatUser.isOnline ? t('online') : t('offline')}</p>
-                      </div>
-                    </div>
-                    <button onClick={() => setAdminChatUser(null)} className="text-slate-400 hover:text-white lg:hidden"><FiX className="text-2xl"/></button>
-                  </div>
-                  
-                  <div className="flex-grow bg-slate-50 p-4 overflow-y-auto flex flex-col gap-4 custom-scrollbar">
-                    {(!adminChatUser.messages || adminChatUser.messages.length === 0) ? (
-                      <p className="text-center text-sm text-slate-400 mt-10">Chưa có tin nhắn nào.</p>
-                    ) : (
-                      adminChatUser.messages.map((msg, idx) => (
-                        <div key={idx} className={`flex gap-3 max-w-[85%] ${msg.sender === 'bot' ? 'ml-auto flex-row-reverse' : ''}`}>
-                          {msg.sender === 'user' && (
-                            <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0 font-bold">{adminChatUser.email?.charAt(0).toUpperCase()}</div>
-                          )}
-                          <div className={`p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.sender === 'bot' ? 'bg-sky-500 text-white rounded-tr-sm' : 'bg-white text-slate-800 rounded-tl-sm border border-slate-100'}`}>
-                            {msg.text}
-                          </div>
-                        </div>
-                      ))
-                    )}
-                    <div ref={adminChatEndRef} />
-                  </div>
-
-                  <div className="p-4 bg-white border-t border-slate-100 flex items-center gap-2">
-                     <input type="text" value={adminChatInput} onChange={e => setAdminChatInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleAdminSendMessage()} placeholder="Trả lời khách hàng..." className="flex-grow bg-slate-100 text-slate-800 rounded-full px-5 py-3 text-sm outline-none focus:ring-1 focus:ring-sky-500" />
-                     <button onClick={handleAdminSendMessage} className={`p-3 rounded-full flex items-center justify-center transition-colors ${adminChatInput.trim() ? 'bg-sky-500 text-white shadow-md' : 'bg-slate-100 text-slate-400'}`}>
-                       <FiSend className="text-lg"/>
-                     </button>
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </main>
@@ -1002,7 +1028,9 @@ export default function App() {
           </div>
         </footer>
 
-        {/* MODALS */}
+        {/* ==============================================
+            CÁC MODALS (CỐ ĐỊNH, DỊCH THUẬT)
+            ============================================== */}
         {showLoginModal && !isAuthenticated && (
           <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-6 animate-fade-in">
             <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onClick={() => setShowLoginModal(false)}></div>
@@ -1065,7 +1093,7 @@ export default function App() {
         )}
 
         {showAddModal && isAdmin && (
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[6000] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" onClick={() => setShowAddModal(false)}></div>
             <div className="bg-white rounded-[40px] p-8 md:p-10 w-full max-w-2xl relative z-10 shadow-2xl animate-fade-in-up flex flex-col max-h-[90vh]">
                <div className="flex justify-between items-center mb-8">
@@ -1074,7 +1102,7 @@ export default function App() {
                </div>
                <div className="flex-grow overflow-y-auto custom-scrollbar pr-2 space-y-6">
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-3">{t('adminImg')}</label>
+                    <label className="block text-sm font-bold text-slate-700 mb-3">{t('adminImg')} (PNG/JPG)</label>
                     <div className="border-2 border-dashed border-slate-300 rounded-[24px] p-8 flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 transition-colors relative cursor-pointer group">
                       <input type="file" accept="image/*" onChange={(e) => {
                         const file = e.target.files[0];
@@ -1139,7 +1167,7 @@ export default function App() {
                           <button onClick={() => updateCartQuantity(item.id, 1)} className="px-3 py-1.5 text-slate-600 font-bold hover:bg-slate-200 transition-colors">+</button>
                         </div>
                       </div>
-                      <button onClick={() => removeFromCart(item.id)} className="absolute top-1/2 -translate-y-1/2 right-4 text-slate-300 hover:text-red-500 p-2 hover:bg-red-50 rounded-full transition-colors" title="Xóa khỏi giỏ">
+                      <button onClick={() => removeFromCart(item.id)} className="absolute top-1/2 -translate-y-1/2 right-4 text-slate-300 hover:text-red-500 p-2 hover:bg-red-50 rounded-full transition-colors" title={t('adminDel')}>
                         <FiTrash2 className="text-xl"/>
                       </button>
                     </div>
