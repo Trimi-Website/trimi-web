@@ -1,21 +1,70 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-// Đã import thêm icon mạng xã hội cho Footer và ĐẢM BẢO ĐỦ TẤT CẢ ICON
 import { 
   FiMenu, FiMail, FiLock, FiLogOut, FiShoppingCart, FiSearch, 
   FiUser, FiStar, FiTruck, FiShield, FiCornerUpLeft, FiX, 
   FiTrash2, FiCheckCircle, FiRefreshCcw, FiSettings, 
   FiPlus, FiUploadCloud, FiArchive, FiCamera, FiEdit3, FiSave, FiMove, FiImage,
-  FiInstagram, FiYoutube, FiLinkedin, FiTwitter
+  FiMessageCircle, FiCreditCard, FiMonitor, FiInstagram, FiLinkedin, FiYoutube, FiGlobe, FiSend
 } from 'react-icons/fi';
-import { BiCloset } from 'react-icons/bi';
 import { FcGoogle } from 'react-icons/fc';
 import { FaFacebook } from 'react-icons/fa';
 
 // Firebase
 import { auth, googleProvider, db } from './firebase';
 import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs, onSnapshot, arrayUnion } from 'firebase/firestore';
+
+// ==========================================
+// SIÊU TỪ ĐIỂN ĐA NGÔN NGỮ (DỊCH TỪ A-Z)
+// ==========================================
+const dict = {
+  VI: { 
+    home: "Trang chủ", shop: "Cửa hàng", men: "Nam", women: "Nữ", collection: "Bộ sưu tập", login: "Đăng nhập", search: "Tìm kiếm trang phục...", cart: "Giỏ hàng", account: "Tài khoản", logout: "Đăng xuất", adminMenu: "Quản Trị Kho", 
+    sloganTitle: "Đậm chất riêng.", sloganDesc: "Chúng tôi tin rằng thời trang không chỉ là áo quần, mà là ngôn ngữ không lời để thể hiện cá tính thực sự của bạn.", explore: "Khám phá ngay", newCol: "New Collection 2026", heroTitle: "Thời trang phong cách,\nđậm chất riêng.", heroDesc: "Khám phá hàng trăm mẫu áo thun, áo khoác và phụ kiện chất lượng cao với mức giá không thể tuyệt vời hơn.", 
+    addToCart: "THÊM VÀO GIỎ HÀNG", desc: "Mô tả chi tiết", ship: "Giao hàng miễn phí toàn quốc", return: "Đổi trả miễn phí 30 ngày", myOrders: "Đơn hàng của tôi", wishlist: "Sản phẩm yêu thích", noOrders: "Chưa có đơn hàng nào", noOrdersDesc: "Khi bạn mua sắm, danh sách hóa đơn sẽ hiển thị tại đây.", total: "Tổng thanh toán", checkout: "Thanh Toán Ngay", emptyCart: "Giỏ hàng của bạn đang trống.", startShop: "Mua sắm ngay",
+    f_prod: "Sản phẩm", f_all: "Tất cả sản phẩm", f_men: "Thời trang Nam", f_women: "Thời trang Nữ", f_acc: "Phụ kiện", f_sup: "Hỗ trợ khách hàng", f_track: "Theo dõi đơn hàng", f_ret: "Chính sách đổi trả", f_ship: "Chính sách giao hàng", f_size: "Hướng dẫn chọn size", f_serv: "Dịch vụ", f_print: "In ấn theo yêu cầu", f_b2b: "Khách hàng doanh nghiệp", f_gift: "Thẻ quà tặng", f_about: "Về Trimi", f_story: "Câu chuyện thương hiệu", f_career: "Tuyển dụng", f_contact: "Liên hệ chúng tôi", f_priv: "Chính sách bảo mật", f_term: "Điều khoản dịch vụ",
+    chatHelp: "Trạm hỗ trợ Trimi", chatHow: "👋 Chúng tôi có thể giúp gì cho bạn?", chatWithUs: "Chat Với Chúng Tôi", sendMsg: "Gửi tin nhắn", replyFast: "Phản hồi ngay lập tức", faqs: "Câu hỏi thường gặp", faqAcc: "Tài khoản của tôi", faqBill: "Thanh toán & Đơn hàng", faqShip: "Vận chuyển", chatInput: "Nhập tin nhắn...",
+    roleCustomer: "Khách hàng", roleVerified: "Thành viên", roleAdmin: "Quản trị viên", changeCover: "Đổi ảnh bìa",
+    adminDashboard: "Trạm Quản Trị", adminAdd: "Đăng Sản Phẩm Mới", adminUsers: "Dữ liệu Khách hàng", adminNoData: "Chưa có dữ liệu", adminImg: "Hình ảnh", adminName: "Tên sản phẩm", adminPrice: "Giá bán", adminAction: "Hành động", adminDel: "Xóa Bỏ", adminCare: "Chăm Sóc Khách Hàng (Real-time)", adminWait: "Chưa có khách hàng", online: "Đang trực tuyến", offline: "Ngoại tuyến"
+  },
+  EN: { 
+    home: "Home", shop: "Shop", men: "Men", women: "Women", collection: "Collections", login: "Login", search: "Search clothes...", cart: "Cart", account: "Account", logout: "Logout", adminMenu: "Admin Panel", 
+    sloganTitle: "Your Unique Vibe.", sloganDesc: "We believe fashion is not just clothing, but a silent language to express your true self.", explore: "Explore Now", newCol: "New Collection 2026", heroTitle: "Stylish fashion,\nunique vibe.", heroDesc: "Discover hundreds of high-quality t-shirts, jackets and accessories at unbeatable prices.", 
+    addToCart: "ADD TO CART", desc: "Description", ship: "Free Nationwide Shipping", return: "30-Day Free Returns", myOrders: "My Orders", wishlist: "Wishlist", noOrders: "No orders yet", noOrdersDesc: "When you shop, your invoices will appear here.", total: "Total", checkout: "Checkout Now", emptyCart: "Your cart is empty.", startShop: "Start Shopping",
+    f_prod: "Products", f_all: "All Products", f_men: "Men's Fashion", f_women: "Women's Fashion", f_acc: "Accessories", f_sup: "Customer Support", f_track: "Track Order", f_ret: "Return Policy", f_ship: "Shipping Policy", f_size: "Size Guide", f_serv: "Services", f_print: "Print on Demand", f_b2b: "Corporate Clients", f_gift: "Gift Cards", f_about: "About Trimi", f_story: "Brand Story", f_career: "Careers", f_contact: "Contact Us", f_priv: "Privacy Policy", f_term: "Terms of Service",
+    chatHelp: "Trimi Help Center", chatHow: "👋 How can we help you today?", chatWithUs: "Chat With Us", sendMsg: "Send a message", replyFast: "Instant reply", faqs: "FAQs", faqAcc: "My Account", faqBill: "Billing & Orders", faqShip: "Shipping", chatInput: "Type a message...",
+    roleCustomer: "Customer", roleVerified: "Member", roleAdmin: "Admin", changeCover: "Change Cover",
+    adminDashboard: "Admin Dashboard", adminAdd: "Add New Product", adminUsers: "Customer Data", adminNoData: "No data", adminImg: "Image", adminName: "Product Name", adminPrice: "Price", adminAction: "Action", adminDel: "Delete", adminCare: "Customer Care (Real-time)", adminWait: "No customers yet", online: "Online", offline: "Offline"
+  },
+  KO: { 
+    home: "홈", shop: "가게", men: "남성", women: "여성", collection: "컬렉션", login: "로그인", search: "의류 검색...", cart: "장바구니", account: "계정", logout: "로그아웃", adminMenu: "관리자 패널", 
+    sloganTitle: "나만의 스타일.", sloganDesc: "우리는 패션이 단순한 옷이 아니라 진정한 개성을 표현하는 침묵의 언어라고 믿습니다.", explore: "지금 탐색하기", newCol: "2026 새로운 컬렉션", heroTitle: "스타일리시한 패션,\n독특한 분위기.", heroDesc: "탁월한 가격에 수백 가지의 고품질 티셔츠, 재킷 및 액세서리를 발견하세요.", 
+    addToCart: "장바구니에 추가", desc: "세부 정보", ship: "전국 무료 배송", return: "30일 무료 반품", myOrders: "내 주문", wishlist: "위시리스트", noOrders: "아직 주문이 없습니다", noOrdersDesc: "쇼핑을 하면 여기에 송장이 표시됩니다.", total: "총액", checkout: "결제하기", emptyCart: "장바구니가 비어 있습니다.", startShop: "쇼핑 시작",
+    f_prod: "제품", f_all: "모든 제품", f_men: "남성 패션", f_women: "여성 패션", f_acc: "액세서리", f_sup: "고객 지원", f_track: "주문 배송조회", f_ret: "반품 정책", f_ship: "배송 정보", f_size: "사이즈 가이드", f_serv: "서비스", f_print: "맞춤형 인쇄", f_b2b: "기업 고객", f_gift: "기프트 카드", f_about: "Trimi 소개", f_story: "브랜드 스토리", f_career: "채용", f_contact: "문의하기", f_priv: "개인정보 보호정책", f_term: "서비스 약관",
+    chatHelp: "Trimi 도움말 센터", chatHow: "👋 무엇을 도와드릴까요?", chatWithUs: "우리와 채팅", sendMsg: "메시지 보내기", replyFast: "즉각적인 답변", faqs: "자주 묻는 질문", faqAcc: "내 계정", faqBill: "결제 및 주문", faqShip: "배송", chatInput: "메시지 입력...",
+    roleCustomer: "고객", roleVerified: "회원", roleAdmin: "관리자", changeCover: "커버 변경",
+    adminDashboard: "관리자 대시보드", adminAdd: "새 제품 추가", adminUsers: "고객 데이터", adminNoData: "데이터 없음", adminImg: "이미지", adminName: "제품 이름", adminPrice: "가격", adminAction: "동작", adminDel: "삭제", adminCare: "고객 관리 (실시간)", adminWait: "아직 고객이 없습니다", online: "온라인", offline: "오프라인"
+  },
+  JA: { 
+    home: "ホーム", shop: "ショップ", men: "メンズ", women: "レディース", collection: "コレクション", login: "ログイン", search: "衣類を検索...", cart: "カート", account: "アカウント", logout: "ログアウト", adminMenu: "管理パネル", 
+    sloganTitle: "独自のスタイル。", sloganDesc: "ファッションは単なる服ではなく、本当の個性を表現する沈黙の言語だと私たちは信じています。", explore: "今すぐ探索", newCol: "新コレクション 2026", heroTitle: "スタイリッシュなファッション、\n独特の雰囲気。", heroDesc: "高品質のTシャツ、ジャケット、アクセサリーを破格の価格で発見してください。", 
+    addToCart: "カートに追加", desc: "説明", ship: "全国送料無料", return: "30日間無料返品", myOrders: "私の注文", wishlist: "ウィッシュリスト", noOrders: "まだ注文はありません", noOrdersDesc: "買い物をすると、ここに請求書が表示されます。", total: "合計", checkout: "チェックアウト", emptyCart: "カートは空です。", startShop: "買い物を始める",
+    f_prod: "製品", f_all: "すべての製品", f_men: "メンズファッション", f_women: "レディースファッション", f_acc: "アクセサリー", f_sup: "顧客サポート", f_track: "注文状況の確認", f_ret: "返品ポリシー", f_ship: "配送情報", f_size: "サイズガイド", f_serv: "サービス", f_print: "オンデマンド印刷", f_b2b: "企業のお客様", f_gift: "ギフトカード", f_about: "Trimiについて", f_story: "ブランドストーリー", f_career: "採用情報", f_contact: "お問い合わせ", f_priv: "プライバシーポリシー", f_term: "利用規約",
+    chatHelp: "Trimiヘルプセンター", chatHow: "👋 今日はどのようなご用件ですか？", chatWithUs: "チャットする", sendMsg: "メッセージを送る", replyFast: "即時返信", faqs: "よくある質問", faqAcc: "マイアカウント", faqBill: "請求と注文", faqShip: "配送", chatInput: "メッセージを入力...",
+    roleCustomer: "お客様", roleVerified: "メンバー", roleAdmin: "管理者", changeCover: "カバーを変更",
+    adminDashboard: "管理ダッシュボード", adminAdd: "新製品の追加", adminUsers: "顧客データ", adminNoData: "データなし", adminImg: "画像", adminName: "製品名", adminPrice: "価格", adminAction: "アクション", adminDel: "削除", adminCare: "カスタマーケア（リアルタイム）", adminWait: "まだ顧客はいません", online: "オンライン", offline: "オフライン"
+  },
+  ZH: { 
+    home: "首页", shop: "商店", men: "男装", women: "女装", collection: "收藏", login: "登录", search: "搜索衣服...", cart: "购物车", account: "帐户", logout: "登出", adminMenu: "管理面板", 
+    sloganTitle: "独特的风格。", sloganDesc: "我们相信时尚不仅是衣服，更是表达你真实个性的无声语言。", explore: "立即探索", newCol: "2026 新系列", heroTitle: "时尚的风格，\n独特的氛围。", heroDesc: "以无与伦比的价格发现数百款高品质的T恤、夹克和配饰。", 
+    addToCart: "加入购物车", desc: "详细描述", ship: "全国免费送货", return: "30天免费退货", myOrders: "我的订单", wishlist: "心愿单", noOrders: "暂无订单", noOrdersDesc: "当您购物时，您的发票将显示在这里。", total: "总计", checkout: "立即结账", emptyCart: "您的购物车是空的。", startShop: "开始购物",
+    f_prod: "产品", f_all: "所有产品", f_men: "男士时尚", f_women: "女士时尚", f_acc: "配件", f_sup: "客户支持", f_track: "跟踪订单", f_ret: "退货政策", f_ship: "运输政策", f_size: "尺码指南", f_serv: "服务", f_print: "按需打印", f_b2b: "企业客户", f_gift: "礼品卡", f_about: "关于 Trimi", f_story: "品牌故事", f_career: "招聘", f_contact: "联系我们", f_priv: "隐私政策", f_term: "服务条款",
+    chatHelp: "Trimi 帮助中心", chatHow: "👋 今天我们能怎么帮助您？", chatWithUs: "与我们聊天", sendMsg: "发送消息", replyFast: "即刻回复", faqs: "常见问题", faqAcc: "我的帐户", faqBill: "账单与订单", faqShip: "运输", chatInput: "输入消息...",
+    roleCustomer: "顾客", roleVerified: "会员", roleAdmin: "管理员", changeCover: "更改封面",
+    adminDashboard: "管理仪表板", adminAdd: "添加新产品", adminUsers: "客户数据", adminNoData: "没有数据", adminImg: "图像", adminName: "产品名称", adminPrice: "价格", adminAction: "行动", adminDel: "删除", adminCare: "客户服务（实时）", adminWait: "暂无客户", online: "在线", offline: "离线"
+  }
+};
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -28,9 +77,13 @@ export default function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  // USER DATA & ĐỔI TÊN
   const [userRole, setUserRole] = useState(''); 
   const [avatarUrl, setAvatarUrl] = useState('');
   const [coverUrl, setCoverUrl] = useState('');
+  const [nickname, setNickname] = useState(''); 
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [tempName, setTempName] = useState('');
 
   const [localProducts, setLocalProducts] = useState([]);
   const [isLoadingShop, setIsLoadingShop] = useState(true);
@@ -41,10 +94,31 @@ export default function App() {
 
   const isAdmin = user?.email === 'phanbasongtoan112@gmail.com';
   const [showAddModal, setShowAddModal] = useState(false);
-  const [usersList, setUsersList] = useState([]);
   const [newProd, setNewProd] = useState({ name: '', price: '', desc: '', imagePreview: null });
   
-  // === ĐÃ FIX LỖI TRẮNG TRANG: KHAI BÁO ĐẦY ĐỦ BANNER IMAGE ===
+  // === NGÔN NGỮ ===
+  const [lang, setLang] = useState('VI');
+  const [showLangMenu, setShowLangMenu] = useState(false);
+  const languages = [
+    { code: 'VI', label: 'Tiếng Việt' }, { code: 'EN', label: 'English' },
+    { code: 'KO', label: '한국어' }, { code: 'JA', label: '日本語' },
+    { code: 'ZH', label: '中文' }
+  ];
+  const t = (key) => dict[lang]?.[key] || dict['VI'][key] || key;
+
+  // === REAL-TIME CHAT & ADMIN DASHBOARD ===
+  const [usersList, setUsersList] = useState([]);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isChatBoxOpen, setIsChatBoxOpen] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const [chatMessages, setChatMessages] = useState([]);
+  const [adminChatUser, setAdminChatUser] = useState(null); 
+  const [adminChatInput, setAdminChatInput] = useState('');
+
+  const chatEndRef = useRef(null);
+  const adminChatEndRef = useRef(null);
+
+  // BANNER & LOOKBOOK CONFIG
   const [isEditingBanner, setIsEditingBanner] = useState(false);
   const [bannerConfig, setBannerConfig] = useState({ x: 0, y: 0, scale: 1 });
   const [bannerImage, setBannerImage] = useState(() => localStorage.getItem('trimi_banner_img') || '/banner.png');
@@ -59,64 +133,57 @@ export default function App() {
   ];
   const [lookbook, setLookbook] = useState(defaultLookbook);
 
-  // === TÍCH HỢP FACEBOOK MESSENGER ===
-  useEffect(() => {
-    if (!document.getElementById('fb-root')) {
-      const fbRoot = document.createElement('div');
-      fbRoot.id = 'fb-root';
-      document.body.appendChild(fbRoot);
-    }
-    window.fbAsyncInit = function() {
-      window.FB.init({ xfbml: true, version: 'v18.0' });
-    };
-    (function(d, s, id) {
-      var js, fjs = d.getElementsByTagName(s)[0];
-      if (d.getElementById(id)) return;
-      js = d.createElement(s); js.id = id;
-      js.src = 'https://connect.facebook.net/vi_VN/sdk/xfbml.customerchat.js';
-      fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));
-  }, []);
-
   // ÉP CUỘN TRANG
   useEffect(() => {
     document.body.style.overflow = 'auto';
     document.documentElement.style.overflow = 'auto';
   }, []);
 
+  // AUTO SCROLL CHAT
+  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [chatMessages, isChatBoxOpen]);
+  useEffect(() => { adminChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [adminChatUser?.messages]);
+
+  // LOAD PRODUCTS
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const response = await fetch("https://fakestoreapi.com/products/category/men's%20clothing");
         const data = await response.json();
         const formattedProducts = data.map((item) => ({
-          id: item.id.toString(),
-          name: item.title,
-          price: item.price, 
-          rating: item.rating.rate,
-          reviews: item.rating.count,
-          imageUrl: item.image,
-          description: item.description
+          id: item.id.toString(), name: item.title, price: item.price, rating: item.rating.rate,
+          reviews: item.rating.count, imageUrl: item.image, description: item.description
         }));
         setLocalProducts(formattedProducts);
         setIsLoadingShop(false);
-      } catch (error) { console.error(error); setIsLoadingShop(false); }
+      } catch (error) { setIsLoadingShop(false); }
     };
     fetchProducts();
   }, []);
 
+  // LOAD GLOBAL CONFIG
   useEffect(() => {
-    const savedLookbook = localStorage.getItem('trimi_lookbook');
-    if (savedLookbook) setLookbook(JSON.parse(savedLookbook));
+    const fetchGlobalConfig = async () => {
+      try {
+        const docRef = doc(db, 'config', 'storefront');
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.lookbook) setLookbook(data.lookbook);
+          if (data.bannerConfig) setBannerConfig(data.bannerConfig);
+          if (data.bannerImage) setBannerImage(data.bannerImage);
+        }
+      } catch (error) {}
+    };
+    fetchGlobalConfig();
+  }, []);
 
+  // === ĐĂNG NHẬP & TRẠNG THÁI REAL-TIME ONLINE ===
+  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
         setIsAuthenticated(true);
         setShowLoginModal(false);
-        
-        const localBanner = localStorage.getItem('trimi_banner');
-        if (localBanner) setBannerConfig(JSON.parse(localBanner));
         
         const localAvatar = localStorage.getItem(`trimi_avatar_${currentUser.uid}`);
         if (localAvatar) setAvatarUrl(localAvatar); else setAvatarUrl('');
@@ -124,36 +191,96 @@ export default function App() {
         const localCover = localStorage.getItem(`trimi_cover_${currentUser.uid}`);
         if (localCover) setCoverUrl(localCover); else setCoverUrl('');
 
+        const localName = localStorage.getItem(`trimi_name_${currentUser.uid}`);
+        if (localName) setNickname(localName); else setNickname(currentUser.email.split('@')[0]);
+
         try {
+          await setDoc(doc(db, 'users', currentUser.uid), { email: currentUser.email, nickname: localName || currentUser.email.split('@')[0], lastActive: Date.now(), isOnline: true }, { merge: true });
           const docRef = doc(db, 'users', currentUser.uid);
           const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            if (docSnap.data().role) setUserRole(docSnap.data().role); else setShowSurveyModal(true);
-          } else { setShowSurveyModal(true); }
-        } catch (error) { console.warn(error); }
+          if (docSnap.exists() && docSnap.data().role) setUserRole(docSnap.data().role);
+          else setShowSurveyModal(true);
+        } catch (error) {}
+
+        const presenceInterval = setInterval(() => {
+          setDoc(doc(db, 'users', currentUser.uid), { lastActive: Date.now(), isOnline: true }, { merge: true }).catch(()=>{});
+        }, 30000);
+
+        const handleUnload = () => { setDoc(doc(db, 'users', currentUser.uid), { isOnline: false }, { merge: true }).catch(()=>{}); };
+        window.addEventListener('beforeunload', handleUnload);
+
+        return () => { clearInterval(presenceInterval); window.removeEventListener('beforeunload', handleUnload); };
       } else {
         setIsAuthenticated(false);
         setUser(null);
         setAvatarUrl('');
         setCoverUrl('');
+        setNickname('');
+        setChatMessages([]); // Reset chat khi đăng xuất
       }
     });
     return () => unsubscribe();
   }, []);
 
+  // === LẤY DANH SÁCH USER CHO ADMIN (REAL-TIME) ===
   useEffect(() => {
     if (isAdmin && currentView === 'admin') {
-      const fetchUsers = async () => {
-        try {
-          const querySnapshot = await getDocs(collection(db, "users"));
-          const usersData = [];
-          querySnapshot.forEach((doc) => { usersData.push({ uid: doc.id, ...doc.data() }); });
-          setUsersList(usersData);
-        } catch (err) { console.warn(err); }
-      };
-      fetchUsers();
+      const unsubscribe = onSnapshot(collection(db, "users"), (snapshot) => {
+        const usersData = [];
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          const isCurrentlyOnline = data.isOnline && (Date.now() - data.lastActive < 60000);
+          usersData.push({ uid: doc.id, ...data, isOnline: isCurrentlyOnline });
+        });
+        setUsersList(usersData);
+      });
+      return () => unsubscribe();
     }
   }, [isAdmin, currentView]);
+
+  // === ĐỌC TIN NHẮN REAL-TIME CỦA USER ===
+  useEffect(() => {
+    if (!user || isAdmin) return;
+    const unsub = onSnapshot(doc(db, 'chats', user.uid), (docSnap) => {
+      if (docSnap.exists()) {
+        setChatMessages(docSnap.data().messages || []);
+      } else {
+        setChatMessages([{ sender: 'bot', text: 'Xin chào! Trimi có thể giúp gì cho bạn? 😊', timestamp: Date.now() }]);
+      }
+    });
+    return () => unsub();
+  }, [user, isAdmin]);
+
+  // === ĐỌC TIN NHẮN REAL-TIME KHI ADMIN BẤM VÀO MỘT USER ===
+  useEffect(() => {
+    if (!isAdmin || !adminChatUser) return;
+    const unsub = onSnapshot(doc(db, 'chats', adminChatUser.uid), (docSnap) => {
+      if (docSnap.exists()) {
+        setAdminChatUser(prev => ({ ...prev, messages: docSnap.data().messages || [] }));
+      }
+    });
+    return () => unsub();
+  }, [isAdmin, adminChatUser?.uid]);
+
+  // === GỬI TIN NHẮN TỪ KHÁCH HÀNG ===
+  const handleUserSendMessage = async () => {
+    if(!chatInput.trim() || !user) return;
+    const newMessage = { sender: 'user', text: chatInput, timestamp: Date.now() };
+    setChatInput('');
+    try {
+      await setDoc(doc(db, 'chats', user.uid), { messages: arrayUnion(newMessage), lastUpdated: Date.now(), userEmail: user.email, nickname: nickname }, { merge: true });
+    } catch(e) { showToast("Lỗi gửi tin nhắn"); }
+  };
+
+  // === GỬI TIN NHẮN TỪ ADMIN ===
+  const handleAdminSendMessage = async () => {
+    if(!adminChatInput.trim() || !adminChatUser) return;
+    const newMessage = { sender: 'bot', text: adminChatInput, timestamp: Date.now() };
+    setAdminChatInput('');
+    try {
+      await setDoc(doc(db, 'chats', adminChatUser.uid), { messages: arrayUnion(newMessage), lastUpdated: Date.now() }, { merge: true });
+    } catch(e) { showToast("Lỗi gửi tin nhắn"); }
+  };
 
   const requireLogin = (action) => {
     if (!isAuthenticated) { setShowLoginModal(true); return; }
@@ -174,11 +301,26 @@ export default function App() {
   };
 
   const handleLogout = async () => {
+    if(user) await setDoc(doc(db, 'users', user.uid), { isOnline: false }, { merge: true }).catch(()=>{});
     await signOut(auth);
+    setChatMessages([]);
+    setAdminChatUser(null);
     setCurrentView('home'); 
   };
 
   const showToast = (msg) => { setToastMsg(msg); setTimeout(() => setToastMsg(''), 2500); };
+
+  const handleSaveName = async () => {
+    if(!tempName.trim()) return alert("Tên không được để trống!");
+    setNickname(tempName);
+    setIsEditingName(false);
+    localStorage.setItem(`trimi_name_${user.uid}`, tempName);
+    if (user) {
+      try { await setDoc(doc(db, "users", user.uid), { nickname: tempName }, { merge: true }); }
+      catch(e) {}
+    }
+    showToast('Đã cập nhật biệt danh!');
+  };
 
   const handleProfileUpload = (e, type) => {
     const file = e.target.files[0];
@@ -188,7 +330,7 @@ export default function App() {
       const base64String = reader.result;
       if(type === 'avatar') { setAvatarUrl(base64String); localStorage.setItem(`trimi_avatar_${user.uid}`, base64String); }
       if(type === 'cover') { setCoverUrl(base64String); localStorage.setItem(`trimi_cover_${user.uid}`, base64String); }
-      showToast('Đã lưu ảnh thành công!');
+      showToast('Đã lưu ảnh cá nhân!');
     };
     reader.readAsDataURL(file);
   };
@@ -197,27 +339,30 @@ export default function App() {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onloadend = () => {
+    reader.onloadend = async () => {
       const base64String = reader.result;
       const updatedLookbook = [...lookbook];
       updatedLookbook[index].img = base64String;
       setLookbook(updatedLookbook);
-      localStorage.setItem('trimi_lookbook', JSON.stringify(updatedLookbook));
-      showToast('Đã cập nhật ảnh trang chủ!');
+      try {
+        await setDoc(doc(db, "config", "storefront"), { lookbook: updatedLookbook }, { merge: true });
+        showToast('Đã cập nhật trang chủ cho tất cả người dùng!');
+      } catch (err) { showToast('Lỗi! Vui lòng dùng ảnh nhẹ hơn.'); }
     };
     reader.readAsDataURL(file);
   };
 
-  // BANNER HÀM XỬ LÝ ẢNH MỚI
   const handleBannerImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onloadend = () => {
+    reader.onloadend = async () => {
       const base64String = reader.result;
       setBannerImage(base64String);
-      localStorage.setItem('trimi_banner_img', base64String);
-      showToast('Đã tải ảnh lên thành công!');
+      try {
+        await setDoc(doc(db, "config", "storefront"), { bannerImage: base64String }, { merge: true });
+        showToast('Đã tải ảnh Banner lên máy chủ!');
+      } catch(err) { showToast('Ảnh quá nặng.'); }
     };
     reader.readAsDataURL(file);
   };
@@ -238,10 +383,12 @@ export default function App() {
     const scaleChange = e.deltaY > 0 ? -0.1 : 0.1;
     setBannerConfig(prev => ({ ...prev, scale: Math.max(0.3, prev.scale + scaleChange) }));
   };
-  const handleSaveBanner = () => {
+  const handleSaveBanner = async () => {
     setIsEditingBanner(false);
-    localStorage.setItem('trimi_banner', JSON.stringify(bannerConfig));
-    showToast('Đã lưu giao diện Banner!');
+    try {
+      await setDoc(doc(db, "config", "storefront"), { bannerConfig: bannerConfig }, { merge: true });
+      showToast('Đã lưu cấu hình Banner cho toàn thế giới!');
+    } catch(err) {}
   };
 
   const handleAddToCart = (item, e) => {
@@ -252,7 +399,7 @@ export default function App() {
         if (existingItem) return prevCart.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
         return [...prevCart, { ...item, quantity: 1 }];
       });
-      showToast('Đã thêm vào giỏ hàng');
+      showToast(t('addToCart') + '!');
     });
   };
 
@@ -283,18 +430,102 @@ export default function App() {
   return (
     <>
       <style>{`
-        html, body, #root {
-          overflow: visible !important;
-          overflow-y: auto !important;
-          height: auto !important;
-          min-height: 100vh !important;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Water+Brush&display=swap');
+        .font-brush { font-family: 'Water Brush', cursive; }
+        html, body, #root { overflow: visible !important; overflow-y: auto !important; height: auto !important; min-height: 100vh !important; }
       `}</style>
 
       <div className="min-h-screen w-full bg-[#f8fafc] text-slate-900 font-sans flex flex-col relative">
         
-        {/* COMPONENT CHAT CỦA FACEBOOK SẼ ĐƯỢC NHÚNG VÀO ĐÂY */}
-        <div className="fb-customerchat" attribution="biz_inbox" page_id="61578555688928"></div>
+        {/* ==============================================
+            BONG BÓNG CHAT (HIỂN THỊ VỚI TẤT CẢ MỌI NGƯỜI)
+            ============================================== */}
+        <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-[9000] flex flex-col items-end">
+          
+          {/* Menu Trợ giúp */}
+          {isHelpOpen && !isChatBoxOpen && (
+            <div className="bg-white w-[340px] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] mb-4 overflow-hidden border border-slate-200 animate-fade-in-up origin-bottom-right">
+              <div className="bg-slate-900 text-white p-5 pr-4 flex justify-between items-start">
+                <div>
+                  <h3 className="font-bold text-[17px] mb-1">{t('chatHelp')}</h3>
+                  <p className="text-sm text-slate-300 flex items-center gap-1">{t('chatHow')}</p>
+                </div>
+                <button onClick={() => setIsHelpOpen(false)} className="text-slate-400 hover:text-white transition-colors p-1"><FiX className="text-xl"/></button>
+              </div>
+              <div className="p-4 border-b border-slate-100">
+                 <p className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mb-3">{t('chatWithUs')}</p>
+                 <div onClick={() => requireLogin(() => { setIsChatBoxOpen(true); setIsHelpOpen(false); })} className="flex items-center gap-3 bg-white border border-slate-200 p-3 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer shadow-sm group">
+                    <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0 border border-slate-200 overflow-hidden group-hover:bg-slate-900 group-hover:text-white transition-colors">
+                      {avatarUrl ? <img src={avatarUrl} className="w-full h-full object-cover"/> : <FiUser className="text-xl"/>}
+                    </div>
+                    <div>
+                      <span className="font-bold text-slate-800 text-sm block">{t('sendMsg')}</span>
+                      <span className="text-xs text-slate-500">{t('replyFast')}</span>
+                    </div>
+                 </div>
+              </div>
+              <div className="p-4">
+                 <div className="flex justify-between items-center mb-3">
+                   <p className="text-[13px] font-bold text-slate-500 uppercase tracking-widest">{t('faqs')}</p>
+                   <FiSearch className="text-slate-400"/>
+                 </div>
+                 <div className="space-y-1">
+                   <button className="w-full flex items-center gap-3 p-2.5 hover:bg-slate-50 rounded-lg text-slate-700 text-sm font-medium transition-colors"><FiUser className="text-lg text-slate-400"/> {t('faqAcc')}</button>
+                   <button className="w-full flex items-center gap-3 p-2.5 hover:bg-slate-50 rounded-lg text-slate-700 text-sm font-medium transition-colors"><FiCreditCard className="text-lg text-slate-400"/> {t('faqBill')}</button>
+                   <button className="w-full flex items-center gap-3 p-2.5 hover:bg-slate-50 rounded-lg text-slate-700 text-sm font-medium transition-colors"><FiTruck className="text-lg text-slate-400"/> {t('faqShip')}</button>
+                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* GIAO DIỆN CHAT CÁ NHÂN */}
+          {isChatBoxOpen && (
+            <div className="bg-white w-[340px] h-[480px] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] mb-4 overflow-hidden border border-slate-200 animate-fade-in-up origin-bottom-right flex flex-col">
+              <div className="bg-slate-900 text-white p-4 flex justify-between items-center rounded-t-2xl shadow-md z-10">
+                <button onClick={() => { setIsChatBoxOpen(false); setIsHelpOpen(true); }} className="text-slate-300 hover:text-white flex items-center gap-2 font-bold text-sm">
+                  <FiCornerUpLeft/> Quay lại
+                </button>
+                <button onClick={() => setIsChatBoxOpen(false)} className="text-slate-400 hover:text-white p-1"><FiX className="text-xl"/></button>
+              </div>
+              
+              <div className="flex-grow bg-slate-50 p-4 overflow-y-auto flex flex-col gap-4 custom-scrollbar">
+                <div className="flex justify-center mb-2"><span className="text-xs text-slate-400 font-medium bg-white px-3 py-1 rounded-full border border-slate-100">Hôm nay</span></div>
+                
+                {chatMessages.map((msg, idx) => (
+                  <div key={idx} className={`flex gap-3 max-w-[85%] ${msg.sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`}>
+                    {msg.sender === 'bot' && (
+                      <div className="w-8 h-8 rounded-full bg-sky-500 text-white flex items-center justify-center flex-shrink-0 shadow-sm font-brush text-lg">T</div>
+                    )}
+                    <div className={`p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.sender === 'user' ? 'bg-slate-900 text-white rounded-tr-sm' : 'bg-white text-slate-700 rounded-tl-sm border border-slate-100'}`}>
+                      {msg.text}
+                    </div>
+                  </div>
+                ))}
+                <div ref={chatEndRef} />
+              </div>
+
+              <div className="p-3 bg-white border-t border-slate-100 flex items-center gap-2">
+                 <input 
+                   type="text" 
+                   value={chatInput}
+                   onChange={e => setChatInput(e.target.value)}
+                   onKeyPress={e => e.key === 'Enter' && handleUserSendMessage()}
+                   placeholder={t('chatInput')} 
+                   className="flex-grow bg-slate-100 text-slate-800 rounded-full px-4 py-2.5 text-sm outline-none focus:ring-1 focus:ring-slate-300"
+                 />
+                 <button onClick={handleUserSendMessage} className={`p-2.5 rounded-full flex items-center justify-center transition-colors ${chatInput.trim() ? 'bg-sky-500 text-white shadow-md' : 'bg-slate-100 text-slate-400'}`}>
+                   <FiSend/>
+                 </button>
+              </div>
+            </div>
+          )}
+
+          {!isChatBoxOpen && (
+            <button onClick={() => setIsHelpOpen(!isHelpOpen)} className="w-14 h-14 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-2xl hover:bg-black hover:scale-105 transition-all">
+               {isHelpOpen ? <FiX className="text-2xl" /> : <FiMessageCircle className="text-2xl" />}
+            </button>
+          )}
+        </div>
 
         {toastMsg && (
           <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 flex items-center justify-center z-[5000] shadow-2xl animate-fade-in-up rounded-full pointer-events-none">
@@ -303,21 +534,20 @@ export default function App() {
           </div>
         )}
 
-        {/* HEADER */}
+        {/* HEADER CÓ DỊCH THUẬT */}
         <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm flex-shrink-0">
            <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-3 md:py-4 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0">
               <div className="flex items-center gap-8 w-full md:w-auto">
-                 <h1 className="text-3xl font-black tracking-tighter cursor-pointer text-slate-900 flex items-center gap-1" onClick={() => setCurrentView('home')}>
-                   Trimi.
+                 <h1 className="text-5xl md:text-[52px] font-brush tracking-wide cursor-pointer text-slate-900" onClick={() => setCurrentView('home')} style={{ lineHeight: '1' }}>
+                   Trimi
                  </h1>
-                 <nav className="hidden lg:flex items-center gap-8 text-sm font-bold text-slate-600 uppercase tracking-widest">
-                   <button onClick={() => setCurrentView('home')} className={`pb-1 border-b-2 transition-colors ${currentView === 'home' ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>Trang chủ</button>
-                   <button onClick={() => setCurrentView('shop')} className={`pb-1 border-b-2 transition-colors ${currentView === 'shop' ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>Cửa hàng</button>
-                   <button className="pb-1 border-b-2 border-transparent hover:text-slate-900 transition-colors">Nam</button>
-                   <button className="pb-1 border-b-2 border-transparent hover:text-slate-900 transition-colors">Nữ</button>
-                   <button className="pb-1 border-b-2 border-transparent hover:text-slate-900 transition-colors">Bộ sưu tập</button>
+                 <nav className="hidden lg:flex items-center gap-8 text-sm font-bold text-slate-600 uppercase tracking-widest pt-2">
+                   <button onClick={() => setCurrentView('home')} className={`pb-1 border-b-2 transition-colors ${currentView === 'home' ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('home')}</button>
+                   <button onClick={() => setCurrentView('shop')} className={`pb-1 border-b-2 transition-colors ${currentView === 'shop' ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('shop')}</button>
+                   <button className="pb-1 border-b-2 border-transparent hover:text-slate-900 transition-colors">{t('men')}</button>
+                   <button className="pb-1 border-b-2 border-transparent hover:text-slate-900 transition-colors">{t('women')}</button>
                  </nav>
-                 <div className="flex md:hidden items-center gap-4 text-slate-800 ml-auto">
+                 <div className="flex md:hidden items-center gap-4 text-slate-800 ml-auto pt-2">
                     {isAuthenticated ? (
                       <>
                         <button onClick={() => setCurrentView('profile')} className="text-slate-800"><FiUser className="text-2xl"/></button>
@@ -327,22 +557,39 @@ export default function App() {
                         </div>
                       </>
                     ) : (
-                      <button onClick={() => setShowLoginModal(true)} className="bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-bold">Đăng nhập</button>
+                      <button onClick={() => setShowLoginModal(true)} className="bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-bold">{t('login')}</button>
                     )}
                  </div>
               </div>
 
-              <div className="w-full md:w-auto md:max-w-[250px] flex-grow lg:mx-6 flex bg-slate-100 rounded-full h-10 overflow-hidden border border-transparent focus-within:border-slate-300 focus-within:bg-white transition-all shadow-inner">
-                 <input type="text" placeholder="Tìm kiếm trang phục..." className="w-full px-4 text-sm outline-none bg-transparent text-slate-800 placeholder-slate-400 font-medium"/>
+              <div className="w-full md:w-auto md:max-w-[250px] flex-grow lg:mx-6 flex bg-slate-100 rounded-full h-10 overflow-hidden border border-transparent focus-within:border-slate-300 focus-within:bg-white transition-all shadow-inner mt-2 md:mt-0">
+                 <input type="text" placeholder={t('search')} className="w-full px-4 text-sm outline-none bg-transparent text-slate-800 placeholder-slate-400 font-medium"/>
                  <button className="px-4 text-slate-500 hover:text-sky-500 transition-colors"><FiSearch className="text-lg"/></button>
               </div>
 
-              <div className="hidden md:flex gap-6 items-center text-sm font-semibold text-slate-700">
+              <div className="hidden md:flex gap-5 items-center text-sm font-semibold text-slate-700 pt-2">
+                 
+                 {/* BỘ CHUYỂN ĐỔI NGÔN NGỮ */}
+                 <div className="relative">
+                   <button onClick={() => setShowLangMenu(!showLangMenu)} className="flex items-center gap-1.5 font-bold text-slate-500 hover:text-slate-900 transition-colors bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
+                     <FiGlobe className="text-lg"/> <span className="uppercase tracking-widest">{lang}</span>
+                   </button>
+                   {showLangMenu && (
+                     <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 z-50 animate-fade-in-up">
+                       {languages.map(l => (
+                         <button key={l.code} onClick={() => {setLang(l.code); setShowLangMenu(false)}} className={`w-full text-left px-4 py-2 rounded-xl text-sm font-bold transition-colors ${lang === l.code ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>
+                           {l.label}
+                         </button>
+                       ))}
+                     </div>
+                   )}
+                 </div>
+
                  {isAuthenticated ? (
                    <>
-                     <button onClick={() => setCurrentView('profile')} className="flex items-center gap-2 hover:text-sky-600 transition-colors">
-                        {avatarUrl ? <img src={avatarUrl} className="w-7 h-7 rounded-full object-cover border border-slate-200"/> : <FiUser className="text-xl"/>}
-                        Tài khoản {isAdmin && <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full ml-1">Admin</span>}
+                     <button onClick={() => setCurrentView('profile')} className="flex items-center gap-2 hover:text-sky-600 transition-colors pl-2 border-l border-slate-200">
+                        {avatarUrl ? <img src={avatarUrl} className="w-8 h-8 rounded-full object-cover border border-slate-200"/> : <FiUser className="text-xl"/>}
+                        <span className="max-w-[100px] truncate">{nickname}</span>
                      </button>
                      <div className="flex items-center gap-2 cursor-pointer hover:text-sky-600 transition-colors relative group" onClick={() => setIsCartOpen(true)}>
                         <div className="relative p-1">
@@ -353,19 +600,19 @@ export default function App() {
                             </span>
                           )}
                         </div>
-                        <span>Giỏ hàng</span>
+                        <span>{t('cart')}</span>
                      </div>
                    </>
                  ) : (
-                   <button onClick={() => setShowLoginModal(true)} className="bg-slate-900 hover:bg-black text-white px-6 py-2.5 rounded-full font-bold transition-all shadow-md">
-                     Đăng nhập
+                   <button onClick={() => setShowLoginModal(true)} className="bg-slate-900 hover:bg-black text-white px-6 py-2.5 rounded-full font-bold transition-all shadow-md ml-2">
+                     {t('login')}
                    </button>
                  )}
               </div>
            </div>
         </header>
 
-        <main className="flex-grow flex flex-col pb-10">
+        <main className="flex-grow flex flex-col">
 
           {/* TRANG CHỦ */}
           {currentView === 'home' && (
@@ -394,10 +641,10 @@ export default function App() {
                   ))}
                </div>
                <div className="w-full bg-white py-20 px-6 text-center border-b border-slate-100">
-                 <h2 className="text-4xl md:text-6xl font-black text-slate-900 mb-6 uppercase tracking-tighter">Đậm chất riêng.</h2>
-                 <p className="text-slate-500 max-w-2xl mx-auto mb-10 font-medium">Chúng tôi tin rằng thời trang không chỉ là áo quần, mà là ngôn ngữ không lời để thể hiện cá tính thực sự của bạn.</p>
+                 <h2 className="text-4xl md:text-6xl font-black text-slate-900 mb-6 uppercase tracking-tighter">{t('sloganTitle')}</h2>
+                 <p className="text-slate-500 max-w-2xl mx-auto mb-10 font-medium">{t('sloganDesc')}</p>
                  <button onClick={() => setCurrentView('shop')} className="bg-slate-900 text-white px-10 py-4 rounded-full font-bold uppercase tracking-widest hover:bg-black transition-transform hover:scale-105 shadow-xl shadow-slate-900/20">
-                   Khám phá ngay
+                   {t('explore')}
                  </button>
                </div>
             </div>
@@ -407,48 +654,30 @@ export default function App() {
           {currentView === 'shop' && (
             <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 py-8 md:py-10 animate-fade-in">
               <div className="bg-[#eef5fc] rounded-[32px] p-8 md:p-12 mb-10 border border-blue-50 flex flex-col md:flex-row items-center justify-between shadow-sm overflow-hidden relative min-h-[320px]">
-                
-                <div className="max-w-xl relative z-10 pointer-events-none">
-                  <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 inline-block">New Collection 2026</span>
-                  <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-4 leading-tight">Thời trang phong cách,<br/>đậm chất riêng.</h2>
-                  <p className="text-slate-600 mb-6 font-medium">Khám phá hàng trăm mẫu áo thun, áo khoác và phụ kiện chất lượng cao với mức giá không thể tuyệt vời hơn.</p>
+                <div className="max-w-xl relative z-10 pointer-events-none whitespace-pre-line">
+                  <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 inline-block">{t('newCol')}</span>
+                  <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-4 leading-tight">{t('heroTitle')}</h2>
+                  <p className="text-slate-600 mb-6 font-medium">{t('heroDesc')}</p>
                 </div>
                 
                 {isAdmin && !isEditingBanner && (
                   <button onClick={() => setIsEditingBanner(true)} className="absolute top-4 right-4 z-30 bg-white/90 backdrop-blur text-slate-900 p-2 px-3 rounded-lg shadow-sm border border-slate-200 hover:text-sky-600 text-xs font-bold flex items-center gap-2 transition-colors">
-                    <FiEdit3/> Chỉnh Banner (Canva Mode)
+                    <FiEdit3/> Chỉnh Banner
                   </button>
                 )}
 
-                <div 
-                  className={`absolute right-0 bottom-0 top-0 w-full md:w-1/2 items-center justify-center flex transition-all ${isEditingBanner ? 'z-20 border-4 border-dashed border-sky-400 bg-sky-50/30 cursor-move' : 'pointer-events-none z-0'}`}
-                  onMouseDown={handleBannerMouseDown}
-                  onMouseMove={handleBannerMouseMove}
-                  onMouseUp={handleBannerMouseUp}
-                  onMouseLeave={handleBannerMouseUp}
-                  onWheel={handleBannerWheel}
-                >
-                  <img 
-                    src={bannerImage} 
-                    alt="Banner" 
-                    draggable={false} 
-                    className={`h-[90%] w-auto object-contain drop-shadow-2xl ${isEditingBanner ? 'opacity-100' : 'opacity-90'}`} 
-                    style={{ transform: `translate(${bannerConfig.x}px, ${bannerConfig.y}px) scale(${bannerConfig.scale})` }}
-                    onError={(e) => { e.target.onerror = null; e.target.src = "https://fakestoreapi.com/img/71YXzeOuslL._AC_UY879_.jpg"; e.target.className = "h-[80%] w-auto object-contain mix-blend-multiply opacity-50 drop-shadow-xl" }} 
-                  />
+                <div className={`absolute right-0 bottom-0 top-0 w-full md:w-1/2 items-center justify-center flex transition-all ${isEditingBanner ? 'z-20 border-4 border-dashed border-sky-400 bg-sky-50/30 cursor-move' : 'pointer-events-none z-0'}`} onMouseDown={handleBannerMouseDown} onMouseMove={handleBannerMouseMove} onMouseUp={handleBannerMouseUp} onMouseLeave={handleBannerMouseUp} onWheel={handleBannerWheel}>
+                  <img src={bannerImage} alt="Banner" draggable={false} className={`h-[90%] w-auto object-contain drop-shadow-2xl ${isEditingBanner ? 'opacity-100' : 'opacity-90'}`} style={{ transform: `translate(${bannerConfig.x}px, ${bannerConfig.y}px) scale(${bannerConfig.scale})` }} onError={(e) => { e.target.onerror = null; e.target.src = "https://fakestoreapi.com/img/71YXzeOuslL._AC_UY879_.jpg"; e.target.className = "h-[80%] w-auto object-contain mix-blend-multiply opacity-50 drop-shadow-xl" }} />
                   
                   {isEditingBanner && (
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white p-2 px-4 rounded-full shadow-2xl flex items-center gap-4 cursor-default animate-fade-in-up" onMouseDown={e => e.stopPropagation()}>
                       <FiMove className="text-xl text-slate-400"/>
-                      <span className="text-xs font-bold text-slate-300 whitespace-nowrap hidden sm:inline">Kéo & Cuộn chuột</span>
+                      <span className="text-xs font-bold text-slate-300 whitespace-nowrap hidden sm:inline">Kéo & Cuộn</span>
                       <div className="w-px h-6 bg-slate-700 mx-1"></div>
-                      
-                      {/* NÚT ĐỔI ẢNH BANNER */}
                       <label className="bg-slate-700 hover:bg-slate-600 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-1 cursor-pointer transition-colors whitespace-nowrap">
                          <FiCamera/> Đổi ảnh
                          <input type="file" accept="image/*" className="hidden" onChange={handleBannerImageUpload} />
                       </label>
-
                       <button onClick={handleSaveBanner} className="bg-sky-500 hover:bg-sky-600 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-1 transition-colors"><FiSave/> Lưu</button>
                     </div>
                   )}
@@ -490,7 +719,7 @@ export default function App() {
             <div className="max-w-[1200px] mx-auto w-full px-4 md:px-8 py-8 md:py-12 animate-fade-in">
               <div className="text-xs font-bold text-slate-400 mb-8 tracking-wider uppercase flex items-center gap-2">
                 <button onClick={() => setCurrentView('shop')} className="hover:text-slate-800 transition-colors flex items-center gap-1"><FiCornerUpLeft/> Quay lại</button>
-                <span>/</span><span>Cửa hàng</span><span>/</span><span className="text-slate-800 truncate">{selectedProduct.name}</span>
+                <span>/</span><span>{t('shop')}</span><span>/</span><span className="text-slate-800 truncate">{selectedProduct.name}</span>
               </div>
               <div className="bg-white rounded-[40px] border border-slate-100 p-6 md:p-12 flex flex-col md:flex-row gap-10 lg:gap-16 shadow-sm">
                 <div className="w-full md:w-1/2 aspect-square bg-slate-50 border border-slate-100 rounded-[32px] flex items-center justify-center p-12 relative group">
@@ -505,15 +734,15 @@ export default function App() {
                   </div>
                   <div className="text-4xl font-black text-sky-600 mb-8">${selectedProduct.price}</div>
                   <div className="space-y-4 text-sm font-medium text-slate-700 mb-10 bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                    <div className="flex items-center gap-3"><FiTruck className="text-2xl text-sky-500"/> Giao hàng miễn phí toàn quốc</div>
-                    <div className="flex items-center gap-3"><FiShield className="text-2xl text-emerald-500"/> Đổi trả miễn phí 30 ngày</div>
+                    <div className="flex items-center gap-3"><FiTruck className="text-2xl text-sky-500"/> {t('ship')}</div>
+                    <div className="flex items-center gap-3"><FiShield className="text-2xl text-emerald-500"/> {t('return')}</div>
                   </div>
                   <div className="mb-12">
-                    <p className="text-sm font-bold text-slate-900 mb-3 uppercase tracking-wider">Mô tả chi tiết</p>
+                    <p className="text-sm font-bold text-slate-900 mb-3 uppercase tracking-wider">{t('desc')}</p>
                     <p className="text-base text-slate-600 leading-relaxed font-medium">{selectedProduct.description}</p>
                   </div>
                   <button onClick={(e) => handleAddToCart(selectedProduct, e)} className="mt-auto w-full bg-slate-900 text-white py-5 rounded-full font-black text-sm tracking-widest uppercase hover:bg-black transition-transform active:scale-[0.98] flex items-center justify-center gap-3 shadow-xl shadow-slate-900/20">
-                    <FiShoppingCart className="text-xl"/> THÊM VÀO GIỎ HÀNG
+                    <FiShoppingCart className="text-xl"/> {t('addToCart')}
                   </button>
                 </div>
               </div>
@@ -528,7 +757,7 @@ export default function App() {
                   {coverUrl ? <img src={coverUrl} className="w-full h-full object-cover" alt="Cover"/> : <FiImage className="text-6xl text-white opacity-20"/>}
                   <div className="absolute bottom-4 right-4">
                     <label htmlFor="coverUpload" className="bg-white/20 backdrop-blur-md text-white border border-white/20 px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 hover:bg-white hover:text-slate-900 transition-all cursor-pointer shadow-md">
-                      <FiCamera className="text-lg"/> Đổi ảnh bìa
+                      <FiCamera className="text-lg"/> {t('changeCover')}
                     </label>
                     <input type="file" id="coverUpload" accept="image/*" onChange={(e) => handleProfileUpload(e, 'cover')} className="hidden" />
                   </div>
@@ -537,7 +766,7 @@ export default function App() {
                 <div className="px-6 md:px-12 pb-8 relative">
                   <div className="w-32 h-32 md:w-44 md:h-44 bg-white rounded-full p-1.5 absolute -top-16 md:-top-24 border border-slate-100 shadow-xl z-10">
                     <div className="w-full h-full bg-slate-900 text-white rounded-full flex items-center justify-center text-5xl font-black relative overflow-hidden group">
-                      {avatarUrl ? <img src={avatarUrl} className="w-full h-full object-cover" alt="Avatar"/> : user?.email?.charAt(0).toUpperCase() || 'U'}
+                      {avatarUrl ? <img src={avatarUrl} className="w-full h-full object-cover" alt="Avatar"/> : nickname.charAt(0).toUpperCase() || 'U'}
                       <label htmlFor="avatarUpload" className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                         <FiCamera className="text-white text-3xl"/>
                       </label>
@@ -547,163 +776,235 @@ export default function App() {
 
                   <div className="flex justify-end pt-6 pb-2 gap-3 relative z-20">
                     <button onClick={handleLogout} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-3 rounded-full font-bold text-sm transition-colors flex items-center gap-2">
-                      <FiLogOut/> Đăng xuất
+                      <FiLogOut/> {t('logout')}
                     </button>
                     {isAdmin && (
                       <button onClick={() => setCurrentView('admin')} className="bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-full font-bold text-sm transition-colors flex items-center gap-2 shadow-md">
-                        <FiSettings/> Quản Trị Kho
+                        <FiSettings/> {t('adminMenu')}
                       </button>
                     )}
                   </div>
 
                   <div className="mt-4 md:mt-0 relative z-20">
-                    <h2 className="text-3xl md:text-4xl font-black text-slate-900">{user?.email?.split('@')[0]}</h2>
-                    <p className="text-slate-500 font-medium mb-4">{user?.email}</p>
+                    {!isEditingName ? (
+                      <h2 className="text-3xl md:text-4xl font-black text-slate-900 flex items-center gap-3">
+                        {nickname}
+                        <button onClick={() => {setTempName(nickname); setIsEditingName(true)}} className="text-sm text-slate-400 hover:text-sky-500 transition-colors p-1 bg-slate-50 rounded-full border border-slate-100" title="Đổi biệt danh"><FiEdit3/></button>
+                      </h2>
+                    ) : (
+                      <div className="flex items-center gap-3 mb-2">
+                        <input type="text" value={tempName} onChange={e => setTempName(e.target.value)} className="border-b-2 border-sky-500 text-3xl md:text-4xl font-black text-slate-900 outline-none bg-transparent w-64 md:w-80" autoFocus placeholder="Nhập tên..."/>
+                        <button onClick={handleSaveName} className="bg-slate-900 text-white p-2 rounded-full hover:bg-sky-500 shadow-md transition-colors"><FiCheckCircle className="text-lg"/></button>
+                        <button onClick={() => setIsEditingName(false)} className="bg-slate-100 text-slate-500 p-2 rounded-full hover:bg-red-500 hover:text-white shadow-md transition-colors"><FiX className="text-lg"/></button>
+                      </div>
+                    )}
+                    <p className="text-slate-500 font-medium mb-4 mt-2">{user?.email}</p>
                     
                     <div className="flex flex-wrap gap-2 mb-8">
-                      <span className="bg-slate-100 text-slate-700 px-4 py-1.5 rounded-full text-xs font-bold border border-slate-200">{userRole || 'Khách hàng'}</span>
-                      <span className="bg-sky-100 text-sky-700 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1"><FiCheckCircle/> Thành viên</span>
-                      {isAdmin && <span className="bg-amber-100 text-amber-700 px-4 py-1.5 rounded-full text-xs font-bold">Admin</span>}
+                      <span className="bg-slate-100 text-slate-700 px-4 py-1.5 rounded-full text-xs font-bold border border-slate-200">{t('roleCustomer')}</span>
+                      <span className="bg-sky-100 text-sky-700 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1"><FiCheckCircle/> {t('roleVerified')}</span>
+                      {isAdmin && <span className="bg-amber-100 text-amber-700 px-4 py-1.5 rounded-full text-xs font-bold">{t('roleAdmin')}</span>}
                     </div>
                   </div>
                   
                   <div className="flex gap-8 border-t border-slate-100 pt-6 overflow-x-auto custom-scrollbar relative z-20">
-                    <button className="text-slate-900 font-black border-b-4 border-slate-900 pb-2 whitespace-nowrap uppercase tracking-widest text-sm">Đơn hàng của tôi</button>
-                    <button className="text-slate-400 font-bold hover:text-slate-900 pb-2 whitespace-nowrap transition-colors uppercase tracking-widest text-sm">Sản phẩm yêu thích</button>
+                    <button className="text-slate-900 font-black border-b-4 border-slate-900 pb-2 whitespace-nowrap uppercase tracking-widest text-sm">{t('myOrders')}</button>
+                    <button className="text-slate-400 font-bold hover:text-slate-900 pb-2 whitespace-nowrap transition-colors uppercase tracking-widest text-sm">{t('wishlist')}</button>
                   </div>
                 </div>
               </div>
 
               <div className="bg-white rounded-[40px] p-8 border border-slate-200 shadow-sm text-center py-24">
                 <FiArchive className="text-6xl text-slate-200 mx-auto mb-6"/>
-                <h3 className="text-2xl font-black text-slate-800 mb-2">Chưa có đơn hàng nào</h3>
-                <p className="text-slate-500 text-base font-medium">Khi bạn mua sắm, danh sách hóa đơn sẽ hiển thị tại đây.</p>
+                <h3 className="text-2xl font-black text-slate-800 mb-2">{t('noOrders')}</h3>
+                <p className="text-slate-500 text-base font-medium">{t('noOrdersDesc')}</p>
               </div>
             </div>
           )}
 
-          {/* QUẢN TRỊ ADMIN */}
+          {/* QUẢN TRỊ ADMIN VÀ TỔNG ĐÀI CHAT */}
           {currentView === 'admin' && isAdmin && (
-            <div className="max-w-6xl mx-auto w-full px-4 py-8 md:py-12 animate-fade-in">
-              <div className="text-xs font-bold text-slate-400 mb-6 tracking-wider uppercase flex items-center gap-2">
-                <button onClick={() => setCurrentView('profile')} className="hover:text-slate-800 transition-colors flex items-center gap-1"><FiCornerUpLeft/> Hồ sơ</button>
-                <span>/</span><span className="text-slate-800 truncate">Quản lý kho hàng</span>
-              </div>
-              <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                 <h2 className="text-3xl md:text-4xl font-black text-slate-900 flex items-center gap-3"><FiArchive className="text-slate-900"/> Quản lý Cửa Hàng</h2>
-                 <button onClick={() => setShowAddModal(true)} className="bg-sky-500 text-white px-6 py-3.5 rounded-full font-bold flex items-center justify-center gap-2 hover:bg-sky-600 transition-colors shadow-lg shadow-sky-500/20">
-                   <FiPlus className="text-xl"/> Đăng Sản Phẩm Mới
-                 </button>
-              </div>
-              <div className="bg-white border border-slate-200 rounded-[32px] p-6 md:p-8 mb-8 shadow-sm">
-                <h3 className="text-lg font-black text-slate-900 mb-4 flex items-center gap-2"><FiUser/> Dữ liệu Khảo sát Khách hàng</h3>
-                <div className="flex flex-wrap gap-3">
-                  {usersList.length === 0 ? <p className="text-sm text-slate-400 font-medium">Chưa có dữ liệu</p> : 
-                    usersList.map(u => (
-                      <div key={u.uid} className="bg-slate-50 px-4 py-3 rounded-2xl text-sm border border-slate-100 flex flex-col gap-1">
-                        <span className="font-black text-slate-800">{u.email.split('@')[0]}</span>
-                        <span className="text-xs text-sky-600 font-bold uppercase tracking-wider">{u.role || 'Chưa chọn'}</span>
-                      </div>
-                    ))
-                  }
+            <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 py-8 md:py-12 animate-fade-in flex flex-col lg:flex-row gap-8">
+              
+              <div className={`flex-1 ${adminChatUser ? 'hidden lg:block' : 'block'}`}>
+                <div className="text-xs font-bold text-slate-400 mb-6 tracking-wider uppercase flex items-center gap-2">
+                  <button onClick={() => setCurrentView('profile')} className="hover:text-slate-800 transition-colors flex items-center gap-1"><FiCornerUpLeft/> Tài khoản</button>
+                  <span>/</span><span className="text-slate-800 truncate">{t('adminMenu')}</span>
                 </div>
-              </div>
-              <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto custom-scrollbar">
-                  <table className="w-full text-left border-collapse min-w-[600px]">
-                    <thead>
-                      <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-widest font-black border-b border-slate-200">
-                        <th className="p-5 pl-8">Hình ảnh</th>
-                        <th className="p-5">Tên sản phẩm</th>
-                        <th className="p-5">Giá bán</th>
-                        <th className="p-5 text-right pr-8">Hành động</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {localProducts.map((item) => (
-                        <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                          <td className="p-5 pl-8">
-                            <div className="w-16 h-16 bg-white border border-slate-200 rounded-2xl p-1 shadow-sm"><img src={item.imageUrl} className="w-full h-full object-contain mix-blend-multiply" alt=""/></div>
-                          </td>
-                          <td className="p-5 font-bold text-base text-slate-800 max-w-[250px] truncate">{item.name}</td>
-                          <td className="p-5 font-black text-slate-900 text-lg">${item.price}</td>
-                          <td className="p-5 text-right pr-8">
-                            <button onClick={() => handleDeleteProduct(item.id)} className="text-red-500 bg-red-50 hover:bg-red-500 hover:text-white px-5 py-2.5 rounded-full transition-colors font-bold text-xs flex items-center gap-2 ml-auto"><FiTrash2 className="text-sm"/> Xóa Bỏ</button>
-                          </td>
+                
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                   <h2 className="text-3xl md:text-4xl font-black text-slate-900 flex items-center gap-3"><FiArchive className="text-slate-900"/> {t('adminDashboard')}</h2>
+                   <button onClick={() => setShowAddModal(true)} className="bg-sky-500 text-white px-6 py-3.5 rounded-full font-bold flex items-center justify-center gap-2 hover:bg-sky-600 transition-colors shadow-lg shadow-sky-500/20">
+                     <FiPlus className="text-xl"/> {t('adminAdd')}
+                   </button>
+                </div>
+
+                <div className="bg-white border border-slate-200 rounded-[32px] p-6 md:p-8 mb-8 shadow-sm">
+                  <h3 className="text-lg font-black text-slate-900 mb-4 flex items-center gap-2"><FiMessageCircle className="text-sky-500"/> {t('adminCare')}</h3>
+                  <div className="flex flex-col gap-3">
+                    {usersList.length === 0 ? <p className="text-sm text-slate-400 font-medium">{t('adminWait')}</p> : 
+                      usersList.map(u => (
+                        <div key={u.uid} onClick={() => setAdminChatUser(u)} className={`px-4 py-3 rounded-2xl text-sm border flex items-center justify-between cursor-pointer transition-all hover:bg-slate-50 ${adminChatUser?.uid === u.uid ? 'border-sky-500 bg-sky-50' : 'border-slate-100 bg-white'}`}>
+                          <div className="flex items-center gap-3">
+                            <div className="relative">
+                              <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center font-black text-slate-500 text-lg">
+                                {u.nickname ? u.nickname.charAt(0).toUpperCase() : u.email?.charAt(0).toUpperCase()}
+                              </div>
+                              <div className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white ${u.isOnline ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="font-black text-slate-800">{u.nickname || u.email?.split('@')[0]}</span>
+                              <span className="text-xs text-slate-500 font-medium">{u.isOnline ? t('online') : t('offline')}</span>
+                            </div>
+                          </div>
+                          <div className="text-sky-600 bg-sky-100 p-2 rounded-full"><FiMessageCircle/></div>
+                        </div>
+                      ))
+                    }
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="overflow-x-auto custom-scrollbar">
+                    <table className="w-full text-left border-collapse min-w-[600px]">
+                      <thead>
+                        <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-widest font-black border-b border-slate-200">
+                          <th className="p-5 pl-8">{t('adminImg')}</th>
+                          <th className="p-5">{t('adminName')}</th>
+                          <th className="p-5">{t('adminPrice')}</th>
+                          <th className="p-5 text-right pr-8">{t('adminAction')}</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {localProducts.map((item) => (
+                          <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                            <td className="p-5 pl-8">
+                              <div className="w-16 h-16 bg-white border border-slate-200 rounded-2xl p-1 shadow-sm"><img src={item.imageUrl} className="w-full h-full object-contain mix-blend-multiply" alt=""/></div>
+                            </td>
+                            <td className="p-5 font-bold text-base text-slate-800 max-w-[250px] truncate">{item.name}</td>
+                            <td className="p-5 font-black text-slate-900 text-lg">${item.price}</td>
+                            <td className="p-5 text-right pr-8">
+                              <button onClick={() => handleDeleteProduct(item.id)} className="text-red-500 bg-red-50 hover:bg-red-500 hover:text-white px-5 py-2.5 rounded-full transition-colors font-bold text-xs flex items-center gap-2 ml-auto"><FiTrash2 className="text-sm"/> {t('adminDel')}</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
+
+              {/* Giao diện Chat của Admin */}
+              {adminChatUser && (
+                <div className="w-full lg:w-[400px] h-[700px] bg-white rounded-[32px] shadow-xl border border-slate-200 flex flex-col overflow-hidden animate-fade-in sticky top-24">
+                  <div className="bg-slate-900 text-white p-5 flex items-center justify-between shadow-md z-10">
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                         <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center font-black text-white text-lg">
+                           {adminChatUser.nickname ? adminChatUser.nickname.charAt(0).toUpperCase() : adminChatUser.email?.charAt(0).toUpperCase()}
+                         </div>
+                         <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-slate-900 ${adminChatUser.isOnline ? 'bg-emerald-500' : 'bg-slate-400'}`}></div>
+                      </div>
+                      <div>
+                        <h4 className="font-bold">{adminChatUser.nickname || adminChatUser.email?.split('@')[0]}</h4>
+                        <p className="text-xs text-slate-300">{adminChatUser.isOnline ? t('online') : t('offline')}</p>
+                      </div>
+                    </div>
+                    <button onClick={() => setAdminChatUser(null)} className="text-slate-400 hover:text-white lg:hidden"><FiX className="text-2xl"/></button>
+                  </div>
+                  
+                  <div className="flex-grow bg-slate-50 p-4 overflow-y-auto flex flex-col gap-4 custom-scrollbar">
+                    {(!adminChatUser.messages || adminChatUser.messages.length === 0) ? (
+                      <p className="text-center text-sm text-slate-400 mt-10">Chưa có tin nhắn nào.</p>
+                    ) : (
+                      adminChatUser.messages.map((msg, idx) => (
+                        <div key={idx} className={`flex gap-3 max-w-[85%] ${msg.sender === 'bot' ? 'ml-auto flex-row-reverse' : ''}`}>
+                          {msg.sender === 'user' && (
+                            <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0 font-bold">{adminChatUser.email?.charAt(0).toUpperCase()}</div>
+                          )}
+                          <div className={`p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.sender === 'bot' ? 'bg-sky-500 text-white rounded-tr-sm' : 'bg-white text-slate-800 rounded-tl-sm border border-slate-100'}`}>
+                            {msg.text}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                    <div ref={adminChatEndRef} />
+                  </div>
+
+                  <div className="p-4 bg-white border-t border-slate-100 flex items-center gap-2">
+                     <input type="text" value={adminChatInput} onChange={e => setAdminChatInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleAdminSendMessage()} placeholder="Trả lời khách hàng..." className="flex-grow bg-slate-100 text-slate-800 rounded-full px-5 py-3 text-sm outline-none focus:ring-1 focus:ring-sky-500" />
+                     <button onClick={handleAdminSendMessage} className={`p-3 rounded-full flex items-center justify-center transition-colors ${adminChatInput.trim() ? 'bg-sky-500 text-white shadow-md' : 'bg-slate-100 text-slate-400'}`}>
+                       <FiSend className="text-lg"/>
+                     </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </main>
 
-        {/* FOOTER CHUYÊN NGHIỆP KIỂU PACDORA */}
-        <footer className="bg-[#111111] text-white pt-16 pb-8 mt-auto border-t border-slate-800 flex-shrink-0">
+        {/* CHÂN TRANG ĐƯỢC DỊCH THUẬT */}
+        <footer className="bg-[#111111] text-white pt-16 pb-8 mt-auto border-t border-slate-800 flex-shrink-0 z-30 relative">
           <div className="max-w-[1400px] mx-auto px-4 md:px-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-16">
               <div className="lg:col-span-1">
-                <h2 className="text-3xl font-black tracking-tighter mb-6">Trimi.</h2>
-                <div className="flex gap-4 text-slate-400">
-                   <div className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 hover:text-white transition-colors cursor-pointer"><FiInstagram className="text-lg"/></div>
-                   <div className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 hover:text-white transition-colors cursor-pointer"><FaFacebook className="text-lg"/></div>
-                   <div className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 hover:text-white transition-colors cursor-pointer"><FiLinkedin className="text-lg"/></div>
-                   <div className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 hover:text-white transition-colors cursor-pointer"><FiYoutube className="text-lg"/></div>
+                <h2 className="text-[60px] md:text-[70px] font-brush mb-2 leading-[0.8] tracking-wider">Trimi</h2>
+                <div className="flex gap-4 text-slate-400 mt-6">
+                   <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 hover:text-white transition-colors cursor-pointer"><FiInstagram className="text-lg"/></div>
+                   <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 hover:text-white transition-colors cursor-pointer"><FaFacebook className="text-lg"/></div>
+                   <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 hover:text-white transition-colors cursor-pointer"><FiLinkedin className="text-lg"/></div>
+                   <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 hover:text-white transition-colors cursor-pointer"><FiYoutube className="text-lg"/></div>
                 </div>
               </div>
               <div>
-                <h4 className="font-bold text-lg mb-6">Sản phẩm</h4>
+                <h4 className="font-bold text-lg mb-6">{t('f_prod')}</h4>
                 <ul className="space-y-4 text-sm text-slate-400 font-medium">
-                  <li className="hover:text-white cursor-pointer transition-colors">Tất cả sản phẩm</li>
-                  <li className="hover:text-white cursor-pointer transition-colors">Thời trang Nam</li>
-                  <li className="hover:text-white cursor-pointer transition-colors">Thời trang Nữ</li>
-                  <li className="hover:text-white cursor-pointer transition-colors">Phụ kiện (Accessories)</li>
-                  <li className="hover:text-white cursor-pointer transition-colors">Bộ sưu tập mới nhất</li>
+                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_all')}</li>
+                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_men')}</li>
+                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_women')}</li>
+                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_acc')}</li>
                 </ul>
               </div>
               <div>
-                <h4 className="font-bold text-lg mb-6">Hỗ trợ khách hàng</h4>
+                <h4 className="font-bold text-lg mb-6">{t('f_sup')}</h4>
                 <ul className="space-y-4 text-sm text-slate-400 font-medium">
-                  <li className="hover:text-white cursor-pointer transition-colors">Theo dõi đơn hàng</li>
-                  <li className="hover:text-white cursor-pointer transition-colors">Chính sách đổi trả</li>
-                  <li className="hover:text-white cursor-pointer transition-colors">Chính sách giao hàng</li>
-                  <li className="hover:text-white cursor-pointer transition-colors">Hướng dẫn chọn size</li>
-                  <li className="hover:text-white cursor-pointer transition-colors">Câu hỏi thường gặp</li>
+                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_track')}</li>
+                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_ret')}</li>
+                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_ship')}</li>
+                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_size')}</li>
                 </ul>
               </div>
               <div>
-                <h4 className="font-bold text-lg mb-6">Dịch vụ</h4>
+                <h4 className="font-bold text-lg mb-6">{t('f_serv')}</h4>
                 <ul className="space-y-4 text-sm text-slate-400 font-medium">
-                  <li className="hover:text-white cursor-pointer transition-colors">In ấn theo yêu cầu</li>
-                  <li className="hover:text-white cursor-pointer transition-colors">Khách hàng doanh nghiệp</li>
-                  <li className="hover:text-white cursor-pointer transition-colors">Thẻ quà tặng (Gift Cards)</li>
+                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_print')}</li>
+                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_b2b')}</li>
+                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_gift')}</li>
                 </ul>
               </div>
               <div>
-                <h4 className="font-bold text-lg mb-6">Về Trimi</h4>
+                <h4 className="font-bold text-lg mb-6">{t('f_about')}</h4>
                 <ul className="space-y-4 text-sm text-slate-400 font-medium">
-                  <li className="hover:text-white cursor-pointer transition-colors">Câu chuyện thương hiệu</li>
-                  <li className="hover:text-white cursor-pointer transition-colors">Tuyển dụng</li>
-                  <li className="hover:text-white cursor-pointer transition-colors">Liên hệ chúng tôi</li>
+                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_story')}</li>
+                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_career')}</li>
+                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_contact')}</li>
                 </ul>
               </div>
             </div>
             <div className="flex flex-col md:flex-row justify-between items-center border-t border-slate-800 pt-8 text-xs text-slate-500 font-medium">
               <p>© Copyright Trimi 2026. All rights reserved.</p>
               <div className="flex gap-4 mt-4 md:mt-0">
-                <span className="hover:text-white cursor-pointer transition-colors">Privacy policy</span>
+                <span className="hover:text-white cursor-pointer transition-colors">{t('f_priv')}</span>
                 <span>·</span>
-                <span className="hover:text-white cursor-pointer transition-colors">Terms of Service</span>
+                <span className="hover:text-white cursor-pointer transition-colors">{t('f_term')}</span>
               </div>
             </div>
           </div>
         </footer>
 
-        {/* MODAL ĐĂNG NHẬP */}
+        {/* MODALS */}
         {showLoginModal && !isAuthenticated && (
-          <div className="fixed inset-0 z-[6000] flex items-center justify-center p-4 md:p-6 animate-fade-in">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-6 animate-fade-in">
             <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onClick={() => setShowLoginModal(false)}></div>
             <div className="bg-white rounded-[40px] w-full max-w-5xl relative z-10 shadow-2xl flex overflow-hidden min-h-[550px]">
               <div className="hidden md:flex w-1/2 bg-slate-900 p-12 flex-col justify-between relative overflow-hidden">
@@ -716,7 +1017,7 @@ export default function App() {
               </div>
               <div className="w-full md:w-1/2 p-8 md:p-14 flex flex-col relative bg-white">
                 <button onClick={() => setShowLoginModal(false)} className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 bg-slate-100 p-2 rounded-full transition-colors"><FiX className="text-2xl"/></button>
-                <h3 className="text-3xl font-black text-slate-900 mb-8">{authMode === 'login' ? 'Đăng nhập vào Trimi' : 'Tạo tài khoản mới'}</h3>
+                <h3 className="text-3xl font-black text-slate-900 mb-8">{authMode === 'login' ? t('login') : 'Tạo tài khoản mới'}</h3>
                 <div className="flex flex-col gap-4 mb-8">
                   <button onClick={handleGoogleLogin} className="w-full bg-[#101828] text-white py-4 font-bold text-sm rounded-full hover:bg-black transition-all flex items-center justify-center gap-3 shadow-lg shadow-slate-900/20">
                     <FcGoogle className="text-xl bg-white rounded-full p-0.5" /> Tiếp tục với Google
@@ -730,7 +1031,7 @@ export default function App() {
                   <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="Nhập Email" className="w-full bg-slate-50 border border-transparent rounded-2xl px-5 py-4 outline-none focus:border-sky-500 focus:bg-white transition-all text-sm font-medium" />
                   <input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="Nhập Mật khẩu" className="w-full bg-slate-50 border border-transparent rounded-2xl px-5 py-4 outline-none focus:border-sky-500 focus:bg-white transition-all text-sm font-medium" />
                   <button onClick={handleEmailAuth} className="w-full bg-sky-500 text-white py-4 font-black text-sm rounded-full hover:bg-sky-600 transition-all mt-2 uppercase tracking-widest shadow-lg shadow-sky-500/30">
-                    {authMode === 'login' ? 'Đăng Nhập' : 'Đăng Ký'}
+                    {authMode === 'login' ? t('login') : 'Đăng Ký'}
                   </button>
                 </div>
                 <div className="text-center text-sm font-medium text-slate-600 mb-8">
@@ -741,7 +1042,6 @@ export default function App() {
           </div>
         )}
 
-        {/* MODAL KHẢO SÁT */}
         {showSurveyModal && isAuthenticated && (
           <div className="fixed inset-0 z-[7000] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
@@ -764,18 +1064,17 @@ export default function App() {
           </div>
         )}
 
-        {/* MODAL THÊM SẢN PHẨM ADMIN */}
         {showAddModal && isAdmin && (
-          <div className="fixed inset-0 z-[6000] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" onClick={() => setShowAddModal(false)}></div>
             <div className="bg-white rounded-[40px] p-8 md:p-10 w-full max-w-2xl relative z-10 shadow-2xl animate-fade-in-up flex flex-col max-h-[90vh]">
                <div className="flex justify-between items-center mb-8">
-                 <h3 className="text-3xl font-black text-slate-900 flex items-center gap-3"><FiPlus className="text-sky-500 bg-sky-50 p-2 rounded-full"/> Đăng Sản Phẩm</h3>
+                 <h3 className="text-3xl font-black text-slate-900 flex items-center gap-3"><FiPlus className="text-sky-500 bg-sky-50 p-2 rounded-full"/> {t('adminAdd')}</h3>
                  <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-900 bg-slate-100 p-3 rounded-full transition-colors"><FiX className="text-xl"/></button>
                </div>
                <div className="flex-grow overflow-y-auto custom-scrollbar pr-2 space-y-6">
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-3">Hình ảnh sản phẩm (PNG/JPG)</label>
+                    <label className="block text-sm font-bold text-slate-700 mb-3">{t('adminImg')}</label>
                     <div className="border-2 border-dashed border-slate-300 rounded-[24px] p-8 flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 transition-colors relative cursor-pointer group">
                       <input type="file" accept="image/*" onChange={(e) => {
                         const file = e.target.files[0];
@@ -786,16 +1085,16 @@ export default function App() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-3">Tên sản phẩm</label>
+                      <label className="block text-sm font-bold text-slate-700 mb-3">{t('adminName')}</label>
                       <input type="text" value={newProd.name} onChange={(e) => setNewProd({...newProd, name: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 outline-none focus:border-sky-500 focus:bg-white transition-all text-sm font-medium"/>
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-3">Giá bán ($)</label>
+                      <label className="block text-sm font-bold text-slate-700 mb-3">{t('adminPrice')} ($)</label>
                       <input type="number" value={newProd.price} onChange={(e) => setNewProd({...newProd, price: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 outline-none focus:border-sky-500 focus:bg-white transition-all text-sm font-medium"/>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-3">Mô tả chi tiết</label>
+                    <label className="block text-sm font-bold text-slate-700 mb-3">{t('desc')}</label>
                     <textarea value={newProd.desc} onChange={(e) => setNewProd({...newProd, desc: e.target.value})} rows="4" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 outline-none focus:border-sky-500 focus:bg-white transition-all text-sm font-medium resize-none"></textarea>
                   </div>
                </div>
@@ -815,15 +1114,15 @@ export default function App() {
             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setIsCartOpen(false)}></div>
             <div className="relative w-full max-w-md bg-white h-full flex flex-col shadow-2xl animate-fade-in-right">
               <div className="flex justify-between items-center p-6 md:p-8 border-b border-slate-100">
-                <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3"><FiShoppingCart className="text-sky-500"/> Giỏ Hàng ({cartItemCount})</h2>
+                <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3"><FiShoppingCart className="text-sky-500"/> {t('cart')} ({cartItemCount})</h2>
                 <button onClick={() => setIsCartOpen(false)} className="text-slate-400 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 p-2.5 rounded-full transition-colors"><FiX className="text-xl"/></button>
               </div>
               <div className="flex-grow overflow-y-auto p-6 flex flex-col gap-5 custom-scrollbar bg-slate-50/50">
                 {cart.length === 0 ? (
                   <div className="text-center mt-32 flex flex-col items-center">
                     <div className="w-32 h-32 bg-white shadow-sm rounded-full flex items-center justify-center mb-6"><FiShoppingCart className="text-6xl text-slate-200"/></div>
-                    <p className="text-slate-500 font-medium mb-8 text-base">Giỏ hàng của bạn đang trống.</p>
-                    <button onClick={() => {setIsCartOpen(false); setCurrentView('shop')}} className="px-10 py-4 bg-slate-900 text-white text-sm font-bold tracking-widest uppercase rounded-full shadow-lg shadow-slate-900/20 hover:bg-black transition-all">Mua Sắm Ngay</button>
+                    <p className="text-slate-500 font-medium mb-8 text-base">{t('emptyCart')}</p>
+                    <button onClick={() => {setIsCartOpen(false); setCurrentView('shop')}} className="px-10 py-4 bg-slate-900 text-white text-sm font-bold tracking-widest uppercase rounded-full shadow-lg shadow-slate-900/20 hover:bg-black transition-all">{t('startShop')}</button>
                   </div>
                 ) : (
                   cart.map((item, index) => (
@@ -850,11 +1149,11 @@ export default function App() {
               {cart.length > 0 && (
                 <div className="p-6 md:p-8 border-t border-slate-100 bg-white">
                   <div className="flex justify-between items-end mb-6">
-                    <span className="text-slate-500 font-bold uppercase tracking-widest text-xs">Tổng thanh toán</span>
+                    <span className="text-slate-500 font-bold uppercase tracking-widest text-xs">{t('total')}</span>
                     <span className="text-4xl font-black text-slate-900">${cartTotal}</span>
                   </div>
                   <button onClick={() => { alert(`Thanh toán thành công đơn hàng $${cartTotal}!`); setCart([]); setIsCartOpen(false); }} className="w-full bg-slate-900 hover:bg-black text-white py-5 rounded-full text-sm font-bold tracking-widest uppercase shadow-xl shadow-slate-900/20 transition-all flex justify-center items-center gap-2">
-                    <FiCheckCircle className="text-lg"/> Thanh Toán Ngay
+                    <FiCheckCircle className="text-lg"/> {t('checkout')}
                   </button>
                 </div>
               )}
