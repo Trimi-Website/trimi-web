@@ -12,11 +12,11 @@ import { FaFacebook } from 'react-icons/fa';
 
 // Firebase
 import { auth, googleProvider, db } from './firebase';
-import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc, setDoc, collection, getDocs, onSnapshot, arrayUnion } from 'firebase/firestore';
+import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, FacebookAuthProvider } from 'firebase/auth';
+import { doc, getDoc, setDoc, collection, onSnapshot, arrayUnion } from 'firebase/firestore';
 
 // ==========================================
-// BỘ NÉN ẢNH CHỐNG LỖI FIREBASE (MAX 1MB)
+// BỘ NÉN ẢNH
 // ==========================================
 const compressImage = (file, callback) => {
   const reader = new FileReader();
@@ -32,6 +32,7 @@ const compressImage = (file, callback) => {
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       callback(canvas.toDataURL('image/jpeg', 0.6)); 
     };
+    img.onerror = () => callback(e.target.result); 
     img.src = e.target.result;
   };
   reader.readAsDataURL(file);
@@ -41,35 +42,63 @@ const compressImage = (file, callback) => {
 // TỪ ĐIỂN ĐA NGÔN NGỮ (i18n)
 // ==========================================
 const dict = {
-  VI: { home: "Trang chủ", shop: "Cửa hàng", men: "Nam", women: "Nữ", collection: "Bộ sưu tập", login: "Đăng nhập", search: "Tìm kiếm trang phục...", cart: "Giỏ hàng", account: "Tài khoản", logout: "Đăng xuất", adminMenu: "Quản Trị Kho", sloganTitle: "Đậm chất riêng.", sloganDesc: "Chúng tôi tin rằng thời trang không chỉ là áo quần, mà là ngôn ngữ không lời để thể hiện cá tính thực sự của bạn.", explore: "Khám phá ngay", newCol: "New Collection 2026", heroTitle: "Thời trang phong cách,\nđậm chất riêng.", heroDesc: "Khám phá hàng trăm mẫu áo thun, áo khoác và phụ kiện chất lượng cao với mức giá không thể tuyệt vời hơn.", addToCart: "THÊM VÀO GIỎ HÀNG", desc: "Mô tả chi tiết", ship: "Giao hàng miễn phí toàn quốc", return: "Đổi trả miễn phí 30 ngày", myOrders: "Đơn hàng của tôi", wishlist: "Sản phẩm yêu thích", noOrders: "Chưa có đơn hàng nào", noOrdersDesc: "Khi bạn mua sắm, danh sách hóa đơn sẽ hiển thị tại đây.", total: "Tổng thanh toán", checkout: "Thanh Toán Ngay", emptyCart: "Giỏ hàng của bạn đang trống.", startShop: "Mua sắm ngay", f_prod: "Sản phẩm", f_all: "Tất cả sản phẩm", f_men: "Thời trang Nam", f_women: "Thời trang Nữ", f_acc: "Phụ kiện", f_sup: "Hỗ trợ khách hàng", f_track: "Theo dõi đơn hàng", f_ret: "Chính sách đổi trả", f_ship: "Chính sách giao hàng", f_size: "Hướng dẫn chọn size", f_serv: "Dịch vụ", f_print: "In ấn theo yêu cầu", f_b2b: "Khách hàng doanh nghiệp", f_gift: "Thẻ quà tặng", f_about: "Về Trimi", f_story: "Câu chuyện thương hiệu", f_career: "Tuyển dụng", f_contact: "Liên hệ chúng tôi", f_priv: "Chính sách bảo mật", f_term: "Điều khoản dịch vụ", chatHelp: "Trạm hỗ trợ Trimi", chatHow: "👋 Chúng tôi có thể giúp gì cho bạn?", chatWithUs: "Chat Với Chúng Tôi", sendMsg: "Gửi tin nhắn", replyFast: "Phản hồi ngay lập tức", faqs: "Câu hỏi thường gặp", faqAcc: "Tài khoản của tôi", faqBill: "Thanh toán & Đơn hàng", faqShip: "Vận chuyển", chatInput: "Nhập tin nhắn...", roleCustomer: "Khách hàng", roleVerified: "Thành viên", roleAdmin: "Quản trị viên", changeCover: "Đổi ảnh bìa", adminDashboard: "Trạm Quản Trị", adminAdd: "Đăng Sản Phẩm Mới", adminUsers: "Dữ liệu Khách hàng", adminNoData: "Chưa có dữ liệu", adminImg: "Hình ảnh", adminName: "Tên sản phẩm", adminPrice: "Giá bán", adminAction: "Hành động", adminDel: "Xóa Bỏ", adminCare: "Chăm Sóc Khách Hàng (Real-time)", adminWait: "Chưa có khách hàng", online: "Đang trực tuyến", offline: "Ngoại tuyến", adminInbox: "Hộp thư khách hàng" },
-  EN: { home: "Home", shop: "Shop", men: "Men", women: "Women", collection: "Collections", login: "Login", search: "Search clothes...", cart: "Cart", account: "Account", logout: "Logout", adminMenu: "Admin Panel", sloganTitle: "Your Unique Vibe.", sloganDesc: "We believe fashion is not just clothing, but a silent language to express your true self.", explore: "Explore Now", newCol: "New Collection 2026", heroTitle: "Stylish fashion,\nunique vibe.", heroDesc: "Discover hundreds of high-quality t-shirts, jackets and accessories at unbeatable prices.", addToCart: "ADD TO CART", desc: "Description", ship: "Free Nationwide Shipping", return: "30-Day Free Returns", myOrders: "My Orders", wishlist: "Wishlist", noOrders: "No orders yet", noOrdersDesc: "When you shop, your invoices will appear here.", total: "Total", checkout: "Checkout Now", emptyCart: "Your cart is empty.", startShop: "Start Shopping", f_prod: "Products", f_all: "All Products", f_men: "Men's Fashion", f_women: "Women's Fashion", f_acc: "Accessories", f_sup: "Customer Support", f_track: "Track Order", f_ret: "Return Policy", f_ship: "Shipping Policy", f_size: "Size Guide", f_serv: "Services", f_print: "Print on Demand", f_b2b: "Corporate Clients", f_gift: "Gift Cards", f_about: "About Trimi", f_story: "Brand Story", f_career: "Careers", f_contact: "Contact Us", f_priv: "Privacy Policy", f_term: "Terms of Service", chatHelp: "Trimi Help Center", chatHow: "👋 How can we help you today?", chatWithUs: "Chat With Us", sendMsg: "Send a message", replyFast: "Instant reply", faqs: "FAQs", faqAcc: "My Account", faqBill: "Billing & Orders", faqShip: "Shipping", chatInput: "Type a message...", roleCustomer: "Customer", roleVerified: "Member", roleAdmin: "Admin", changeCover: "Change Cover", adminDashboard: "Admin Dashboard", adminAdd: "Add New Product", adminUsers: "Customer Data", adminNoData: "No data", adminImg: "Image", adminName: "Product Name", adminPrice: "Price", adminAction: "Action", adminDel: "Delete", adminCare: "Customer Care (Real-time)", adminWait: "No customers yet", online: "Online", offline: "Offline", adminInbox: "Customer Inbox" },
-  KO: { home: "홈", shop: "가게", men: "남성", women: "여성", collection: "컬렉션", login: "로그인", search: "의류 검색...", cart: "장바구니", account: "계정", logout: "로그아웃", adminMenu: "관리자 패널", sloganTitle: "나만의 스타일.", sloganDesc: "우리는 패션이 단순한 옷이 아니라 진정한 개성을 표현하는 침묵의 언어라고 믿습니다.", explore: "지금 탐색하기", newCol: "2026 새로운 컬렉션", heroTitle: "스타일리시한 패션,\n독특한 분위기.", heroDesc: "탁월한 가격에 수백 가지의 고품질 티셔츠, 재킷 및 액세서리를 발견하세요.", addToCart: "장바구니에 추가", desc: "세부 정보", ship: "전국 무료 배송", return: "30일 무료 반품", myOrders: "내 주문", wishlist: "위시리스트", noOrders: "아직 주문이 없습니다", noOrdersDesc: "쇼핑을 하면 여기에 송장이 표시됩니다.", total: "총액", checkout: "결제하기", emptyCart: "장바구니가 비어 있습니다.", startShop: "쇼핑 시작", f_prod: "제품", f_all: "모든 제품", f_men: "남성 패션", f_women: "여성 패션", f_acc: "액세서리", f_sup: "고객 지원", f_track: "주문 배송조회", f_ret: "반품 정책", f_ship: "배송 정보", f_size: "사이즈 가이드", f_serv: "서비스", f_print: "맞춤형 인쇄", f_b2b: "기업 고객", f_gift: "기프트 카드", f_about: "Trimi 소개", f_story: "브랜드 스토리", f_career: "채용", f_contact: "문의하기", f_priv: "개인정보 보호정책", f_term: "서비스 약관", chatHelp: "Trimi 도움말 센터", chatHow: "👋 무엇을 도와드릴까요?", chatWithUs: "우리와 채팅", sendMsg: "메시지 보내기", replyFast: "즉각적인 답변", faqs: "자주 묻는 질문", faqAcc: "내 계정", faqBill: "결제 및 주문", faqShip: "배송", chatInput: "메시지 입력...", roleCustomer: "고객", roleVerified: "회원", roleAdmin: "관리자", changeCover: "커버 변경", adminDashboard: "관리자 대시보드", adminAdd: "새 제품 추가", adminUsers: "고객 데이터", adminNoData: "데이터 없음", adminImg: "이미지", adminName: "제품 이름", adminPrice: "가격", adminAction: "동작", adminDel: "삭제", adminCare: "고객 관리", adminWait: "고객이 없습니다", online: "온라인", offline: "오프라인", adminInbox: "고객받은 편지함" },
-  JA: { home: "ホーム", shop: "ショップ", men: "メンズ", women: "レディース", collection: "コレクション", login: "ログイン", search: "衣類を検索...", cart: "カート", account: "アカウント", logout: "ログアウト", adminMenu: "管理パネル", sloganTitle: "独自のスタイル。", sloganDesc: "ファッションは単なる服ではなく、本当の個性を表現する沈黙の言語だと私たちは信じています。", explore: "今すぐ探索", newCol: "新コレクション 2026", heroTitle: "スタイリッシュなファッション、\n独特の雰囲気。", heroDesc: "高品質のTシャツ、ジャケット、アクセサリーを破格の価格で発見してください。", addToCart: "カートに追加", desc: "説明", ship: "全国送料無料", return: "30日間無料返品", myOrders: "私の注文", wishlist: "ウィッシュリスト", noOrders: "まだ注文はありません", noOrdersDesc: "買い物をすると、ここに請求書が表示されます。", total: "合計", checkout: "チェックアウト", emptyCart: "カートは空です。", startShop: "買い物を始める", f_prod: "製品", f_all: "すべての製品", f_men: "メンズファッション", f_women: "レディースファッション", f_acc: "アクセサリー", f_sup: "顧客サポート", f_track: "注文状況の確認", f_ret: "返品ポリシー", f_ship: "配送情報", f_size: "サイズガイド", f_serv: "サービス", f_print: "オンデマンド印刷", f_b2b: "企業のお客様", f_gift: "ギフトカード", f_about: "Trimiについて", f_story: "ブランドストーリー", f_career: "採用情報", f_contact: "お問い合わせ", f_priv: "プライバシーポリシー", f_term: "利用規約", chatHelp: "Trimiヘルプセンター", chatHow: "👋 今日はどのようなご用件ですか？", chatWithUs: "チャットする", sendMsg: "メッセージを送る", replyFast: "即時返信", faqs: "よくある質問", faqAcc: "マイアカウント", faqBill: "請求と注文", faqShip: "配送", chatInput: "メッセージを入力...", roleCustomer: "お客様", roleVerified: "メンバー", roleAdmin: "管理者", changeCover: "カバーを変更", adminDashboard: "管理ダッシュボード", adminAdd: "新製品の追加", adminUsers: "顧客データ", adminNoData: "データなし", adminImg: "画像", adminName: "製品名", adminPrice: "価格", adminAction: "アクション", adminDel: "削除", adminCare: "カスタマーケア", adminWait: "顧客はいません", online: "オンライン", offline: "オフライン", adminInbox: "顧客の受信トレイ" },
-  ZH: { home: "首页", shop: "商店", men: "男装", women: "女装", collection: "收藏", login: "登录", search: "搜索衣服...", cart: "购物车", account: "帐户", logout: "登出", adminMenu: "管理面板", sloganTitle: "独特的风格。", sloganDesc: "我们相信时尚不仅是衣服，更是表达你真实个性的无声语言。", explore: "立即探索", newCol: "2026 新系列", heroTitle: "时尚的风格，\n独特的氛围。", heroDesc: "以无与伦比的价格发现数百款高品质的T恤、夹克和配饰。", addToCart: "加入购物车", desc: "详细描述", ship: "全国免费送货", return: "30天免费退货", myOrders: "我的订单", wishlist: "心愿单", noOrders: "暂无订单", noOrdersDesc: "当您购物时，您的发票将显示在这里。", total: "总计", checkout: "立即结账", emptyCart: "您的购物车是空的。", startShop: "开始购物", f_prod: "产品", f_all: "所有产品", f_men: "男士时尚", f_women: "女士时尚", f_acc: "配件", f_sup: "客户支持", f_track: "跟踪订单", f_ret: "退货政策", f_ship: "运输政策", f_size: "尺码指南", f_serv: "服务", f_print: "按需打印", f_b2b: "企业客户", f_gift: "礼品卡", f_about: "关于 Trimi", f_story: "品牌故事", f_career: "招聘", f_contact: "联系我们", f_priv: "隐私政策", f_term: "服务条款", chatHelp: "Trimi 帮助中心", chatHow: "👋 今天我们能怎么帮助您？", chatWithUs: "与我们聊天", sendMsg: "发送消息", replyFast: "即刻回复", faqs: "常见问题", faqAcc: "我的帐户", faqBill: "账单与订单", faqShip: "运输", chatInput: "输入消息...", roleCustomer: "顾客", roleVerified: "会员", roleAdmin: "管理员", changeCover: "更改封面", adminDashboard: "管理仪表板", adminAdd: "添加新产品", adminUsers: "客户数据", adminNoData: "没有数据", adminImg: "图像", adminName: "产品名称", adminPrice: "价格", adminAction: "行动", adminDel: "删除", adminCare: "客户服务", adminWait: "暂无客户", online: "在线", offline: "离线", adminInbox: "客户收件箱" },
-  FR: { home: "Accueil", shop: "Boutique", men: "Hommes", women: "Femmes", collection: "Collections", login: "Connexion", search: "Rechercher...", cart: "Panier", account: "Compte", logout: "Déconnexion", adminMenu: "Panneau Admin", sloganTitle: "Style unique.", sloganDesc: "Nous croyons que la mode n'est pas seulement des vêtements.", explore: "Explorer", newCol: "Nouvelle Collection", heroTitle: "Mode élégante,\nambiance unique.", heroDesc: "Découvrez des t-shirts de haute qualité à des prix imbattables.", addToCart: "AJOUTER", desc: "Description", ship: "Livraison Gratuite", return: "Retours 30 Jours", myOrders: "Mes Commandes", wishlist: "Favoris", noOrders: "Aucune commande", noOrdersDesc: "Vos factures apparaîtront ici.", total: "Total", checkout: "Payer", emptyCart: "Panier vide.", startShop: "Acheter", f_prod: "Produits", f_all: "Tous les produits", f_men: "Mode Homme", f_women: "Mode Femme", f_acc: "Accessoires", f_sup: "Support", f_track: "Suivre la commande", f_ret: "Retours", f_ship: "Livraison", f_size: "Guide des tailles", f_serv: "Services", f_print: "Impression", f_b2b: "B2B", f_gift: "Cartes Cadeaux", f_about: "À propos", f_story: "Histoire", f_career: "Carrières", f_contact: "Contact", f_priv: "Confidentialité", f_term: "Conditions", chatHelp: "Centre d'aide", chatHow: "👋 Comment vous aider?", chatWithUs: "Discuter", sendMsg: "Envoyer un message", replyFast: "Réponse instantanée", faqs: "FAQs", faqAcc: "Mon Compte", faqBill: "Facturation", faqShip: "Livraison", chatInput: "Taper un message...", roleCustomer: "Client", roleVerified: "Membre", roleAdmin: "Admin", changeCover: "Changer la couverture", adminDashboard: "Tableau de bord", adminAdd: "Ajouter", adminUsers: "Clients", adminNoData: "Aucune donnée", adminImg: "Image", adminName: "Nom", adminPrice: "Prix", adminAction: "Action", adminDel: "Supprimer", adminCare: "Service Client", adminWait: "Aucun client", online: "En ligne", offline: "Hors ligne", adminInbox: "Boîte de réception" },
-  IT: { home: "Home", shop: "Negozio", men: "Uomo", women: "Donna", collection: "Collezioni", login: "Accedi", search: "Cerca abiti...", cart: "Carrello", account: "Account", logout: "Esci", adminMenu: "Admin", sloganTitle: "Stile Unico.", sloganDesc: "La moda è un linguaggio silenzioso per esprimere la tua personalità.", explore: "Esplora Ora", newCol: "Nuova Collezione", heroTitle: "Moda elegante,\natmosfera unica.", heroDesc: "Scopri accessori di alta qualità a prezzi imbattibili.", addToCart: "AGGIUNGI", desc: "Descrizione", ship: "Spedizione Gratuita", return: "Resi 30 Giorni", myOrders: "I Miei Ordini", wishlist: "Desideri", noOrders: "Nessun ordine", noOrdersDesc: "Le tue fatture appariranno qui.", total: "Totale", checkout: "Paga Ora", emptyCart: "Carrello vuoto.", startShop: "Acquista", f_prod: "Prodotti", f_all: "Tutti i prodotti", f_men: "Uomo", f_women: "Donna", f_acc: "Accessori", f_sup: "Supporto", f_track: "Traccia Ordine", f_ret: "Resi", f_ship: "Spedizione", f_size: "Guida Taglie", f_serv: "Servizi", f_print: "Stampa", f_b2b: "Clienti Aziendali", f_gift: "Gift Cards", f_about: "Chi Siamo", f_story: "Storia", f_career: "Carriere", f_contact: "Contatti", f_priv: "Privacy", f_term: "Termini", chatHelp: "Centro Assistenza", chatHow: "👋 Come possiamo aiutarti?", chatWithUs: "Chatta con noi", sendMsg: "Invia messaggio", replyFast: "Risposta veloce", faqs: "FAQs", faqAcc: "Account", faqBill: "Fatturazione", faqShip: "Spedizione", chatInput: "Scrivi messaggio...", roleCustomer: "Cliente", roleVerified: "Membro", roleAdmin: "Admin", changeCover: "Cambia Copertina", adminDashboard: "Dashboard Admin", adminAdd: "Aggiungi", adminUsers: "Clienti", adminNoData: "Nessun dato", adminImg: "Immagine", adminName: "Nome", adminPrice: "Prezzo", adminAction: "Azione", adminDel: "Elimina", adminCare: "Assistenza", adminWait: "Nessun cliente", online: "Online", offline: "Offline", adminInbox: "Posta in arrivo" },
-  RU: { home: "Главная", shop: "Магазин", men: "Мужчины", women: "Женщины", collection: "Коллекции", login: "Войти", search: "Поиск одежды...", cart: "Корзина", account: "Аккаунт", logout: "Выйти", adminMenu: "Админ", sloganTitle: "Уникальный стиль.", sloganDesc: "Мода - это безмолвный язык для выражения вашей личности.", explore: "Исследовать", newCol: "Новая коллекция", heroTitle: "Стильная мода,\nуникальная атмосфера.", heroDesc: "Откройте для себя высококачественные футболки и аксессуары.", addToCart: "В КОРЗИНУ", desc: "Описание", ship: "Бесплатная доставка", return: "Возврат 30 дней", myOrders: "Мои заказы", wishlist: "Избранное", noOrders: "Нет заказов", noOrdersDesc: "Здесь будут ваши счета.", total: "Итого", checkout: "Оформить", emptyCart: "Корзина пуста.", startShop: "Начать покупки", f_prod: "Товары", f_all: "Все товары", f_men: "Мужчинам", f_women: "Женщинам", f_acc: "Аксессуары", f_sup: "Поддержка", f_track: "Отследить заказ", f_ret: "Возврат", f_ship: "Доставка", f_size: "Размеры", f_serv: "Услуги", f_print: "Печать", f_b2b: "B2B", f_gift: "Подарочные карты", f_about: "О нас", f_story: "История", f_career: "Карьера", f_contact: "Контакты", f_priv: "Конфиденциальность", f_term: "Условия", chatHelp: "Центр помощи", chatHow: "👋 Как мы можем помочь?", chatWithUs: "Чат с нами", sendMsg: "Отправить сообщение", replyFast: "Быстрый ответ", faqs: "Частые вопросы", faqAcc: "Аккаунт", faqBill: "Оплата", faqShip: "Доставка", chatInput: "Введите сообщение...", roleCustomer: "Клиент", roleVerified: "Участник", roleAdmin: "Админ", changeCover: "Изменить обложку", adminDashboard: "Панель", adminAdd: "Добавить", adminUsers: "Клиенты", adminNoData: "Нет данных", adminImg: "Фото", adminName: "Название", adminPrice: "Цена", adminAction: "Действие", adminDel: "Удалить", adminCare: "Поддержка", adminWait: "Нет клиентов", online: "Онлайн", offline: "Офлайн", adminInbox: "Входящие" }
+  VI: { home: "Trang chủ", shop: "Cửa hàng", nav_shirt: "Áo", nav_pants: "Quần", nav_acc: "Linh kiện", shirt_1: "Áo thun", shirt_2: "Áo sơ mi", shirt_3: "Áo khoác", pants_1: "Quần Jeans", pants_2: "Quần Kaki", pants_3: "Quần Short", acc_1: "Mũ / Nón", acc_2: "Túi xách", acc_3: "Trang sức", collection: "Bộ sưu tập", login: "Đăng nhập", search: "Tìm kiếm trang phục...", cart: "Giỏ hàng", account: "Tài khoản", logout: "Đăng xuất", adminMenu: "Quản Trị Kho", sloganTitle: "Đậm chất riêng.", sloganDesc: "Chúng tôi tin rằng thời trang không chỉ là áo quần, mà là ngôn ngữ không lời để thể hiện cá tính thực sự của bạn.", explore: "Khám phá ngay", newCol: "New Collection 2026", heroTitle: "Thời trang phong cách,\nđậm chất riêng.", heroDesc: "Khám phá hàng trăm mẫu áo thun, áo khoác và phụ kiện chất lượng cao với mức giá không thể tuyệt vời hơn.", addToCart: "THÊM VÀO GIỎ HÀNG", desc: "Mô tả chi tiết", ship: "Giao hàng miễn phí toàn quốc", return: "Đổi trả miễn phí 30 ngày", myOrders: "Đơn hàng của tôi", wishlist: "Sản phẩm yêu thích", noOrders: "Chưa có đơn hàng nào", noOrdersDesc: "Khi bạn mua sắm, danh sách hóa đơn sẽ hiển thị tại đây.", total: "Tổng thanh toán", checkout: "Thanh Toán Ngay", emptyCart: "Giỏ hàng của bạn đang trống.", startShop: "Mua sắm ngay", f_prod: "Sản phẩm", f_all: "Tất cả sản phẩm", f_men: "Thời trang Nam", f_women: "Thời trang Nữ", f_acc: "Phụ kiện", f_sup: "Hỗ trợ khách hàng", f_track: "Theo dõi đơn hàng", f_ret: "Chính sách đổi trả", f_ship: "Chính sách giao hàng", f_size: "Hướng dẫn chọn size", f_serv: "Dịch vụ", f_print: "In ấn theo yêu cầu", f_b2b: "Khách hàng doanh nghiệp", f_gift: "Thẻ quà tặng", f_about: "Về Trimi", f_story: "Câu chuyện thương hiệu", f_career: "Tuyển dụng", f_contact: "Liên hệ chúng tôi", f_priv: "Chính sách bảo mật", f_term: "Điều khoản dịch vụ", chatHelp: "Trạm hỗ trợ Trimi", chatHow: "👋 Chúng tôi có thể giúp gì cho bạn?", chatWithUs: "Chat Với Chúng Tôi", sendMsg: "Gửi tin nhắn", replyFast: "Phản hồi ngay lập tức", faqs: "Câu hỏi thường gặp", faqAcc: "Tài khoản của tôi", faqBill: "Thanh toán & Đơn hàng", faqShip: "Vận chuyển", chatInput: "Nhập tin nhắn...", roleCustomer: "Khách hàng", roleVerified: "Thành viên", roleAdmin: "Quản trị viên", changeCover: "Đổi ảnh bìa", adminDashboard: "Trạm Quản Trị", adminAdd: "Đăng Sản Phẩm", adminUsers: "Dữ liệu Khách hàng", adminNoData: "Chưa có dữ liệu", adminImg: "Hình ảnh", adminName: "Tên sản phẩm", adminPrice: "Giá bán", adminAction: "Hành động", adminDel: "Xóa Bỏ", adminCare: "Chăm Sóc Khách Hàng", adminWait: "Chưa có khách hàng", online: "Đang trực tuyến", offline: "Ngoại tuyến", adminInbox: "Hộp thư khách hàng", all_products: "Tất cả sản phẩm" },
+  EN: { home: "Home", shop: "Shop", nav_shirt: "Shirts", nav_pants: "Pants", nav_acc: "Accessories", shirt_1: "T-Shirts", shirt_2: "Dress Shirts", shirt_3: "Jackets", pants_1: "Jeans", pants_2: "Khakis", pants_3: "Shorts", acc_1: "Hats", acc_2: "Bags", acc_3: "Jewelry", collection: "Collections", login: "Login", search: "Search clothes...", cart: "Cart", account: "Account", logout: "Logout", adminMenu: "Admin Panel", sloganTitle: "Your Unique Vibe.", sloganDesc: "We believe fashion is not just clothing, but a silent language to express your true self.", explore: "Explore Now", newCol: "New Collection 2026", heroTitle: "Stylish fashion,\nunique vibe.", heroDesc: "Discover hundreds of high-quality t-shirts, jackets and accessories at unbeatable prices.", addToCart: "ADD TO CART", desc: "Description", ship: "Free Nationwide Shipping", return: "30-Day Free Returns", myOrders: "My Orders", wishlist: "Wishlist", noOrders: "No orders yet", noOrdersDesc: "When you shop, your invoices will appear here.", total: "Total", checkout: "Checkout Now", emptyCart: "Your cart is empty.", startShop: "Start Shopping", f_prod: "Products", f_all: "All Products", f_men: "Men's Fashion", f_women: "Women's Fashion", f_acc: "Accessories", f_sup: "Customer Support", f_track: "Track Order", f_ret: "Return Policy", f_ship: "Shipping Policy", f_size: "Size Guide", f_serv: "Services", f_print: "Print on Demand", f_b2b: "Corporate Clients", f_gift: "Gift Cards", f_about: "About Trimi", f_story: "Brand Story", f_career: "Careers", f_contact: "Contact Us", f_priv: "Privacy Policy", f_term: "Terms of Service", chatHelp: "Trimi Help Center", chatHow: "👋 How can we help you today?", chatWithUs: "Chat With Us", sendMsg: "Send a message", replyFast: "Instant reply", faqs: "FAQs", faqAcc: "My Account", faqBill: "Billing & Orders", faqShip: "Shipping", chatInput: "Type a message...", roleCustomer: "Customer", roleVerified: "Member", roleAdmin: "Admin", changeCover: "Change Cover", adminDashboard: "Admin Dashboard", adminAdd: "Add Product", adminUsers: "Customer Data", adminNoData: "No data", adminImg: "Image", adminName: "Product Name", adminPrice: "Price", adminAction: "Action", adminDel: "Delete", adminCare: "Customer Care", adminWait: "No customers yet", online: "Online", offline: "Offline", adminInbox: "Customer Inbox", all_products: "All Products" },
+  KO: { home: "홈", shop: "가게", nav_shirt: "상의", nav_pants: "바지", nav_acc: "액세서리", shirt_1: "티셔츠", shirt_2: "셔츠", shirt_3: "재킷", pants_1: "청바지", pants_2: "면바지", pants_3: "반바지", acc_1: "모자", acc_2: "가방", acc_3: "보석", collection: "컬렉션", login: "로그인", search: "의류 검색...", cart: "장바구니", account: "계정", logout: "로그아웃", adminMenu: "관리자 패널", sloganTitle: "나만의 스타일.", sloganDesc: "우리는 패션이 단순한 옷이 아니라 진정한 개성을 표현하는 침묵의 언어라고 믿습니다.", explore: "지금 탐색하기", newCol: "2026 새로운 컬렉션", heroTitle: "스타일리시한 패션,\n독특한 분위기.", heroDesc: "탁월한 가격에 수백 가지의 고품질 티셔츠, 재킷 및 액세서리를 발견하세요.", addToCart: "장바구니에 추가", desc: "세부 정보", ship: "전국 무료 배송", return: "30일 무료 반품", myOrders: "내 주문", wishlist: "위시리스트", noOrders: "아직 주문이 없습니다", noOrdersDesc: "쇼핑을 하면 여기에 송장이 표시됩니다.", total: "총액", checkout: "결제하기", emptyCart: "장바구니가 비어 있습니다.", startShop: "쇼핑 시작", f_prod: "제품", f_all: "모든 제품", f_men: "남성 패션", f_women: "여성 패션", f_acc: "액세서리", f_sup: "고객 지원", f_track: "주문 배송조회", f_ret: "반품 정책", f_ship: "배송 정보", f_size: "사이즈 가이드", f_serv: "서비스", f_print: "맞춤형 인쇄", f_b2b: "기업 고객", f_gift: "기프트 카드", f_about: "Trimi 소개", f_story: "브랜드 스토리", f_career: "채용", f_contact: "문의하기", f_priv: "개인정보 보호정책", f_term: "서비스 약관", chatHelp: "Trimi 도움말 센터", chatHow: "👋 무엇을 도와드릴까요?", chatWithUs: "우리와 채팅", sendMsg: "메시지 보내기", replyFast: "즉각적인 답변", faqs: "자주 묻는 질문", faqAcc: "내 계정", faqBill: "결제 및 주문", faqShip: "배송", chatInput: "메시지 입력...", roleCustomer: "고객", roleVerified: "회원", roleAdmin: "관리자", changeCover: "커버 변경", adminDashboard: "관리자 대시보드", adminAdd: "새 제품 추가", adminUsers: "고객 데이터", adminNoData: "데이터 없음", adminImg: "이미지", adminName: "제품 이름", adminPrice: "가격", adminAction: "동작", adminDel: "삭제", adminCare: "고객 관리", adminWait: "고객이 없습니다", online: "온라인", offline: "오프라인", adminInbox: "고객받은 편지함" },
+  JA: { home: "ホーム", shop: "ショップ", nav_shirt: "シャツ", nav_pants: "パンツ", nav_acc: "アクセサリー", shirt_1: "Tシャツ", shirt_2: "Yシャツ", shirt_3: "ジャケット", pants_1: "ジーンズ", pants_2: "チノパン", pants_3: "ショートパンツ", acc_1: "帽子", acc_2: "バッグ", acc_3: "ジュエリー", collection: "コレクション", login: "ログイン", search: "衣類を検索...", cart: "カート", account: "アカウント", logout: "ログアウト", adminMenu: "管理パネル", sloganTitle: "独自のスタイル。", sloganDesc: "ファッションは単なる服ではなく、本当の個性を表現する沈黙の言語だと私たちは信じています。", explore: "今すぐ探索", newCol: "新コレクション 2026", heroTitle: "スタイリッシュなファッション、\n独特の雰囲気。", heroDesc: "高品質のTシャツ、ジャケット、アクセサリーを破格の価格で発見してください。", addToCart: "カートに追加", desc: "説明", ship: "全国送料無料", return: "30日間無料返品", myOrders: "私の注文", wishlist: "ウィッシュリスト", noOrders: "まだ注文はありません", noOrdersDesc: "買い物をすると、ここに請求書が表示されます。", total: "合計", checkout: "チェックアウト", emptyCart: "カートは空です。", startShop: "買い物を始める", f_prod: "製品", f_all: "すべての製品", f_men: "メンズファッション", f_women: "レディースファッション", f_acc: "アクセサリー", f_sup: "顧客サポート", f_track: "注文状況の確認", f_ret: "返品ポリシー", f_ship: "配送情報", f_size: "サイズガイド", f_serv: "サービス", f_print: "オンデマンド印刷", f_b2b: "企業のお客様", f_gift: "ギフトカード", f_about: "Trimiについて", f_story: "ブランドストーリー", f_career: "採用情報", f_contact: "お問い合わせ", f_priv: "プライバシーポリシー", f_term: "利用規約", chatHelp: "Trimiヘルプセンター", chatHow: "👋 今日はどのようなご用件ですか？", chatWithUs: "チャットする", sendMsg: "メッセージを送る", replyFast: "即時返信", faqs: "よくある質問", faqAcc: "マイアカウント", faqBill: "請求と注文", faqShip: "配送", chatInput: "メッセージを入力...", roleCustomer: "お客様", roleVerified: "メンバー", roleAdmin: "管理者", changeCover: "カバーを変更", adminDashboard: "管理ダッシュボード", adminAdd: "新製品の追加", adminUsers: "顧客データ", adminNoData: "データなし", adminImg: "画像", adminName: "製品名", adminPrice: "価格", adminAction: "アクション", adminDel: "削除", adminCare: "カスタマーケア", adminWait: "顧客はいません", online: "オンライン", offline: "オフライン", adminInbox: "顧客の受信トレイ" },
+  ZH: { home: "首页", shop: "商店", nav_shirt: "衬衫", nav_pants: "裤子", nav_acc: "配件", shirt_1: "T恤", shirt_2: "正装衬衫", shirt_3: "夹克", pants_1: "牛仔裤", pants_2: "休闲裤", pants_3: "短裤", acc_1: "帽子", acc_2: "包", acc_3: "首饰", collection: "收藏", login: "登录", search: "搜索衣服...", cart: "购物车", account: "帐户", logout: "登出", adminMenu: "管理面板", sloganTitle: "独特的风格。", sloganDesc: "我们相信时尚不仅是衣服，更是表达你真实个性的无声语言。", explore: "立即探索", newCol: "2026 新系列", heroTitle: "时尚的风格，\n独特的氛围。", heroDesc: "以无与伦比的价格发现数百款高品质的T恤、夹克和配饰。", addToCart: "加入购物车", desc: "详细描述", ship: "全国免费送货", return: "30天免费退货", myOrders: "我的订单", wishlist: "心愿单", noOrders: "暂无订单", noOrdersDesc: "当您购物时，您的发票将显示在这里。", total: "总计", checkout: "立即结账", emptyCart: "您的购物车是空的。", startShop: "开始购物", f_prod: "产品", f_all: "所有产品", f_men: "男士时尚", f_women: "女士时尚", f_acc: "配件", f_sup: "客户支持", f_track: "跟踪订单", f_ret: "退货政策", f_ship: "运输政策", f_size: "尺码指南", f_serv: "服务", f_print: "按需打印", f_b2b: "企业客户", f_gift: "礼品卡", f_about: "关于 Trimi", f_story: "品牌故事", f_career: "招聘", f_contact: "联系我们", f_priv: "隐私政策", f_term: "服务条款", chatHelp: "Trimi 帮助中心", chatHow: "👋 今天我们能怎么帮助您？", chatWithUs: "与我们聊天", sendMsg: "发送消息", replyFast: "即刻回复", faqs: "常见问题", faqAcc: "我的帐户", faqBill: "账单与订单", faqShip: "运输", chatInput: "输入消息...", roleCustomer: "顾客", roleVerified: "会员", roleAdmin: "管理员", changeCover: "更改封面", adminDashboard: "管理仪表板", adminAdd: "添加新产品", adminUsers: "客户数据", adminNoData: "没有数据", adminImg: "图像", adminName: "产品名称", adminPrice: "价格", adminAction: "行动", adminDel: "删除", adminCare: "客户服务", adminWait: "暂无客户", online: "在线", offline: "离线", adminInbox: "客户收件箱" },
+  FR: { home: "Accueil", shop: "Boutique", nav_shirt: "Hauts", nav_pants: "Pantalons", nav_acc: "Accessoires", shirt_1: "T-Shirts", shirt_2: "Chemises", shirt_3: "Vestes", pants_1: "Jeans", pants_2: "Chinos", pants_3: "Shorts", acc_1: "Chapeaux", acc_2: "Sacs", acc_3: "Bijoux", collection: "Collections", login: "Connexion", search: "Rechercher...", cart: "Panier", account: "Compte", logout: "Déconnexion", adminMenu: "Panneau Admin", sloganTitle: "Style unique.", sloganDesc: "Nous croyons que la mode n'est pas seulement des vêtements.", explore: "Explorer", newCol: "Nouvelle Collection", heroTitle: "Mode élégante,\nambiance unique.", heroDesc: "Découvrez des t-shirts de haute qualité à des prix imbattables.", addToCart: "AJOUTER", desc: "Description", ship: "Livraison Gratuite", return: "Retours 30 Jours", myOrders: "Mes Commandes", wishlist: "Favoris", noOrders: "Aucune commande", noOrdersDesc: "Vos factures apparaîtront ici.", total: "Total", checkout: "Payer", emptyCart: "Panier vide.", startShop: "Acheter", f_prod: "Produits", f_all: "Tous les produits", f_men: "Mode Homme", f_women: "Mode Femme", f_acc: "Accessoires", f_sup: "Support", f_track: "Suivre la commande", f_ret: "Retours", f_ship: "Livraison", f_size: "Guide des tailles", f_serv: "Services", f_print: "Impression", f_b2b: "B2B", f_gift: "Cartes Cadeaux", f_about: "À propos", f_story: "Histoire", f_career: "Carrières", f_contact: "Contact", f_priv: "Confidentialité", f_term: "Conditions", chatHelp: "Centre d'aide", chatHow: "👋 Comment vous aider?", chatWithUs: "Discuter", sendMsg: "Envoyer un message", replyFast: "Réponse instantanée", faqs: "FAQs", faqAcc: "Mon Compte", faqBill: "Facturation", faqShip: "Livraison", chatInput: "Taper un message...", roleCustomer: "Client", roleVerified: "Membre", roleAdmin: "Admin", changeCover: "Changer la couverture", adminDashboard: "Tableau de bord", adminAdd: "Ajouter", adminUsers: "Clients", adminNoData: "Aucune donnée", adminImg: "Image", adminName: "Nom", adminPrice: "Prix", adminAction: "Action", adminDel: "Supprimer", adminCare: "Service Client", adminWait: "Aucun client", online: "En ligne", offline: "Hors ligne", adminInbox: "Boîte de réception" },
+  IT: { home: "Home", shop: "Negozio", nav_shirt: "Maglie", nav_pants: "Pantaloni", nav_acc: "Accessori", shirt_1: "T-Shirts", shirt_2: "Camicie", shirt_3: "Giacche", pants_1: "Jeans", pants_2: "Chinos", pants_3: "Pantaloncini", acc_1: "Cappelli", acc_2: "Borse", acc_3: "Gioielli", collection: "Collezioni", login: "Accedi", search: "Cerca abiti...", cart: "Carrello", account: "Account", logout: "Esci", adminMenu: "Admin", sloganTitle: "Stile Unico.", sloganDesc: "La moda è un linguaggio silenzioso per esprimere la tua personalità.", explore: "Esplora Ora", newCol: "Nuova Collezione", heroTitle: "Moda elegante,\natmosfera unica.", heroDesc: "Scopri accessori di alta qualità a prezzi imbattibili.", addToCart: "AGGIUNGI", desc: "Descrizione", ship: "Spedizione Gratuita", return: "Resi 30 Giorni", myOrders: "I Miei Ordini", wishlist: "Desideri", noOrders: "Nessun ordine", noOrdersDesc: "Le tue fatture appariranno qui.", total: "Totale", checkout: "Paga Ora", emptyCart: "Carrello vuoto.", startShop: "Acquista", f_prod: "Prodotti", f_all: "Tutti i prodotti", f_men: "Uomo", f_women: "Donna", f_acc: "Accessori", f_sup: "Supporto", f_track: "Traccia Ordine", f_ret: "Resi", f_ship: "Spedizione", f_size: "Guida Taglie", f_serv: "Servizi", f_print: "Stampa", f_b2b: "Clienti Aziendali", f_gift: "Gift Cards", f_about: "Chi Siamo", f_story: "Storia", f_career: "Carriere", f_contact: "Contatti", f_priv: "Privacy", f_term: "Termini", chatHelp: "Centro Assistenza", chatHow: "👋 Come possiamo aiutarti?", chatWithUs: "Chatta con noi", sendMsg: "Invia messaggio", replyFast: "Risposta veloce", faqs: "FAQs", faqAcc: "Account", faqBill: "Fatturazione", faqShip: "Spedizione", chatInput: "Scrivi messaggio...", roleCustomer: "Cliente", roleVerified: "Membro", roleAdmin: "Admin", changeCover: "Cambia Copertina", adminDashboard: "Dashboard Admin", adminAdd: "Aggiungi", adminUsers: "Clienti", adminNoData: "Nessun dato", adminImg: "Immagine", adminName: "Nome", adminPrice: "Prezzo", adminAction: "Azione", adminDel: "Elimina", adminCare: "Assistenza", adminWait: "Nessun cliente", online: "Online", offline: "Offline", adminInbox: "Posta in arrivo" },
+  RU: { home: "Главная", shop: "Магазин", nav_shirt: "Рубашки", nav_pants: "Брюки", nav_acc: "Аксессуары", shirt_1: "Футболки", shirt_2: "Рубашки", shirt_3: "Куртки", pants_1: "Джинсы", pants_2: "Брюки", pants_3: "Шорты", acc_1: "Шляпы", acc_2: "Сумки", acc_3: "Ювелирные", collection: "Коллекции", login: "Войти", search: "Поиск одежды...", cart: "Корзина", account: "Аккаунт", logout: "Выйти", adminMenu: "Админ", sloganTitle: "Уникальный стиль.", sloganDesc: "Мода - это безмолвный язык для выражения вашей личности.", explore: "Исследовать", newCol: "Новая коллекция", heroTitle: "Стильная мода,\nуникальная атмосфера.", heroDesc: "Откройте для себя высококачественные футболки и аксессуары.", addToCart: "В КОРЗИНУ", desc: "Описание", ship: "Бесплатная доставка", return: "Возврат 30 дней", myOrders: "Мои заказы", wishlist: "Избранное", noOrders: "Нет заказов", noOrdersDesc: "Здесь будут ваши счета.", total: "Итого", checkout: "Оформить", emptyCart: "Корзина пуста.", startShop: "Начать покупки", f_prod: "Товары", f_all: "Все товары", f_men: "Мужчинам", f_women: "Женщинам", f_acc: "Аксессуары", f_sup: "Поддержка", f_track: "Отследить заказ", f_ret: "Возврат", f_ship: "Доставка", f_size: "Размеры", f_serv: "Услуги", f_print: "Печать", f_b2b: "B2B", f_gift: "Подарочные карты", f_about: "О нас", f_story: "История", f_career: "Карьера", f_contact: "Контакты", f_priv: "Конфиденциальность", f_term: "Условия", chatHelp: "Центр помощи", chatHow: "👋 Как мы можем помочь?", chatWithUs: "Чат с нами", sendMsg: "Отправить сообщение", replyFast: "Быстрый ответ", faqs: "Частые вопросы", faqAcc: "Аккаунт", faqBill: "Оплата", faqShip: "Доставка", chatInput: "Введите сообщение...", roleCustomer: "Клиент", roleVerified: "Участник", roleAdmin: "Админ", changeCover: "Изменить обложку", adminDashboard: "Панель", adminAdd: "Добавить", adminUsers: "Клиенты", adminNoData: "Нет данных", adminImg: "Фото", adminName: "Название", adminPrice: "Цена", adminAction: "Действие", adminDel: "Удалить", adminCare: "Поддержка", adminWait: "Нет клиентов", online: "Онлайн", offline: "Офлайн", adminInbox: "Входящие" }
 };
+const t = (key, lang = 'VI') => dict[lang]?.[key] || dict['VI'][key] || key;
+
+// ==========================================
+// SẢN PHẨM MẪU CHUẨN (DUMMY DATA)
+// ==========================================
+const initialProducts = [
+  { id: '101', name: 'Premium Basic T-Shirt', price: 25.00, rating: 4.8, reviews: 120, category: 'shirt_1', imageUrl: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format&fit=crop', description: 'Áo thun basic cao cấp, chất liệu cotton 100% thoáng mát, form dáng chuẩn phù hợp mọi hoạt động hàng ngày.' },
+  { id: '102', name: 'Oversized Street Tee', price: 29.99, rating: 4.9, reviews: 85, category: 'shirt_1', imageUrl: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=800&auto=format&fit=crop', description: 'Áo thun form rộng phong cách đường phố bụi bặm, chất vải dày dặn giữ form tuyệt đối.' },
+  { id: '201', name: 'Classic Oxford Shirt', price: 45.00, rating: 4.7, reviews: 90, category: 'shirt_2', imageUrl: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?q=80&w=800&auto=format&fit=crop', description: 'Áo sơ mi Oxford thanh lịch, phù hợp công sở và các buổi tiệc sang trọng.' },
+  { id: '202', name: 'Striped Casual Shirt', price: 39.50, rating: 4.6, reviews: 60, category: 'shirt_2', imageUrl: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?q=80&w=800&auto=format&fit=crop', description: 'Áo sơ mi kẻ sọc thời trang trẻ trung năng động.' },
+  { id: '301', name: 'Leather Biker Jacket', price: 120.00, rating: 4.9, reviews: 200, category: 'shirt_3', imageUrl: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=800&auto=format&fit=crop', description: 'Áo khoác da lộn phong cách Biker cực ngầu, lót lông giữ ấm.' },
+  { id: '302', name: 'Denim Vintage Jacket', price: 85.00, rating: 4.8, reviews: 150, category: 'shirt_3', imageUrl: 'https://images.unsplash.com/photo-1576871337632-b9aef4c17ab9?q=80&w=800&auto=format&fit=crop', description: 'Áo khoác bò phong cách cổ điển, chất denim mềm.' },
+  { id: '401', name: 'Slim Fit Blue Jeans', price: 55.00, rating: 4.7, reviews: 310, category: 'pants_1', imageUrl: 'https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=800&auto=format&fit=crop', description: 'Quần jeans form ôm tôn dáng, vải co giãn tốt không bai nhão.' },
+  { id: '402', name: 'Ripped Street Jeans', price: 65.00, rating: 4.8, reviews: 180, category: 'pants_1', imageUrl: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=800&auto=format&fit=crop', description: 'Quần jeans rách gối phong cách đường phố.' },
+  { id: '501', name: 'Beige Khaki Trousers', price: 48.00, rating: 4.6, reviews: 95, category: 'pants_2', imageUrl: 'https://images.unsplash.com/photo-1559551409-dadc959f76b8?q=80&w=800&auto=format&fit=crop', description: 'Quần Kaki màu be thanh lịch, dễ phối đồ.' },
+  { id: '601', name: 'Summer Board Shorts', price: 25.00, rating: 4.5, reviews: 70, category: 'pants_3', imageUrl: 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?q=80&w=800&auto=format&fit=crop', description: 'Quần short đi biển thoáng mát.' },
+  { id: '701', name: 'Classic Baseball Cap', price: 18.00, rating: 4.9, reviews: 420, category: 'acc_1', imageUrl: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?q=80&w=800&auto=format&fit=crop', description: 'Mũ lưỡi trai phong cách thể thao, chất kaki 100%.' },
+  { id: '801', name: 'Leather Urban Backpack', price: 75.00, rating: 4.8, reviews: 110, category: 'acc_2', imageUrl: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=800&auto=format&fit=crop', description: 'Balo da thời trang đi học, đi làm có ngăn chống sốc laptop 15.6 inch.' },
+  { id: '802', name: 'Canvas Tote Bag', price: 22.00, rating: 4.7, reviews: 340, category: 'acc_2', imageUrl: 'https://images.unsplash.com/photo-1597589827317-4c6d6e0a90bd?q=80&w=800&auto=format&fit=crop', description: 'Túi tote vải canvas siêu bền đựng được cả thế giới.' },
+  { id: '901', name: 'Silver Chain Necklace', price: 35.00, rating: 4.9, reviews: 88, category: 'acc_3', imageUrl: 'https://images.unsplash.com/photo-1599643478524-fb66f4ceb5d8?q=80&w=800&auto=format&fit=crop', description: 'Dây chuyền bạc nam tính không gỉ.' },
+  { id: '902', name: 'Minimalist Cuff Bracelet', price: 28.00, rating: 4.6, reviews: 65, category: 'acc_3', imageUrl: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?q=80&w=800&auto=format&fit=crop', description: 'Vòng tay nam thiết kế tối giản Titan xước.' }
+];
 
 const defaultLookbookData = [
-  { id: 1, title: 'Men Collection', img: 'https://images.unsplash.com/photo-1520975954732-57dd22299614?q=80&w=800&auto=format&fit=crop' },
-  { id: 2, title: 'Streetwear', img: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=800&auto=format&fit=crop' },
-  { id: 3, title: 'Accessories', img: 'https://images.unsplash.com/photo-1509319117193-57bab727e09d?q=80&w=800&auto=format&fit=crop' },
-  { id: 4, title: 'New Arrivals', img: 'https://images.unsplash.com/photo-1529139574466-a303027c028b?q=80&w=800&auto=format&fit=crop' },
+  { id: 1, title: 'Men Collection', img: 'https://images.unsplash.com/photo-1520975954732-57dd22299614?q=80&w=800&auto=format&fit=crop', targetCategory: 'shirt_1' },
+  { id: 2, title: 'Streetwear', img: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=800&auto=format&fit=crop', targetCategory: 'pants_1' },
+  { id: 3, title: 'Accessories', img: 'https://images.unsplash.com/photo-1509319117193-57bab727e09d?q=80&w=800&auto=format&fit=crop', targetCategory: 'acc_2' },
+  { id: 4, title: 'New Arrivals', img: 'https://images.unsplash.com/photo-1529139574466-a303027c028b?q=80&w=800&auto=format&fit=crop', targetCategory: 'all' },
 ];
+
+const surveyRoles = ["Tín đồ Thời trang", "Thiết kế viên", "Sinh viên", "Chủ doanh nghiệp", "Khác"];
+const fakeColorSpheres = ['from-white to-slate-300', 'from-zinc-700 to-black', 'from-amber-200 to-amber-600', 'from-sky-300 to-sky-600'];
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
-  const [currentView, setCurrentView] = useState('home'); 
   
+  // STATE ĐIỀU HƯỚNG
+  const [currentView, setCurrentView] = useState('home'); 
+  const [currentCategory, setCurrentCategory] = useState('all'); 
+
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [authMode, setAuthMode] = useState('login'); 
   const [showSurveyModal, setShowSurveyModal] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // USER DATA & ĐỔI TÊN
+  // USER DATA
   const [userRole, setUserRole] = useState(''); 
   const [avatarUrl, setAvatarUrl] = useState('');
   const [coverUrl, setCoverUrl] = useState('');
@@ -77,29 +106,25 @@ export default function App() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState('');
 
-  const [localProducts, setLocalProducts] = useState([]);
-  const [isLoadingShop, setIsLoadingShop] = useState(true);
+  // FIX LỖI: THÊM LẠI isLoadingShop ĐỂ TRÁNH MÀN HÌNH TRẮNG
+  const [localProducts, setLocalProducts] = useState(initialProducts); 
+  const [isLoadingShop, setIsLoadingShop] = useState(false); // <--- Biến bị mất đã được thêm lại
   const [selectedProduct, setSelectedProduct] = useState(null); 
+  
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState(''); 
 
   const isAdmin = user?.email === 'phanbasongtoan112@gmail.com';
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newProd, setNewProd] = useState({ name: '', price: '', desc: '', imagePreview: null });
+  const [newProd, setNewProd] = useState({ name: '', price: '', category: 'shirt_1', desc: '', imagePreview: null });
   
-  // === NGÔN NGỮ ===
   const [lang, setLang] = useState('VI');
   const [showLangMenu, setShowLangMenu] = useState(false);
   const languages = [
-    { code: 'VI', label: 'Tiếng Việt' }, { code: 'EN', label: 'English' },
-    { code: 'KO', label: '한국어' }, { code: 'JA', label: '日本語' },
-    { code: 'ZH', label: '中文' }, { code: 'FR', label: 'Français' },
-    { code: 'IT', label: 'Italiano' }, { code: 'RU', label: 'Русский' }
+    { code: 'VI', label: 'Tiếng Việt' }, { code: 'EN', label: 'English' }
   ];
-  const t = (key) => dict[lang]?.[key] || dict['VI'][key] || key;
 
-  // === REAL-TIME CHAT & ADMIN DASHBOARD ===
   const [usersList, setUsersList] = useState([]);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isChatBoxOpen, setIsChatBoxOpen] = useState(false);
@@ -113,41 +138,24 @@ export default function App() {
   const chatContainerRef = useRef(null);
   const adminChatContainerRef = useRef(null);
 
-  // === BANNER & LOOKBOOK INIT SYNCHRONOUSLY (XÓA CHỚP ẢNH 1 GIÂY) ===
   const [isEditingBanner, setIsEditingBanner] = useState(false);
-  
-  const [bannerConfig, setBannerConfig] = useState(() => {
-    const saved = localStorage.getItem('trimi_banner');
-    return saved ? JSON.parse(saved) : { x: 0, y: 0, scale: 1 };
-  });
-  
-  const [bannerImage, setBannerImage] = useState(() => {
-    return localStorage.getItem('trimi_banner_img') || '/banner.png';
-  });
-  
-  const [lookbook, setLookbook] = useState(() => {
-    const saved = localStorage.getItem('trimi_lookbook');
-    return saved ? JSON.parse(saved) : defaultLookbook;
-  });
+  const [bannerConfig, setBannerConfig] = useState(() => JSON.parse(localStorage.getItem('trimi_banner')) || { x: 0, y: 0, scale: 1 });
+  const [bannerImage, setBannerImage] = useState(() => localStorage.getItem('trimi_banner_img') || '/banner.png');
+  const [lookbook, setLookbook] = useState(() => JSON.parse(localStorage.getItem('trimi_lookbook')) || defaultLookbookData);
 
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-  // ÉP CUỘN TRANG (GHI ĐÈ CSS CŨ) VÀ TIÊM FAVICON (ICON TRÌNH DUYỆT)
   useEffect(() => {
     document.body.style.overflow = 'auto';
     document.documentElement.style.overflow = 'auto';
-
-    let appleLink = document.querySelector("link[rel='apple-touch-icon']");
-    if (!appleLink) {
-      appleLink = document.createElement('link');
-      appleLink.rel = 'apple-touch-icon';
-      document.head.appendChild(appleLink);
-    }
-    appleLink.href = '/apple-touch-icon.png';
   }, []);
 
-  // FIX LỖI NHẢY TRANG KHI CUỘN CHAT
+  // RULE TOÀN CẦU: AUTO SCROLL LÊN ĐẦU TRANG KHI CHUYỂN TAB
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentView, currentCategory, selectedProduct]);
+
   useEffect(() => {
     if(chatContainerRef.current) chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
   }, [chatMessages, isChatBoxOpen]);
@@ -156,24 +164,7 @@ export default function App() {
     if(adminChatContainerRef.current) adminChatContainerRef.current.scrollTop = adminChatContainerRef.current.scrollHeight;
   }, [adminChatUser?.messages]);
 
-  // LOAD PRODUCTS
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch("https://fakestoreapi.com/products/category/men's%20clothing");
-        const data = await response.json();
-        const formattedProducts = data.map((item) => ({
-          id: item.id.toString(), name: item.title, price: item.price, rating: item.rating.rate,
-          reviews: item.rating.count, imageUrl: item.image, description: item.description
-        }));
-        setLocalProducts(formattedProducts);
-        setIsLoadingShop(false);
-      } catch (error) { setIsLoadingShop(false); }
-    };
-    fetchProducts();
-  }, []);
-
-  // LOAD GLOBAL CONFIG TỪ CLOUD ĐỂ ĐỒNG BỘ MỌI MÁY
+  // FIX LỖI TẢI DỮ LIỆU: Bỏ gọi FakeStoreAPI để giữ nguyên Dummy Data của chúng ta
   useEffect(() => {
     const fetchGlobalConfig = async () => {
       try {
@@ -190,7 +181,6 @@ export default function App() {
     fetchGlobalConfig();
   }, []);
 
-  // === ĐĂNG NHẬP & TRẠNG THÁI REAL-TIME ONLINE ===
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
@@ -198,21 +188,39 @@ export default function App() {
         setIsAuthenticated(true);
         setShowLoginModal(false);
         
+        const localRole = localStorage.getItem(`trimi_role_${currentUser.uid}`);
+        if(localRole) setUserRole(localRole);
+
         const localAvatar = localStorage.getItem(`trimi_avatar_${currentUser.uid}`);
         if (localAvatar) setAvatarUrl(localAvatar); else setAvatarUrl('');
         
         const localCover = localStorage.getItem(`trimi_cover_${currentUser.uid}`);
         if (localCover) setCoverUrl(localCover); else setCoverUrl('');
 
+        const baseEmailName = currentUser.email ? currentUser.email.split('@')[0] : 'Guest';
         const localName = localStorage.getItem(`trimi_name_${currentUser.uid}`);
-        if (localName) setNickname(localName); else setNickname(currentUser.email.split('@')[0]);
+        if (localName) setNickname(localName); else setNickname(baseEmailName);
 
         try {
-          await setDoc(doc(db, 'users', currentUser.uid), { email: currentUser.email, nickname: localName || currentUser.email.split('@')[0], lastActive: Date.now(), isOnline: true }, { merge: true });
+          await setDoc(doc(db, 'users', currentUser.uid), { 
+            email: currentUser.email || '', 
+            nickname: localName || baseEmailName, 
+            lastActive: Date.now(), 
+            isOnline: true 
+          }, { merge: true });
+          
           const docRef = doc(db, 'users', currentUser.uid);
           const docSnap = await getDoc(docRef);
-          if (docSnap.exists() && docSnap.data().role) setUserRole(docSnap.data().role);
-          else setShowSurveyModal(true);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.role) { setUserRole(data.role); localStorage.setItem(`trimi_role_${currentUser.uid}`, data.role); }
+            else if (!localRole) { setShowSurveyModal(true); }
+
+            if (data.avatar) { setAvatarUrl(data.avatar); localStorage.setItem(`trimi_avatar_${currentUser.uid}`, data.avatar); }
+            if (data.cover) { setCoverUrl(data.cover); localStorage.setItem(`trimi_cover_${currentUser.uid}`, data.cover); }
+          } else if (!localRole) { 
+            setShowSurveyModal(true); 
+          }
         } catch (error) {}
 
         const presenceInterval = setInterval(() => {
@@ -236,9 +244,8 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // === LẤY DANH SÁCH USER CHO ADMIN (REAL-TIME) ===
   useEffect(() => {
-    if (isAdmin && currentView === 'admin') {
+    if (isAdmin) {
       const unsubscribe = onSnapshot(collection(db, "users"), (snapshot) => {
         const usersData = [];
         snapshot.forEach((doc) => {
@@ -250,9 +257,8 @@ export default function App() {
       });
       return () => unsubscribe();
     }
-  }, [isAdmin, currentView]);
+  }, [isAdmin]);
 
-  // === ĐỌC TIN NHẮN REAL-TIME CỦA USER & BÁO TIN MỚI ===
   useEffect(() => {
     if (!user || isAdmin) return;
     const unsub = onSnapshot(doc(db, 'users', user.uid), (docSnap) => {
@@ -264,7 +270,6 @@ export default function App() {
     return () => unsub();
   }, [user, isAdmin]);
 
-  // === ĐỌC TIN NHẮN REAL-TIME KHI ADMIN BẤM VÀO MỘT USER ===
   useEffect(() => {
     if (!isAdmin || !adminChatUser) return;
     const unsub = onSnapshot(doc(db, 'users', adminChatUser.uid), (docSnap) => {
@@ -297,7 +302,7 @@ export default function App() {
     setChatInput('');
     try {
       await setDoc(doc(db, 'users', user.uid), { 
-        messages: arrayUnion(newMessage), lastUpdated: Date.now(), userEmail: user.email, nickname: nickname,
+        messages: arrayUnion(newMessage), lastUpdated: Date.now(), userEmail: user.email || '', nickname: nickname,
         hasUnreadAdmin: true 
       }, { merge: true });
     } catch(e) { showToast("Lỗi gửi tin nhắn"); }
@@ -327,6 +332,11 @@ export default function App() {
       if (authMode === 'login') await signInWithEmailAndPassword(auth, email, password);
       else await createUserWithEmailAndPassword(auth, email, password);
     } catch (error) { alert("Lỗi hệ thống: " + error.message); }
+  };
+
+  const handleFacebookLogin = async () => {
+    const fbProvider = new FacebookAuthProvider();
+    try { await signInWithPopup(auth, fbProvider); } catch (error) { console.error(error); }
   };
 
   const handleGoogleLogin = async () => {
@@ -359,13 +369,21 @@ export default function App() {
     const file = e.target.files[0];
     if (!file || !user) return;
     compressImage(file, async (compressedBase64) => {
-      if(type === 'avatar') { setAvatarUrl(compressedBase64); localStorage.setItem(`trimi_avatar_${user.uid}`, compressedBase64); }
-      if(type === 'cover') { setCoverUrl(compressedBase64); localStorage.setItem(`trimi_cover_${user.uid}`, compressedBase64); }
+      if(type === 'avatar') { 
+        setAvatarUrl(compressedBase64); 
+        localStorage.setItem(`trimi_avatar_${user.uid}`, compressedBase64); 
+        await setDoc(doc(db, "users", user.uid), { avatar: compressedBase64 }, { merge: true }).catch(()=>{});
+      }
+      if(type === 'cover') { 
+        setCoverUrl(compressedBase64); 
+        localStorage.setItem(`trimi_cover_${user.uid}`, compressedBase64); 
+        await setDoc(doc(db, "users", user.uid), { cover: compressedBase64 }, { merge: true }).catch(()=>{});
+      }
       showToast('Đã lưu ảnh cá nhân!');
     });
+    e.target.value = null; 
   };
 
-  // === FIX LỖI CLOUD BẰNG COMPRESS ẢNH ===
   const handleLookbookUpload = (e, index) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -373,12 +391,13 @@ export default function App() {
       const updatedLookbook = [...lookbook];
       updatedLookbook[index].img = compressedBase64;
       setLookbook(updatedLookbook);
-      localStorage.setItem('trimi_lookbook', JSON.stringify(updatedLookbook)); // Update local immediately
+      localStorage.setItem('trimi_lookbook', JSON.stringify(updatedLookbook)); 
       try {
         await setDoc(doc(db, "config", "storefront"), { lookbook: updatedLookbook }, { merge: true });
-        showToast('Đã cập nhật trang chủ cho tất cả người dùng!');
+        showToast('Đã cập nhật trang chủ!');
       } catch (err) { showToast('Lỗi tải lên Cloud!'); }
     });
+    e.target.value = null;
   };
 
   const handleBannerImageUpload = (e) => {
@@ -386,12 +405,13 @@ export default function App() {
     if (!file) return;
     compressImage(file, async (compressedBase64) => {
       setBannerImage(compressedBase64);
-      localStorage.setItem('trimi_banner_img', compressedBase64); // Update local immediately
+      localStorage.setItem('trimi_banner_img', compressedBase64); 
       try {
         await setDoc(doc(db, "config", "storefront"), { bannerImage: compressedBase64 }, { merge: true });
         showToast('Đã đổi ảnh Banner thành công!');
       } catch(err) { showToast('Lỗi tải lên Cloud!'); }
     });
+    e.target.value = null;
   };
 
   const handleBannerMouseDown = (e) => {
@@ -412,10 +432,10 @@ export default function App() {
   };
   const handleSaveBanner = async () => {
     setIsEditingBanner(false);
-    localStorage.setItem('trimi_banner', JSON.stringify(bannerConfig)); // Update local immediately
+    localStorage.setItem('trimi_banner', JSON.stringify(bannerConfig)); 
     try {
       await setDoc(doc(db, "config", "storefront"), { bannerConfig: bannerConfig }, { merge: true });
-      showToast('Đã lưu cấu hình Banner cho toàn thế giới!');
+      showToast('Đã lưu cấu hình Banner!');
     } catch(err) {}
   };
 
@@ -445,14 +465,15 @@ export default function App() {
 
   const handleSubmitNewProduct = () => {
     if (!newProd.name || !newProd.price || !newProd.imagePreview) return alert("Vui lòng điền đủ thông tin!");
-    const product = { id: Date.now().toString(), name: newProd.name, price: parseFloat(newProd.price), rating: 5.0, reviews: 0, imageUrl: newProd.imagePreview, description: newProd.desc || 'Sản phẩm chính hãng.' };
+    const product = { id: Date.now().toString(), name: newProd.name, price: parseFloat(newProd.price), rating: 5.0, reviews: 0, category: newProd.category, imageUrl: newProd.imagePreview, description: newProd.desc || 'Sản phẩm chính hãng.' };
     setLocalProducts([product, ...localProducts]);
     setShowAddModal(false);
-    setNewProd({ name: '', price: '', desc: '', imagePreview: null });
+    setNewProd({ name: '', price: '', category: 'shirt_1', desc: '', imagePreview: null });
     showToast('Đã thêm sản phẩm lên cửa hàng!');
   };
 
-  const fakeColorSpheres = ['from-white to-slate-300', 'from-zinc-700 to-black', 'from-amber-200 to-amber-600', 'from-sky-300 to-sky-600'];
+  // LỌC SẢN PHẨM THEO DANH MỤC
+  const displayedProducts = localProducts.filter(p => currentCategory === 'all' || p.category === currentCategory);
 
   return (
     <>
@@ -489,7 +510,6 @@ export default function App() {
                       <span className="font-bold text-slate-800 text-sm block">{t('chatAdmin')}</span>
                       <span className="text-xs text-slate-500">{t('replyFast')}</span>
                     </div>
-                    {/* BÁO TIN MỚI TRONG MENU */}
                     {hasUnreadUser && <div className="absolute top-1/2 -translate-y-1/2 right-4 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>}
                  </div>
               </div>
@@ -519,14 +539,13 @@ export default function App() {
                   usersList.map(u => (
                     <div key={u.uid} onClick={() => openAdminChatWithUser(u)} className="flex items-center gap-3 p-3 hover:bg-slate-50 cursor-pointer rounded-xl border-b border-slate-100 last:border-0 relative">
                       <div className="relative">
-                        <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-slate-600">{u.nickname?.charAt(0).toUpperCase() || 'U'}</div>
+                        <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-slate-600">{u.nickname?.charAt(0).toUpperCase() || (u.email ? u.email.charAt(0).toUpperCase() : 'U')}</div>
                         <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${u.isOnline ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
                       </div>
                       <div className="flex-col flex flex-grow">
-                        <span className="text-sm font-bold text-slate-800">{u.nickname || u.email?.split('@')[0]}</span>
+                        <span className="text-sm font-bold text-slate-800">{u.nickname || (u.email ? u.email.split('@')[0] : 'Khách')}</span>
                         <span className="text-xs text-slate-500">{u.isOnline ? t('online') : t('offline')}</span>
                       </div>
-                      {/* BÁO TIN MỚI CHO ADMIN */}
                       {u.hasUnreadAdmin && <div className="w-3 h-3 bg-red-500 rounded-full mr-2 shadow-sm animate-pulse"></div>}
                     </div>
                   ))}
@@ -557,13 +576,13 @@ export default function App() {
                 ))}
               </div>
               <div className="p-3 bg-white border-t border-slate-100 flex items-center gap-2">
-                 <input type="text" value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleUserSendMessage()} placeholder={t('sendMsg')} className="flex-grow bg-slate-100 text-slate-800 rounded-full px-4 py-2.5 text-sm outline-none focus:ring-1 focus:ring-slate-300" />
+                 <input type="text" value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleUserSendMessage()} placeholder={t('chatInput')} className="flex-grow bg-slate-100 text-slate-800 rounded-full px-4 py-2.5 text-sm outline-none focus:ring-1 focus:ring-slate-300" />
                  <button onClick={handleUserSendMessage} className={`p-2.5 rounded-full flex items-center justify-center transition-colors ${chatInput.trim() ? 'bg-sky-500 text-white shadow-md' : 'bg-slate-100 text-slate-400'}`}><FiSend/></button>
               </div>
             </div>
           )}
 
-          {/* GIAO DIỆN CHAT CỦA ADMIN (TRONG BUBBLE) */}
+          {/* GIAO DIỆN CHAT CỦA ADMIN */}
           {isAdmin && isHelpOpen && adminChatUser && (
             <div className="bg-white w-[340px] h-[480px] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] mb-4 overflow-hidden border border-slate-200 animate-fade-in-up origin-bottom-right flex flex-col">
               <div className="bg-slate-900 text-white p-4 flex justify-between items-center rounded-t-2xl shadow-md z-10">
@@ -572,7 +591,7 @@ export default function App() {
                 </button>
                 <div className="flex items-center gap-2">
                    <div className={`w-2.5 h-2.5 rounded-full ${adminChatUser.isOnline ? 'bg-emerald-500' : 'bg-slate-500'}`}></div>
-                   <span className="text-sm font-bold truncate max-w-[120px]">{adminChatUser.nickname || adminChatUser.email?.split('@')[0]}</span>
+                   <span className="text-sm font-bold truncate max-w-[120px]">{adminChatUser.nickname || (adminChatUser.email ? adminChatUser.email.split('@')[0] : 'Khách')}</span>
                 </div>
               </div>
               <div ref={adminChatContainerRef} className="flex-grow bg-slate-50 p-4 overflow-y-auto flex flex-col gap-4 custom-scrollbar">
@@ -582,7 +601,7 @@ export default function App() {
                   adminChatUser.messages.map((msg, idx) => (
                     <div key={idx} className={`flex gap-3 max-w-[85%] ${msg.sender === 'bot' ? 'ml-auto flex-row-reverse' : ''}`}>
                       {msg.sender === 'user' && (
-                        <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0 font-bold">{adminChatUser.email?.charAt(0).toUpperCase()}</div>
+                        <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0 font-bold">{adminChatUser.nickname?.[0]?.toUpperCase() || (adminChatUser.email ? adminChatUser.email.charAt(0).toUpperCase() : 'U')}</div>
                       )}
                       <div className={`p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.sender === 'bot' ? 'bg-sky-500 text-white rounded-tr-sm' : 'bg-white text-slate-800 rounded-tl-sm border border-slate-100'}`}>
                         {msg.text}
@@ -617,20 +636,69 @@ export default function App() {
           </div>
         )}
 
-        {/* HEADER CÓ DỊCH THUẬT */}
+        {/* HEADER CẤU TRÚC MỚI (MENU XUỐNG HÀNG DƯỚI) */}
         <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm flex-shrink-0">
-           <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-3 md:py-4 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0">
-              <div className="flex items-center gap-8 w-full md:w-auto">
-                 <h1 className="text-5xl md:text-[52px] font-brush tracking-wide cursor-pointer text-slate-900" onClick={() => setCurrentView('home')} style={{ lineHeight: '1' }}>
-                   Trimi
-                 </h1>
-                 <nav className="hidden lg:flex items-center gap-8 text-sm font-bold text-slate-600 uppercase tracking-widest pt-2">
-                   <button onClick={() => setCurrentView('home')} className={`pb-1 border-b-2 transition-colors ${currentView === 'home' ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('home')}</button>
-                   <button onClick={() => setCurrentView('shop')} className={`pb-1 border-b-2 transition-colors ${currentView === 'shop' ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('shop')}</button>
-                   <button className="pb-1 border-b-2 border-transparent hover:text-slate-900 transition-colors">{t('men')}</button>
-                   <button className="pb-1 border-b-2 border-transparent hover:text-slate-900 transition-colors">{t('women')}</button>
-                 </nav>
-                 <div className="flex md:hidden items-center gap-4 text-slate-800 ml-auto pt-2">
+           <div className="max-w-[1400px] mx-auto px-4 md:px-8 pt-3 pb-0">
+              
+              {/* HÀNG TRÊN: LOGO LÀ NÚT TRANG CHỦ, TÌM KIẾM, CÔNG CỤ */}
+              <div className="flex items-center justify-between gap-4 pb-2 md:pb-3">
+                 <div className="flex items-center">
+                    <h1 className="text-5xl md:text-[52px] font-brush tracking-wide cursor-pointer text-slate-900 hover:text-sky-600 transition-colors" onClick={() => {setCurrentView('home'); setCurrentCategory('all');}} style={{ lineHeight: '1' }}>
+                      Trimi
+                    </h1>
+                 </div>
+
+                 {/* THANH TÌM KIẾM */}
+                 <div className="hidden md:flex w-full max-w-[400px] flex-grow lg:mx-6 bg-slate-100 rounded-full h-10 overflow-hidden border border-transparent focus-within:border-slate-300 focus-within:bg-white transition-all shadow-inner">
+                    <input type="text" placeholder={t('search')} className="w-full px-4 text-sm outline-none bg-transparent text-slate-800 placeholder-slate-400 font-medium"/>
+                    <button className="px-4 text-slate-500 hover:text-sky-500 transition-colors"><FiSearch className="text-lg"/></button>
+                 </div>
+
+                 {/* THANH CÔNG CỤ TRÁI */}
+                 <div className="hidden md:flex gap-5 items-center text-sm font-semibold text-slate-700">
+                    <div className="relative">
+                      <button onClick={() => setShowLangMenu(!showLangMenu)} className="flex items-center gap-1.5 font-bold text-slate-500 hover:text-slate-900 transition-colors bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
+                        <FiGlobe className="text-lg"/> <span className="uppercase tracking-widest">{lang}</span>
+                      </button>
+                      {showLangMenu && (
+                        <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 z-50 animate-fade-in-up">
+                          {languages.map(l => (
+                            <button key={l.code} onClick={() => {setLang(l.code); setShowLangMenu(false)}} className={`w-full text-left px-4 py-2 rounded-xl text-sm font-bold transition-colors ${lang === l.code ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>
+                              {l.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {isAuthenticated ? (
+                      <>
+                        <button onClick={() => setCurrentView('profile')} className="flex items-center gap-2 hover:text-sky-600 transition-colors pl-2 border-l border-slate-200">
+                           {avatarUrl ? <img src={avatarUrl} className="w-8 h-8 rounded-full object-cover border border-slate-200"/> : <FiUser className="text-xl"/>}
+                           <span className="max-w-[100px] truncate">{nickname}</span>
+                        </button>
+                        <div className="flex items-center gap-2 cursor-pointer hover:text-sky-600 transition-colors relative group" onClick={() => setIsCartOpen(true)}>
+                           <div className="relative p-1">
+                             <FiShoppingCart className="text-2xl"/>
+                             {cartItemCount > 0 && (
+                               <span className="absolute -top-1 -right-1 bg-sky-500 text-white w-5 h-5 flex items-center justify-center text-[10px] font-bold rounded-full shadow-sm border-2 border-white transition-all group-hover:scale-110">
+                                 {cartItemCount}
+                               </span>
+                             )}
+                           </div>
+                           <span>{t('cart')}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <button onClick={() => setShowLoginModal(true)} className="bg-slate-900 hover:bg-black text-white px-6 py-2.5 rounded-full font-bold transition-all shadow-md ml-2">
+                        {t('login')}
+                      </button>
+                    )}
+                 </div>
+
+                 {/* MOBILE ICONS */}
+                 <div className="flex md:hidden items-center gap-4 text-slate-800 ml-auto">
+                    <button className="px-2 text-slate-500"><FiSearch className="text-xl"/></button>
                     {isAuthenticated ? (
                       <>
                         <button onClick={() => setCurrentView('profile')} className="text-slate-800"><FiUser className="text-2xl"/></button>
@@ -645,52 +713,40 @@ export default function App() {
                  </div>
               </div>
 
-              <div className="w-full md:w-auto md:max-w-[250px] flex-grow lg:mx-6 flex bg-slate-100 rounded-full h-10 overflow-hidden border border-transparent focus-within:border-slate-300 focus-within:bg-white transition-all shadow-inner mt-2 md:mt-0">
-                 <input type="text" placeholder={t('search')} className="w-full px-4 text-sm outline-none bg-transparent text-slate-800 placeholder-slate-400 font-medium"/>
-                 <button className="px-4 text-slate-500 hover:text-sky-500 transition-colors"><FiSearch className="text-lg"/></button>
-              </div>
-
-              <div className="hidden md:flex gap-5 items-center text-sm font-semibold text-slate-700 pt-2">
-                 {/* BỘ CHUYỂN ĐỔI NGÔN NGỮ */}
-                 <div className="relative">
-                   <button onClick={() => setShowLangMenu(!showLangMenu)} className="flex items-center gap-1.5 font-bold text-slate-500 hover:text-slate-900 transition-colors bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
-                     <FiGlobe className="text-lg"/> <span className="uppercase tracking-widest">{lang}</span>
-                   </button>
-                   {showLangMenu && (
-                     <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 z-50 animate-fade-in-up">
-                       {languages.map(l => (
-                         <button key={l.code} onClick={() => {setLang(l.code); setShowLangMenu(false)}} className={`w-full text-left px-4 py-2 rounded-xl text-sm font-bold transition-colors ${lang === l.code ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>
-                           {l.label}
-                         </button>
-                       ))}
-                     </div>
-                   )}
+              {/* HÀNG DƯỚI: MENU CHÍNH VỚI DROPDOWN PHÂN LOẠI */}
+              <nav className="hidden lg:flex items-center justify-center gap-12 text-[13px] font-bold text-slate-500 uppercase tracking-widest pt-3 pb-3 border-t border-slate-100 relative z-30">
+                 <button onClick={() => {setCurrentCategory('all'); setCurrentView('shop');}} className={`pb-1 border-b-2 transition-colors ${currentView === 'shop' && currentCategory === 'all' ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('shop')}</button>
+                 
+                 {/* MENU ÁO */}
+                 <div className="relative group pb-1 cursor-pointer">
+                   <button className={`border-b-2 transition-colors pb-1 uppercase ${currentCategory.includes('shirt') ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('nav_shirt')}</button>
+                   <div className="absolute top-full left-1/2 -translate-x-1/2 mt-0 w-48 bg-white rounded-xl shadow-xl border border-slate-100 p-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform origin-top translate-y-2 group-hover:translate-y-0">
+                     <button onClick={() => {setCurrentCategory('shirt_1'); setCurrentView('shop');}} className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors uppercase">{t('shirt_1')}</button>
+                     <button onClick={() => {setCurrentCategory('shirt_2'); setCurrentView('shop');}} className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors uppercase">{t('shirt_2')}</button>
+                     <button onClick={() => {setCurrentCategory('shirt_3'); setCurrentView('shop');}} className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors uppercase">{t('shirt_3')}</button>
+                   </div>
                  </div>
 
-                 {isAuthenticated ? (
-                   <>
-                     <button onClick={() => setCurrentView('profile')} className="flex items-center gap-2 hover:text-sky-600 transition-colors pl-2 border-l border-slate-200">
-                        {avatarUrl ? <img src={avatarUrl} className="w-8 h-8 rounded-full object-cover border border-slate-200"/> : <FiUser className="text-xl"/>}
-                        <span className="max-w-[100px] truncate">{nickname}</span>
-                     </button>
-                     <div className="flex items-center gap-2 cursor-pointer hover:text-sky-600 transition-colors relative group" onClick={() => setIsCartOpen(true)}>
-                        <div className="relative p-1">
-                          <FiShoppingCart className="text-2xl"/>
-                          {cartItemCount > 0 && (
-                            <span className="absolute -top-1 -right-1 bg-sky-500 text-white w-5 h-5 flex items-center justify-center text-[10px] font-bold rounded-full shadow-sm border-2 border-white transition-all group-hover:scale-110">
-                              {cartItemCount}
-                            </span>
-                          )}
-                        </div>
-                        <span>{t('cart')}</span>
-                     </div>
-                   </>
-                 ) : (
-                   <button onClick={() => setShowLoginModal(true)} className="bg-slate-900 hover:bg-black text-white px-6 py-2.5 rounded-full font-bold transition-all shadow-md ml-2">
-                     {t('login')}
-                   </button>
-                 )}
-              </div>
+                 {/* MENU QUẦN */}
+                 <div className="relative group pb-1 cursor-pointer">
+                   <button className={`border-b-2 transition-colors pb-1 uppercase ${currentCategory.includes('pants') ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('nav_pants')}</button>
+                   <div className="absolute top-full left-1/2 -translate-x-1/2 mt-0 w-48 bg-white rounded-xl shadow-xl border border-slate-100 p-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform origin-top translate-y-2 group-hover:translate-y-0">
+                     <button onClick={() => {setCurrentCategory('pants_1'); setCurrentView('shop');}} className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors uppercase">{t('pants_1')}</button>
+                     <button onClick={() => {setCurrentCategory('pants_2'); setCurrentView('shop');}} className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors uppercase">{t('pants_2')}</button>
+                     <button onClick={() => {setCurrentCategory('pants_3'); setCurrentView('shop');}} className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors uppercase">{t('pants_3')}</button>
+                   </div>
+                 </div>
+
+                 {/* MENU LINH KIỆN */}
+                 <div className="relative group pb-1 cursor-pointer">
+                   <button className={`border-b-2 transition-colors pb-1 uppercase ${currentCategory.includes('acc') ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('nav_acc')}</button>
+                   <div className="absolute top-full left-1/2 -translate-x-1/2 mt-0 w-48 bg-white rounded-xl shadow-xl border border-slate-100 p-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform origin-top translate-y-2 group-hover:translate-y-0">
+                     <button onClick={() => {setCurrentCategory('acc_1'); setCurrentView('shop');}} className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors uppercase">{t('acc_1')}</button>
+                     <button onClick={() => {setCurrentCategory('acc_2'); setCurrentView('shop');}} className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors uppercase">{t('acc_2')}</button>
+                     <button onClick={() => {setCurrentCategory('acc_3'); setCurrentView('shop');}} className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors uppercase">{t('acc_3')}</button>
+                   </div>
+                 </div>
+              </nav>
            </div>
         </header>
 
@@ -702,7 +758,10 @@ export default function App() {
                <div className="w-full h-[70vh] md:h-[80vh] flex flex-col md:flex-row">
                   {lookbook.map((block, index) => (
                     <div key={block.id} className="flex-1 relative group cursor-pointer overflow-hidden border-r border-white/20" onClick={(e) => {
-                      if(e.target.tagName !== 'INPUT' && e.target.tagName !== 'svg' && e.target.tagName !== 'LABEL') setCurrentView('shop');
+                      if(e.target.tagName !== 'INPUT' && e.target.tagName !== 'svg' && e.target.tagName !== 'LABEL') {
+                        setCurrentCategory(block.targetCategory || 'all');
+                        setCurrentView('shop');
+                      }
                     }}>
                       <img src={block.img} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" alt={block.title} />
                       <div className="absolute inset-0 bg-black/20 group-hover:bg-black/50 transition-colors duration-500"></div>
@@ -715,7 +774,7 @@ export default function App() {
                         <div className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
                           <label className="bg-white/90 hover:bg-white text-slate-900 p-3 rounded-full cursor-pointer shadow-lg flex items-center justify-center transition-colors" title="Đổi ảnh cột này">
                             <FiCamera className="text-xl"/>
-                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleLookbookUpload(e, index)} />
+                            <input type="file" accept="image/*" onClick={(e) => e.target.value = null} onChange={(e) => handleLookbookUpload(e, index)} className="hidden" />
                           </label>
                         </div>
                       )}
@@ -725,7 +784,7 @@ export default function App() {
                <div className="w-full bg-white py-20 px-6 text-center border-b border-slate-100">
                  <h2 className="text-4xl md:text-6xl font-black text-slate-900 mb-6 uppercase tracking-tighter">{t('sloganTitle')}</h2>
                  <p className="text-slate-500 max-w-2xl mx-auto mb-10 font-medium">{t('sloganDesc')}</p>
-                 <button onClick={() => setCurrentView('shop')} className="bg-slate-900 text-white px-10 py-4 rounded-full font-bold uppercase tracking-widest hover:bg-black transition-transform hover:scale-105 shadow-xl shadow-slate-900/20">
+                 <button onClick={() => {setCurrentCategory('all'); setCurrentView('shop')}} className="bg-slate-900 text-white px-10 py-4 rounded-full font-bold uppercase tracking-widest hover:bg-black transition-transform hover:scale-105 shadow-xl shadow-slate-900/20">
                    {t('explore')}
                  </button>
                </div>
@@ -735,17 +794,17 @@ export default function App() {
           {/* CỬA HÀNG */}
           {currentView === 'shop' && (
             <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 py-8 md:py-10 animate-fade-in">
-              <div className="bg-[#eef5fc] rounded-[32px] p-8 md:p-12 mb-10 border border-blue-50 flex flex-col md:flex-row items-center justify-between shadow-sm overflow-hidden relative min-h-[320px]">
+              <div className="bg-[#eef5fc] rounded-[32px] p-8 md:p-12 mb-10 border border-blue-50 flex flex-col md:flex-row items-center justify-between shadow-sm overflow-hidden relative min-h-[320px] cursor-pointer group" onClick={() => { if(!isEditingBanner) setCurrentCategory('all'); }}>
                 
-                <div className="max-w-xl relative z-10 pointer-events-none whitespace-pre-line">
+                <div className="max-w-xl relative z-10 pointer-events-none whitespace-pre-line group-hover:-translate-y-1 transition-transform">
                   <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 inline-block">{t('newCol')}</span>
                   <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-4 leading-tight">{t('heroTitle')}</h2>
                   <p className="text-slate-600 mb-6 font-medium">{t('heroDesc')}</p>
                 </div>
                 
                 {isAdmin && !isEditingBanner && (
-                  <button onClick={() => setIsEditingBanner(true)} className="absolute top-4 right-4 z-30 bg-white/90 backdrop-blur text-slate-900 p-2 px-3 rounded-lg shadow-sm border border-slate-200 hover:text-sky-600 text-xs font-bold flex items-center gap-2 transition-colors">
-                    <FiEdit3/> Chỉnh Banner (Canva Mode)
+                  <button onClick={(e) => { e.stopPropagation(); setIsEditingBanner(true); }} className="absolute top-4 right-4 z-30 bg-white/90 backdrop-blur text-slate-900 p-2 px-3 rounded-lg shadow-sm border border-slate-200 hover:text-sky-600 text-xs font-bold flex items-center gap-2 transition-colors">
+                    <FiEdit3/> Chỉnh Banner
                   </button>
                 )}
 
@@ -758,36 +817,44 @@ export default function App() {
                   onWheel={handleBannerWheel}
                 >
                   <img 
-                    src={bannerImage} 
-                    alt="Banner" 
-                    draggable={false} 
-                    className={`h-[90%] w-auto object-contain drop-shadow-2xl ${isEditingBanner ? 'opacity-100' : 'opacity-90'}`} 
+                    src={bannerImage} alt="Banner" draggable={false} 
+                    className={`h-[90%] w-auto object-contain drop-shadow-2xl ${isEditingBanner ? 'opacity-100' : 'opacity-90 group-hover:scale-105 transition-transform duration-700 ease-out'}`} 
                     style={{ transform: `translate(${bannerConfig.x}px, ${bannerConfig.y}px) scale(${bannerConfig.scale})` }}
                     onError={(e) => { e.target.onerror = null; e.target.src = "https://fakestoreapi.com/img/71YXzeOuslL._AC_UY879_.jpg"; e.target.className = "h-[80%] w-auto object-contain mix-blend-multiply opacity-50 drop-shadow-xl" }} 
                   />
                   
                   {isEditingBanner && (
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white p-2 px-4 rounded-full shadow-2xl flex items-center gap-4 cursor-default animate-fade-in-up" onMouseDown={e => e.stopPropagation()}>
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white p-2 px-4 rounded-full shadow-2xl flex items-center gap-4 cursor-default animate-fade-in-up" onMouseDown={e => e.stopPropagation()} onClick={e => e.stopPropagation()}>
                       <FiMove className="text-xl text-slate-400"/>
                       <span className="text-xs font-bold text-slate-300 whitespace-nowrap hidden sm:inline">Kéo & Cuộn chuột</span>
                       <div className="w-px h-6 bg-slate-700 mx-1"></div>
-                      
                       <label className="bg-slate-700 hover:bg-slate-600 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-1 cursor-pointer transition-colors whitespace-nowrap">
                          <FiCamera/> Đổi ảnh
-                         <input type="file" accept="image/*" className="hidden" onChange={handleBannerImageUpload} />
+                         <input type="file" accept="image/*" onClick={(e) => e.target.value = null} onChange={handleBannerImageUpload} className="hidden" />
                       </label>
-
                       <button onClick={handleSaveBanner} className="bg-sky-500 hover:bg-sky-600 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-1 transition-colors"><FiSave/> Lưu</button>
                     </div>
                   )}
                 </div>
               </div>
 
+              {/* TÊN DANH MỤC HIỆN TẠI ĐỂ USER DỄ NHÌN */}
+              <div className="mb-8 flex items-center gap-2">
+                 <div className="w-2 h-8 bg-sky-500 rounded-full"></div>
+                 <h2 className="text-2xl font-black text-slate-800 uppercase tracking-widest">{currentCategory === 'all' ? t('all_products') : t(currentCategory)}</h2>
+              </div>
+
               {isLoadingShop ? (
                 <div className="flex justify-center py-32"><FiRefreshCcw className="text-4xl text-sky-500 animate-spin" /></div>
+              ) : displayedProducts.length === 0 ? (
+                <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                  <FiArchive className="text-6xl text-slate-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-slate-800">Chưa có sản phẩm nào trong danh mục này</h3>
+                  <p className="text-slate-500 mt-2">Vui lòng quay lại sau hoặc chọn danh mục khác.</p>
+                </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-                  {localProducts.map((item) => (
+                  {displayedProducts.map((item) => (
                     <div key={item.id} className="flex flex-col gap-3 group">
                       <div className="bg-white rounded-[32px] border border-slate-200 relative aspect-[4/5] flex items-center justify-center p-8 cursor-pointer hover:shadow-2xl hover:border-slate-300 hover:-translate-y-1 transition-all duration-500 overflow-hidden" onClick={() => { setSelectedProduct(item); setCurrentView('productDetail'); }}>
                          <img src={item.imageUrl} alt={item.name} className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-700 ease-out" />
@@ -813,34 +880,37 @@ export default function App() {
             </div>
           )}
 
-          {/* CHI TIẾT SẢN PHẨM */}
+          {/* CHI TIẾT SẢN PHẨM: ĐÃ THU NHỎ KHUNG ẢNH ĐỂ THẤY HẾT TRÊN 1 MÀN HÌNH */}
           {currentView === 'productDetail' && selectedProduct && (
-            <div className="max-w-[1200px] mx-auto w-full px-4 md:px-8 py-8 md:py-12 animate-fade-in">
-              <div className="text-xs font-bold text-slate-400 mb-8 tracking-wider uppercase flex items-center gap-2">
-                <button onClick={() => setCurrentView('shop')} className="hover:text-slate-800 transition-colors flex items-center gap-1"><FiCornerUpLeft/> Quay lại</button>
-                <span>/</span><span>{t('shop')}</span><span>/</span><span className="text-slate-800 truncate">{selectedProduct.name}</span>
+            <div className="max-w-[1200px] mx-auto w-full px-4 md:px-8 py-6 md:py-8 animate-fade-in">
+              <div className="text-xs font-bold text-slate-400 mb-6 tracking-wider uppercase flex items-center gap-2">
+                <button onClick={() => setCurrentView('shop')} className="hover:text-slate-800 transition-colors flex items-center gap-1"><FiCornerUpLeft/> {t('shop')}</button>
+                <span>/</span><span>{currentCategory === 'all' ? t('all_products') : t(selectedProduct.category)}</span><span>/</span><span className="text-slate-800 truncate">{selectedProduct.name}</span>
               </div>
-              <div className="bg-white rounded-[40px] border border-slate-100 p-6 md:p-12 flex flex-col md:flex-row gap-10 lg:gap-16 shadow-sm">
-                <div className="w-full md:w-1/2 aspect-square bg-slate-50 border border-slate-100 rounded-[32px] flex items-center justify-center p-12 relative group">
+              <div className="bg-white rounded-[40px] border border-slate-100 p-6 md:p-8 flex flex-col md:flex-row gap-8 lg:gap-12 shadow-sm">
+                
+                {/* ẢNH ĐƯỢC GIỚI HẠN CHIỀU CAO VÀ PADDING */}
+                <div className="w-full md:w-[45%] lg:w-[40%] max-h-[400px] lg:max-h-[500px] bg-slate-50 border border-slate-100 rounded-[32px] flex items-center justify-center p-6 relative group overflow-hidden">
                    <img src={selectedProduct.imageUrl} className="w-full h-full object-contain mix-blend-multiply hover:scale-105 transition-transform duration-500" alt={selectedProduct.name}/>
                 </div>
-                <div className="w-full md:w-1/2 flex flex-col justify-center">
-                  <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-4 leading-tight">{selectedProduct.name}</h1>
-                  <div className="flex items-center text-sm gap-4 mb-8">
-                    <span className="text-amber-400 font-bold flex items-center gap-1 text-lg"><FiStar className="fill-current"/> {selectedProduct.rating}</span>
+
+                <div className="w-full md:w-[55%] lg:w-[60%] flex flex-col justify-center">
+                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-slate-900 mb-3 leading-tight">{selectedProduct.name}</h1>
+                  <div className="flex items-center text-sm gap-4 mb-6">
+                    <span className="text-amber-400 font-bold flex items-center gap-1 text-base"><FiStar className="fill-current"/> {selectedProduct.rating}</span>
                     <span className="text-slate-300">|</span>
                     <span className="text-slate-500 font-medium underline underline-offset-4">{selectedProduct.reviews} Đánh giá</span>
                   </div>
-                  <div className="text-4xl font-black text-sky-600 mb-8">${selectedProduct.price}</div>
-                  <div className="space-y-4 text-sm font-medium text-slate-700 mb-10 bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                    <div className="flex items-center gap-3"><FiTruck className="text-2xl text-sky-500"/> {t('ship')}</div>
-                    <div className="flex items-center gap-3"><FiShield className="text-2xl text-emerald-500"/> {t('return')}</div>
+                  <div className="text-3xl lg:text-4xl font-black text-sky-600 mb-6">${selectedProduct.price}</div>
+                  <div className="space-y-3 text-sm font-medium text-slate-700 mb-8 bg-slate-50 p-5 rounded-3xl border border-slate-100">
+                    <div className="flex items-center gap-3"><FiTruck className="text-xl text-sky-500"/> {t('ship')}</div>
+                    <div className="flex items-center gap-3"><FiShield className="text-xl text-emerald-500"/> {t('return')}</div>
                   </div>
-                  <div className="mb-12">
-                    <p className="text-sm font-bold text-slate-900 mb-3 uppercase tracking-wider">{t('desc')}</p>
-                    <p className="text-base text-slate-600 leading-relaxed font-medium">{selectedProduct.description}</p>
+                  <div className="mb-10">
+                    <p className="text-sm font-bold text-slate-900 mb-2 uppercase tracking-wider">{t('desc')}</p>
+                    <p className="text-sm text-slate-600 leading-relaxed font-medium">{selectedProduct.description}</p>
                   </div>
-                  <button onClick={(e) => handleAddToCart(selectedProduct, e)} className="mt-auto w-full bg-slate-900 text-white py-5 rounded-full font-black text-sm tracking-widest uppercase hover:bg-black transition-transform active:scale-[0.98] flex items-center justify-center gap-3 shadow-xl shadow-slate-900/20">
+                  <button onClick={(e) => handleAddToCart(selectedProduct, e)} className="mt-auto w-full md:w-[80%] bg-slate-900 text-white py-4 rounded-full font-black text-sm tracking-widest uppercase hover:bg-black transition-transform active:scale-[0.98] flex items-center justify-center gap-3 shadow-xl shadow-slate-900/20">
                     <FiShoppingCart className="text-xl"/> {t('addToCart')}
                   </button>
                 </div>
@@ -858,7 +928,7 @@ export default function App() {
                     <label htmlFor="coverUpload" className="bg-white/20 backdrop-blur-md text-white border border-white/20 px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 hover:bg-white hover:text-slate-900 transition-all cursor-pointer shadow-md">
                       <FiCamera className="text-lg"/> {t('changeCover')}
                     </label>
-                    <input type="file" id="coverUpload" accept="image/*" onChange={(e) => handleProfileUpload(e, 'cover')} className="hidden" />
+                    <input type="file" id="coverUpload" accept="image/*" onClick={(e) => e.target.value = null} onChange={(e) => handleProfileUpload(e, 'cover')} className="hidden" />
                   </div>
                 </div>
                 
@@ -869,7 +939,7 @@ export default function App() {
                       <label htmlFor="avatarUpload" className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                         <FiCamera className="text-white text-3xl"/>
                       </label>
-                      <input type="file" id="avatarUpload" accept="image/*" onChange={(e) => handleProfileUpload(e, 'avatar')} className="hidden" />
+                      <input type="file" id="avatarUpload" accept="image/*" onClick={(e) => e.target.value = null} onChange={(e) => handleProfileUpload(e, 'avatar')} className="hidden" />
                     </div>
                   </div>
 
@@ -897,12 +967,12 @@ export default function App() {
                         <button onClick={() => setIsEditingName(false)} className="bg-slate-100 text-slate-500 p-2 rounded-full hover:bg-red-500 hover:text-white shadow-md transition-colors"><FiX className="text-lg"/></button>
                       </div>
                     )}
-                    <p className="text-slate-500 font-medium mb-4 mt-2">{user?.email}</p>
+                    <p className="text-slate-500 font-medium mb-4 mt-2">{user?.email || 'Đăng nhập bằng Số điện thoại'}</p>
                     
                     <div className="flex flex-wrap gap-2 mb-8">
                       <span className="bg-slate-100 text-slate-700 px-4 py-1.5 rounded-full text-xs font-bold border border-slate-200">{t('roleCustomer')}</span>
                       <span className="bg-sky-100 text-sky-700 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1"><FiCheckCircle/> {t('roleVerified')}</span>
-                      {isAdmin && <span className="bg-amber-100 text-amber-700 px-4 py-1.5 rounded-full text-xs font-bold">{t('roleAdmin')}</span>}
+                      {isAdmin && <span className="bg-amber-100 text-amber-700 px-4 py-1.5 rounded-full text-xs font-bold">Admin</span>}
                     </div>
                   </div>
                   
@@ -927,11 +997,11 @@ export default function App() {
               <div>
                 <div className="text-xs font-bold text-slate-400 mb-6 tracking-wider uppercase flex items-center gap-2">
                   <button onClick={() => setCurrentView('profile')} className="hover:text-slate-800 transition-colors flex items-center gap-1"><FiCornerUpLeft/> {t('account')}</button>
-                  <span>/</span><span className="text-slate-800 truncate">{t('adminMenu')}</span>
+                  <span>/</span><span className="text-slate-800 truncate">{t('adminDashboard')}</span>
                 </div>
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                    <h2 className="text-3xl md:text-4xl font-black text-slate-900 flex items-center gap-3"><FiArchive className="text-slate-900"/> {t('adminDashboard')}</h2>
-                   <button onClick={() => setShowAddModal(true)} className="bg-sky-500 text-white px-6 py-3.5 rounded-full font-bold flex items-center justify-center gap-2 hover:bg-sky-600 transition-colors shadow-lg shadow-sky-500/20">
+                   <button onClick={() => setShowAddModal(true)} className="bg-sky-500 text-white px-6 py-3.5 rounded-full font-bold shadow-lg flex items-center gap-2">
                      <FiPlus className="text-xl"/> {t('adminAdd')}
                    </button>
                 </div>
@@ -974,12 +1044,12 @@ export default function App() {
           <div className="max-w-[1400px] mx-auto px-4 md:px-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-16">
               <div className="lg:col-span-1">
-                <h2 className="text-[60px] md:text-[70px] font-brush mb-2 leading-[0.8] tracking-wider">Trimi</h2>
+                <h2 className="text-[65px] font-brush mb-2 leading-[0.8] tracking-wider">Trimi</h2>
                 <div className="flex gap-4 text-slate-400 mt-6">
-                   <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 hover:text-white transition-colors cursor-pointer"><FiInstagram className="text-lg"/></div>
-                   <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 hover:text-white transition-colors cursor-pointer"><FaFacebook className="text-lg"/></div>
-                   <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 hover:text-white transition-colors cursor-pointer"><FiLinkedin className="text-lg"/></div>
-                   <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 hover:text-white transition-colors cursor-pointer"><FiYoutube className="text-lg"/></div>
+                   <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 cursor-pointer transition-colors"><FiInstagram className="text-lg"/></div>
+                   <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 cursor-pointer transition-colors"><FaFacebook className="text-lg"/></div>
+                   <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 cursor-pointer transition-colors"><FiLinkedin className="text-lg"/></div>
+                   <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 cursor-pointer transition-colors"><FiYoutube className="text-lg"/></div>
                 </div>
               </div>
               <div>
@@ -1028,9 +1098,7 @@ export default function App() {
           </div>
         </footer>
 
-        {/* ==============================================
-            CÁC MODALS (CỐ ĐỊNH, DỊCH THUẬT)
-            ============================================== */}
+        {/* MODALS CỐ ĐỊNH (PHẢI NẰM DƯỚI CÙNG ĐỂ CHỐNG CẮT CODE) */}
         {showLoginModal && !isAuthenticated && (
           <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-6 animate-fade-in">
             <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onClick={() => setShowLoginModal(false)}></div>
@@ -1038,33 +1106,24 @@ export default function App() {
               <div className="hidden md:flex w-1/2 bg-slate-900 p-12 flex-col justify-between relative overflow-hidden">
                  <div className="relative z-10">
                    <h2 className="text-4xl font-black text-white mb-6 leading-tight">Gia nhập thế giới<br/>Thời trang Trimi.</h2>
-                   <p className="text-slate-400 font-medium text-lg leading-relaxed">Đăng nhập để thêm sản phẩm yêu thích vào giỏ hàng và theo dõi đơn hàng của bạn mọi lúc, mọi nơi.</p>
+                   <p className="text-slate-400 font-medium text-lg leading-relaxed">Đăng nhập để thêm sản phẩm vào giỏ hàng.</p>
                  </div>
                  <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-sky-500 rounded-full mix-blend-screen filter blur-[100px] opacity-40"></div>
-                 <div className="absolute top-1/4 -right-20 w-64 h-64 bg-indigo-500 rounded-full mix-blend-screen filter blur-[100px] opacity-40"></div>
               </div>
               <div className="w-full md:w-1/2 p-8 md:p-14 flex flex-col relative bg-white">
-                <button onClick={() => setShowLoginModal(false)} className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 bg-slate-100 p-2 rounded-full transition-colors"><FiX className="text-2xl"/></button>
-                <h3 className="text-3xl font-black text-slate-900 mb-8">{authMode === 'login' ? t('login') : 'Tạo tài khoản mới'}</h3>
+                <button onClick={() => setShowLoginModal(false)} className="absolute top-6 right-6 p-2 rounded-full transition-colors"><FiX className="text-2xl"/></button>
+                <h3 className="text-3xl font-black text-slate-900 mb-8">{authMode === 'login' ? t('login') : 'Tạo tài khoản'}</h3>
                 <div className="flex flex-col gap-4 mb-8">
-                  <button onClick={handleGoogleLogin} className="w-full bg-[#101828] text-white py-4 font-bold text-sm rounded-full hover:bg-black transition-all flex items-center justify-center gap-3 shadow-lg shadow-slate-900/20">
-                    <FcGoogle className="text-xl bg-white rounded-full p-0.5" /> Tiếp tục với Google
-                  </button>
-                  <button className="w-full bg-white border-2 border-slate-200 text-slate-700 py-4 font-bold text-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-3 rounded-full">
-                    <FaFacebook className="text-xl text-[#1877F2]"/> Tiếp tục với Facebook
-                  </button>
+                  <button onClick={handleGoogleLogin} className="w-full bg-[#101828] text-white py-4 font-bold rounded-full flex items-center justify-center gap-3"><FcGoogle className="text-xl bg-white rounded-full p-0.5" /> Google</button>
+                  <button onClick={handleFacebookLogin} className="w-full border-2 py-4 font-bold rounded-full flex items-center justify-center gap-3"><FaFacebook className="text-xl text-[#1877F2]"/> Facebook</button>
                 </div>
-                <div className="flex items-center py-2 mb-6"><div className="flex-grow border-t border-slate-200"></div><span className="mx-4 text-slate-400 text-xs font-bold uppercase tracking-widest">Hoặc</span><div className="flex-grow border-t border-slate-200"></div></div>
+                <div className="flex items-center mb-6"><div className="flex-grow border-t"></div><span className="mx-4 text-slate-400 text-xs font-bold uppercase">Hoặc</span><div className="flex-grow border-t"></div></div>
                 <div className="flex flex-col gap-4 mb-6">
-                  <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="Nhập Email" className="w-full bg-slate-50 border border-transparent rounded-2xl px-5 py-4 outline-none focus:border-sky-500 focus:bg-white transition-all text-sm font-medium" />
-                  <input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="Nhập Mật khẩu" className="w-full bg-slate-50 border border-transparent rounded-2xl px-5 py-4 outline-none focus:border-sky-500 focus:bg-white transition-all text-sm font-medium" />
-                  <button onClick={handleEmailAuth} className="w-full bg-sky-500 text-white py-4 font-black text-sm rounded-full hover:bg-sky-600 transition-all mt-2 uppercase tracking-widest shadow-lg shadow-sky-500/30">
-                    {authMode === 'login' ? t('login') : 'Đăng Ký'}
-                  </button>
+                  <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="Email" className="bg-slate-50 rounded-2xl px-5 py-4 outline-none focus:ring-1" />
+                  <input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="Mật khẩu" className="bg-slate-50 rounded-2xl px-5 py-4 outline-none focus:ring-1" />
+                  <button onClick={handleEmailAuth} className="bg-sky-500 text-white py-4 font-black rounded-full uppercase shadow-lg">{authMode === 'login' ? t('login') : 'Đăng Ký'}</button>
                 </div>
-                <div className="text-center text-sm font-medium text-slate-600 mb-8">
-                  {authMode === 'login' ? <>Chưa có tài khoản? <button onClick={() => setAuthMode('register')} className="text-sky-600 font-bold hover:underline">Tạo ngay</button></> : <>Đã có tài khoản? <button onClick={() => setAuthMode('login')} className="text-sky-600 font-bold hover:underline">Đăng nhập</button></>}
-                </div>
+                <div className="text-center text-sm font-medium text-slate-600 mb-8">{authMode === 'login' ? <>Chưa có tài khoản? <button onClick={() => setAuthMode('register')} className="text-sky-600 font-bold underline">Tạo ngay</button></> : <>Đã có tài khoản? <button onClick={() => setAuthMode('login')} className="text-sky-600 font-bold underline">Đăng nhập</button></>}</div>
               </div>
             </div>
           </div>
@@ -1081,110 +1140,16 @@ export default function App() {
                 {surveyRoles.map((role, idx) => (
                   <button key={idx} onClick={async () => {
                     setUserRole(role); setShowSurveyModal(false);
-                    if (user) { try { await setDoc(doc(db, "users", user.uid), { email: user.email, role: role }, { merge: true }); } catch(e){} }
+                    if (user) { 
+                      localStorage.setItem(`trimi_role_${user.uid}`, role);
+                      try { await setDoc(doc(db, "users", user.uid), { email: user.email || '', role: role }, { merge: true }); } catch(e){} 
+                    }
                     showToast('Cảm ơn bạn đã hoàn thành!');
                   }} className="bg-white border-2 border-slate-100 text-slate-700 py-5 px-6 rounded-2xl font-bold text-base hover:border-sky-500 hover:text-sky-600 transition-all shadow-sm hover:shadow-md">
                     {role}
                   </button>
                 ))}
               </div>
-            </div>
-          </div>
-        )}
-
-        {showAddModal && isAdmin && (
-          <div className="fixed inset-0 z-[6000] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" onClick={() => setShowAddModal(false)}></div>
-            <div className="bg-white rounded-[40px] p-8 md:p-10 w-full max-w-2xl relative z-10 shadow-2xl animate-fade-in-up flex flex-col max-h-[90vh]">
-               <div className="flex justify-between items-center mb-8">
-                 <h3 className="text-3xl font-black text-slate-900 flex items-center gap-3"><FiPlus className="text-sky-500 bg-sky-50 p-2 rounded-full"/> {t('adminAdd')}</h3>
-                 <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-900 bg-slate-100 p-3 rounded-full transition-colors"><FiX className="text-xl"/></button>
-               </div>
-               <div className="flex-grow overflow-y-auto custom-scrollbar pr-2 space-y-6">
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-3">{t('adminImg')} (PNG/JPG)</label>
-                    <div className="border-2 border-dashed border-slate-300 rounded-[24px] p-8 flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 transition-colors relative cursor-pointer group">
-                      <input type="file" accept="image/*" onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (file) setNewProd({ ...newProd, imagePreview: URL.createObjectURL(file) });
-                      }} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                      {newProd.imagePreview ? <img src={newProd.imagePreview} className="h-40 object-contain mix-blend-multiply drop-shadow-md" alt="Preview" /> : <><FiUploadCloud className="text-5xl text-slate-300 mb-3 group-hover:text-sky-500 transition-colors"/><p className="text-sm font-medium text-slate-500">Bấm hoặc kéo thả ảnh vào đây</p></>}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-3">{t('adminName')}</label>
-                      <input type="text" value={newProd.name} onChange={(e) => setNewProd({...newProd, name: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 outline-none focus:border-sky-500 focus:bg-white transition-all text-sm font-medium"/>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-3">{t('adminPrice')} ($)</label>
-                      <input type="number" value={newProd.price} onChange={(e) => setNewProd({...newProd, price: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 outline-none focus:border-sky-500 focus:bg-white transition-all text-sm font-medium"/>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-3">{t('desc')}</label>
-                    <textarea value={newProd.desc} onChange={(e) => setNewProd({...newProd, desc: e.target.value})} rows="4" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 outline-none focus:border-sky-500 focus:bg-white transition-all text-sm font-medium resize-none"></textarea>
-                  </div>
-               </div>
-               <div className="pt-8 border-t border-slate-100 mt-4 flex justify-end gap-4">
-                 <button onClick={() => setShowAddModal(false)} className="px-8 py-4 rounded-full font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">Hủy Bỏ</button>
-                 <button onClick={handleSubmitNewProduct} className="px-8 py-4 rounded-full font-bold text-white bg-sky-500 hover:bg-sky-600 transition-colors flex items-center gap-2 shadow-lg shadow-sky-500/30">
-                   <FiCheckCircle className="text-lg"/> Đăng Lên Cửa Hàng
-                 </button>
-               </div>
-            </div>
-          </div>
-        )}
-
-        {/* GIỎ HÀNG SIDEBAR */}
-        {isCartOpen && (
-          <div className="fixed inset-0 z-[5000] flex justify-end pointer-events-auto">
-            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setIsCartOpen(false)}></div>
-            <div className="relative w-full max-w-md bg-white h-full flex flex-col shadow-2xl animate-fade-in-right">
-              <div className="flex justify-between items-center p-6 md:p-8 border-b border-slate-100">
-                <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3"><FiShoppingCart className="text-sky-500"/> {t('cart')} ({cartItemCount})</h2>
-                <button onClick={() => setIsCartOpen(false)} className="text-slate-400 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 p-2.5 rounded-full transition-colors"><FiX className="text-xl"/></button>
-              </div>
-              <div className="flex-grow overflow-y-auto p-6 flex flex-col gap-5 custom-scrollbar bg-slate-50/50">
-                {cart.length === 0 ? (
-                  <div className="text-center mt-32 flex flex-col items-center">
-                    <div className="w-32 h-32 bg-white shadow-sm rounded-full flex items-center justify-center mb-6"><FiShoppingCart className="text-6xl text-slate-200"/></div>
-                    <p className="text-slate-500 font-medium mb-8 text-base">{t('emptyCart')}</p>
-                    <button onClick={() => {setIsCartOpen(false); setCurrentView('shop')}} className="px-10 py-4 bg-slate-900 text-white text-sm font-bold tracking-widest uppercase rounded-full shadow-lg shadow-slate-900/20 hover:bg-black transition-all">{t('startShop')}</button>
-                  </div>
-                ) : (
-                  cart.map((item, index) => (
-                    <div key={`${item.id}-${index}`} className="flex gap-5 bg-white p-4 rounded-3xl border border-slate-100 shadow-sm relative pr-12 group hover:border-slate-300 transition-colors">
-                      <div className="w-24 h-24 bg-slate-50 rounded-2xl p-3 flex-shrink-0 border border-slate-100">
-                        <img src={item.imageUrl} className="w-full h-full object-contain mix-blend-multiply" alt=""/>
-                      </div>
-                      <div className="flex-1 flex flex-col justify-center py-1">
-                        <h4 className="text-sm font-bold text-slate-800 line-clamp-2 leading-snug pr-2">{item.name}</h4>
-                        <p className="text-slate-900 font-black text-lg mt-1">${item.price}</p>
-                        <div className="flex items-center border border-slate-200 rounded-xl w-fit mt-3 overflow-hidden bg-slate-50">
-                          <button onClick={() => updateCartQuantity(item.id, -1)} className="px-3 py-1.5 text-slate-600 font-bold hover:bg-slate-200 transition-colors">-</button>
-                          <span className="px-4 text-xs font-black text-slate-900 bg-white py-1.5 border-x border-slate-200">{item.quantity}</span>
-                          <button onClick={() => updateCartQuantity(item.id, 1)} className="px-3 py-1.5 text-slate-600 font-bold hover:bg-slate-200 transition-colors">+</button>
-                        </div>
-                      </div>
-                      <button onClick={() => removeFromCart(item.id)} className="absolute top-1/2 -translate-y-1/2 right-4 text-slate-300 hover:text-red-500 p-2 hover:bg-red-50 rounded-full transition-colors" title={t('adminDel')}>
-                        <FiTrash2 className="text-xl"/>
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-              {cart.length > 0 && (
-                <div className="p-6 md:p-8 border-t border-slate-100 bg-white">
-                  <div className="flex justify-between items-end mb-6">
-                    <span className="text-slate-500 font-bold uppercase tracking-widest text-xs">{t('total')}</span>
-                    <span className="text-4xl font-black text-slate-900">${cartTotal}</span>
-                  </div>
-                  <button onClick={() => { alert(`Thanh toán thành công đơn hàng $${cartTotal}!`); setCart([]); setIsCartOpen(false); }} className="w-full bg-slate-900 hover:bg-black text-white py-5 rounded-full text-sm font-bold tracking-widest uppercase shadow-xl shadow-slate-900/20 transition-all flex justify-center items-center gap-2">
-                    <FiCheckCircle className="text-lg"/> {t('checkout')}
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         )}
