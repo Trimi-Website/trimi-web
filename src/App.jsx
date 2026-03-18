@@ -6,14 +6,14 @@ import {
   FiTrash2, FiCheckCircle, FiRefreshCcw, FiSettings, 
   FiPlus, FiUploadCloud, FiArchive, FiCamera, FiEdit3, FiSave, FiMove, FiImage,
   FiMessageCircle, FiCreditCard, FiMonitor, FiInstagram, FiLinkedin, FiYoutube, FiGlobe, FiSend, FiLoader,
-  FiArrowUp, FiMoon, FiSun, FiUsers, FiUserPlus
+  FiArrowUp, FiMoon, FiSun, FiUsers, FiUserPlus, FiUpload
 } from 'react-icons/fi';
 import { FcGoogle } from 'react-icons/fc';
 import { FaFacebook } from 'react-icons/fa';
 
 // Firebase
 import { auth, googleProvider, db } from './firebase';
-import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, FacebookAuthProvider, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
+import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, FacebookAuthProvider } from 'firebase/auth';
 import { doc, getDoc, setDoc, deleteDoc, collection, onSnapshot, arrayUnion } from 'firebase/firestore';
 
 const compressImage = (file, callback) => {
@@ -42,12 +42,12 @@ const daNangDistricts = [
 ];
 
 const dict = {
-  VI: { home: "Trang chủ", shop: "Cửa hàng", nav_shirt: "Áo", nav_pants: "Quần", nav_acc: "Linh kiện", shirt_all: "Tất cả Áo", pants_all: "Tất cả Quần", acc_all: "Tất cả Phụ kiện", shirt_1: "Áo thun", shirt_2: "Áo sơ mi", shirt_3: "Áo khoác", pants_1: "Quần Jeans", pants_2: "Quần Kaki", pants_3: "Quần Short", acc_1: "Mũ / Nón", acc_2: "Túi xách", acc_3: "Trang sức", login: "Đăng nhập", search: "Tìm kiếm...", cart: "Giỏ hàng", account: "Tài khoản", logout: "Đăng xuất", adminMenu: "Quản Trị Kho", sloganTitle: "Đậm chất riêng.", sloganDesc: "Chúng tôi tin rằng thời trang không chỉ là áo quần, mà là ngôn ngữ không lời để thể hiện cá tính thực sự của bạn.", explore: "Khám phá ngay", newCol: "New Collection 2026", heroTitle: "Thời trang phong cách,\nđậm chất riêng.", heroDesc: "Khám phá hàng trăm mẫu áo thun, áo khoác và phụ kiện chất lượng cao với mức giá không thể tuyệt vời hơn.", addToCart: "THÊM VÀO GIỎ HÀNG", desc: "Mô tả chi tiết", ship: "Giao hàng miễn phí toàn quốc", return: "Đổi trả miễn phí 30 ngày", myOrders: "Đơn hàng của tôi", wishlist: "Yêu thích", noOrders: "Chưa có đơn hàng nào", noOrdersDesc: "Khi bạn mua sắm, danh sách hóa đơn sẽ hiển thị tại đây.", total: "Tổng thanh toán", checkout: "Thanh Toán Ngay", emptyCart: "Giỏ hàng của bạn đang trống.", startShop: "Mua sắm ngay", f_prod: "Sản phẩm", f_all: "Tất cả sản phẩm", f_men: "Thời trang Nam", f_women: "Thời trang Nữ", f_acc: "Phụ kiện", f_sup: "Hỗ trợ khách hàng", f_track: "Theo dõi đơn hàng", f_ret: "Chính sách đổi trả", f_ship: "Chính sách giao hàng", f_size: "Hướng dẫn chọn size", f_serv: "Dịch vụ", f_print: "In ấn theo yêu cầu", f_b2b: "Khách hàng doanh nghiệp", f_gift: "Thẻ quà tặng", f_about: "Về Trimi", f_story: "Câu chuyện thương hiệu", f_career: "Tuyển dụng", f_contact: "Liên hệ chúng tôi", f_priv: "Chính sách bảo mật", f_term: "Điều khoản", chatHelp: "Trạm hỗ trợ Trimi", chatHow: "👋 Chúng tôi có thể giúp gì cho bạn?", chatWithUs: "Chat Với Admin", sendMsg: "Gửi tin nhắn", replyFast: "Phản hồi ngay lập tức", faqs: "Câu hỏi thường gặp", faqAcc: "Tài khoản của tôi", faqBill: "Thanh toán & Đơn hàng", faqShip: "Vận chuyển", chatInput: "Nhập tin nhắn...", roleCustomer: "Khách hàng", roleVerified: "Thành viên", roleAdmin: "Quản trị viên", changeCover: "Đổi ảnh bìa", adminDashboard: "Trạm Quản Trị", adminAdd: "Đăng Sản Phẩm", adminUsers: "Khách hàng", adminNoData: "Chưa có dữ liệu", adminImg: "Hình ảnh", adminName: "Tên sản phẩm", adminPrice: "Giá bán", adminAction: "Hành động", adminDel: "Xóa Bỏ", adminCare: "Chăm Sóc Khách Hàng", adminWait: "Chưa có khách hàng", online: "Đang trực tuyến", offline: "Ngoại tuyến", adminInbox: "Hộp thư khách hàng", all_products: "Tất cả sản phẩm", no_products: "Chưa có sản phẩm nào trong danh mục này", no_products_desc: "Vui lòng quay lại sau hoặc chọn danh mục khác.", order_summary: "Thông tin đơn hàng", qr_pay: "Thanh toán QR", qr_scan_desc: "Vui lòng quét mã QR bằng ứng dụng ngân hàng. Hệ thống sẽ tự động xác nhận khi nhận được tiền.", order_price: "Tiền hàng", shipping_fee: "Phí vận chuyển", deposit: "Cần cọc (30%)", waiting_payment: "Đang kiểm tra giao dịch...", confirm_paid: "Xác nhận đã chuyển khoản", community: "Cộng đồng Trimi", add_friend: "Kết bạn" },
-  EN: { home: "Home", shop: "Shop", nav_shirt: "Shirts", nav_pants: "Pants", nav_acc: "Accessories", shirt_all: "All Shirts", pants_all: "All Pants", acc_all: "All Accessories", shirt_1: "T-Shirts", shirt_2: "Dress Shirts", shirt_3: "Jackets", pants_1: "Jeans", pants_2: "Khakis", pants_3: "Shorts", acc_1: "Hats", acc_2: "Bags", acc_3: "Jewelry", login: "Login", search: "Search...", cart: "Cart", account: "Account", logout: "Logout", adminMenu: "Admin Panel", sloganTitle: "Your Unique Vibe.", sloganDesc: "We believe fashion is not just clothing, but a silent language to express your true self.", explore: "Explore Now", newCol: "New Collection 2026", heroTitle: "Stylish fashion,\nunique vibe.", heroDesc: "Discover hundreds of high-quality items.", addToCart: "ADD TO CART", desc: "Description", ship: "Free Nationwide Shipping", return: "30-Day Free Returns", myOrders: "My Orders", wishlist: "Wishlist", noOrders: "No orders yet", noOrdersDesc: "Your invoices will appear here.", total: "Total", checkout: "Checkout Now", emptyCart: "Your cart is empty.", startShop: "Start Shopping", f_prod: "Products", f_all: "All Products", f_men: "Men's Fashion", f_women: "Women's Fashion", f_acc: "Accessories", f_sup: "Support", f_track: "Track Order", f_ret: "Return Policy", f_ship: "Shipping", f_size: "Size Guide", f_serv: "Services", f_print: "Print on Demand", f_b2b: "Corporate Clients", f_gift: "Gift Cards", f_about: "About", f_story: "Brand Story", f_career: "Careers", f_contact: "Contact Us", f_priv: "Privacy Policy", f_term: "Terms of Service", chatHelp: "Trimi Help", chatHow: "👋 How can we help you today?", chatWithUs: "Chat With Admin", sendMsg: "Send a message", replyFast: "Instant reply", faqs: "FAQs", faqAcc: "My Account", faqBill: "Billing", faqShip: "Shipping", chatInput: "Type a message...", roleCustomer: "Customer", roleVerified: "Member", roleAdmin: "Admin", changeCover: "Change Cover", adminDashboard: "Dashboard", adminAdd: "Add Product", adminUsers: "Customers", adminNoData: "No data", adminImg: "Image", adminName: "Name", adminPrice: "Price", adminAction: "Action", adminDel: "Delete", adminCare: "Customer Care", adminWait: "No customers yet", online: "Online", offline: "Offline", adminInbox: "Inbox", all_products: "All Products", no_products: "No products in this category", no_products_desc: "Please come back later.", order_summary: "Order Summary", qr_pay: "QR Payment", qr_scan_desc: "Scan the QR code. System will auto-verify.", order_price: "Subtotal", shipping_fee: "Shipping", deposit: "Deposit (30%)", waiting_payment: "Checking transaction...", confirm_paid: "Confirm Transfer", community: "Community", add_friend: "Add Friend" }
+  VI: { home: "Trang chủ", shop: "Cửa hàng", nav_shirt: "Áo", nav_pants: "Quần", nav_acc: "Linh kiện", shirt_all: "Tất cả Áo", pants_all: "Tất cả Quần", acc_all: "Tất cả Phụ kiện", shirt_1: "Áo thun", shirt_2: "Áo sơ mi", shirt_3: "Áo khoác", pants_1: "Quần Jeans", pants_2: "Quần Kaki", pants_3: "Quần Short", acc_1: "Mũ / Nón", acc_2: "Túi xách", acc_3: "Trang sức", login: "Đăng nhập", search: "Tìm kiếm...", cart: "Giỏ hàng", account: "Tài khoản", logout: "Đăng xuất", adminMenu: "Quản Trị Kho", sloganTitle: "Đậm chất riêng.", sloganDesc: "Chúng tôi tin rằng thời trang không chỉ là áo quần, mà là ngôn ngữ không lời để thể hiện cá tính thực sự của bạn.", explore: "Khám phá ngay", newCol: "New Collection 2026", heroTitle: "Thời trang phong cách,\nđậm chất riêng.", heroDesc: "Khám phá hàng trăm mẫu áo thun, áo khoác và phụ kiện chất lượng cao với mức giá không thể tuyệt vời hơn.", addToCart: "THÊM VÀO GIỎ HÀNG", desc: "Mô tả chi tiết", ship: "Giao hàng miễn phí toàn quốc", return: "Đổi trả miễn phí 30 ngày", myOrders: "Đơn hàng của tôi", wishlist: "Yêu thích", noOrders: "Chưa có đơn hàng nào", noOrdersDesc: "Khi bạn mua sắm, danh sách hóa đơn sẽ hiển thị tại đây.", total: "Tổng thanh toán", checkout: "Thanh Toán Ngay", emptyCart: "Giỏ hàng của bạn đang trống.", startShop: "Mua sắm ngay", f_prod: "Sản phẩm", f_all: "Tất cả sản phẩm", f_men: "Thời trang Nam", f_women: "Thời trang Nữ", f_acc: "Phụ kiện", f_sup: "Hỗ trợ khách hàng", f_track: "Theo dõi đơn hàng", f_ret: "Chính sách đổi trả", f_ship: "Chính sách giao hàng", f_size: "Hướng dẫn chọn size", f_serv: "Dịch vụ", f_print: "In ấn theo yêu cầu", f_b2b: "Khách hàng doanh nghiệp", f_gift: "Thẻ quà tặng", f_about: "Về Trimi", f_story: "Câu chuyện thương hiệu", f_career: "Tuyển dụng", f_contact: "Liên hệ chúng tôi", f_priv: "Chính sách bảo mật", f_term: "Điều khoản", chatHelp: "Trạm hỗ trợ Trimi", chatHow: "👋 Chúng tôi có thể giúp gì cho bạn?", chatWithUs: "Chat Với Admin", sendMsg: "Gửi tin nhắn", replyFast: "Phản hồi ngay lập tức", faqs: "Câu hỏi thường gặp", faqAcc: "Tài khoản của tôi", faqBill: "Thanh toán & Đơn hàng", faqShip: "Vận chuyển", chatInput: "Nhập tin nhắn...", roleCustomer: "Khách hàng", roleVerified: "Thành viên", roleAdmin: "Quản trị viên", changeCover: "Đổi ảnh bìa", adminDashboard: "Trạm Quản Trị", adminAdd: "Đăng Sản Phẩm", adminUsers: "Khách hàng", adminNoData: "Chưa có dữ liệu", adminImg: "Hình ảnh", adminName: "Tên sản phẩm", adminPrice: "Giá bán", adminAction: "Hành động", adminDel: "Xóa Bỏ", adminCare: "Chăm Sóc Khách Hàng", adminWait: "Chưa có khách hàng", online: "Đang trực tuyến", offline: "Ngoại tuyến", adminInbox: "Hộp thư khách hàng", all_products: "Tất cả sản phẩm", no_products: "Chưa có sản phẩm nào trong danh mục này", no_products_desc: "Vui lòng quay lại sau hoặc chọn danh mục khác.", order_summary: "Thông tin đơn hàng", qr_pay: "Thanh toán QR", qr_scan_desc: "Vui lòng quét mã QR bằng ứng dụng ngân hàng. Hệ thống sẽ tự động xác nhận khi nhận được tiền.", order_price: "Tiền hàng", shipping_fee: "Phí vận chuyển", deposit: "Cần cọc (30%)", waiting_payment: "Đang xử lý đơn hàng...", confirm_paid: "Xác nhận đã chuyển khoản", community: "Cộng đồng Trimi", add_friend: "Kết bạn" },
+  EN: { home: "Home", shop: "Shop", nav_shirt: "Shirts", nav_pants: "Pants", nav_acc: "Accessories", shirt_all: "All Shirts", pants_all: "All Pants", acc_all: "All Accessories", shirt_1: "T-Shirts", shirt_2: "Dress Shirts", shirt_3: "Jackets", pants_1: "Jeans", pants_2: "Khakis", pants_3: "Shorts", acc_1: "Hats", acc_2: "Bags", acc_3: "Jewelry", login: "Login", search: "Search...", cart: "Cart", account: "Account", logout: "Logout", adminMenu: "Admin Panel", sloganTitle: "Your Unique Vibe.", sloganDesc: "We believe fashion is not just clothing, but a silent language to express your true self.", explore: "Explore Now", newCol: "New Collection 2026", heroTitle: "Stylish fashion,\nunique vibe.", heroDesc: "Discover hundreds of high-quality items.", addToCart: "ADD TO CART", desc: "Description", ship: "Free Nationwide Shipping", return: "30-Day Free Returns", myOrders: "My Orders", wishlist: "Wishlist", noOrders: "No orders yet", noOrdersDesc: "Your invoices will appear here.", total: "Total", checkout: "Checkout Now", emptyCart: "Your cart is empty.", startShop: "Start Shopping", f_prod: "Products", f_all: "All Products", f_men: "Men's Fashion", f_women: "Women's Fashion", f_acc: "Accessories", f_sup: "Support", f_track: "Track Order", f_ret: "Return Policy", f_ship: "Shipping", f_size: "Size Guide", f_serv: "Services", f_print: "Print on Demand", f_b2b: "Corporate Clients", f_gift: "Gift Cards", f_about: "About", f_story: "Brand Story", f_career: "Careers", f_contact: "Contact Us", f_priv: "Privacy Policy", f_term: "Terms of Service", chatHelp: "Trimi Help", chatHow: "👋 How can we help you today?", chatWithUs: "Chat With Admin", sendMsg: "Send a message", replyFast: "Instant reply", faqs: "FAQs", faqAcc: "My Account", faqBill: "Billing", faqShip: "Shipping", chatInput: "Type a message...", roleCustomer: "Customer", roleVerified: "Member", roleAdmin: "Admin", changeCover: "Change Cover", adminDashboard: "Dashboard", adminAdd: "Add Product", adminUsers: "Customers", adminNoData: "No data", adminImg: "Image", adminName: "Name", adminPrice: "Price", adminAction: "Action", adminDel: "Delete", adminCare: "Customer Care", adminWait: "No customers yet", online: "Online", offline: "Offline", adminInbox: "Inbox", all_products: "All Products", no_products: "No products in this category", no_products_desc: "Please come back later.", order_summary: "Order Summary", qr_pay: "QR Payment", qr_scan_desc: "Scan the QR code. System will auto-verify.", order_price: "Subtotal", shipping_fee: "Shipping", deposit: "Deposit (30%)", waiting_payment: "Processing order...", confirm_paid: "Confirm Transfer", community: "Community", add_friend: "Add Friend" }
 };
 
 // ==========================================
-// TỪ ĐIỂN DỊCH TÊN VÀ NỘI DUNG SẢN PHẨM (YÊU CẦU 4)
+// TỪ ĐIỂN DỊCH TÊN VÀ NỘI DUNG SẢN PHẨM
 // ==========================================
 const productDict = {
   VI: {
@@ -125,6 +125,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('trimi_theme') === 'dark');
+  const [isMobile, setIsMobile] = useState(false);
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [authMode, setAuthMode] = useState('login'); 
@@ -143,13 +144,9 @@ export default function App() {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [district, setDistrict] = useState('Hải Châu');
-  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
   const [friendsList, setFriendsList] = useState([]);
   
-  const [showOtpInput, setShowOtpInput] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
   const [tempProfile, setTempProfile] = useState({});
-  const [confirmationResult, setConfirmationResult] = useState(null);
 
   const [localProducts, setLocalProducts] = useState([]); 
   const [isLoadingShop, setIsLoadingShop] = useState(true); 
@@ -165,6 +162,9 @@ export default function App() {
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [paymentMode, setPaymentMode] = useState('deposit'); 
   const [isCheckingPayment, setIsCheckingPayment] = useState(false);
+  
+  const [currentOrderId, setCurrentOrderId] = useState('');
+  const [receiptImg, setReceiptImg] = useState(null);
 
   const [toastMsg, setToastMsg] = useState(''); 
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -210,6 +210,13 @@ export default function App() {
   const finalPayAmount = paymentMode === 'deposit' ? depositAmount : cartFinalTotal;
 
   useEffect(() => {
+    setIsMobile(window.innerWidth < 768);
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
     if (isDarkMode) {
       document.body.classList.add('dark-mode');
       localStorage.setItem('trimi_theme', 'dark');
@@ -250,19 +257,16 @@ export default function App() {
   useEffect(() => { if(adminChatContainerRef.current) adminChatContainerRef.current.scrollTop = adminChatContainerRef.current.scrollHeight; }, [adminChatUser?.messages]);
 
   useEffect(() => {
-    const fetchGlobalConfig = async () => {
-      try {
-        const docSnap = await getDoc(doc(db, 'config', 'storefront'));
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          if (data.lookbook) { setLookbook(data.lookbook); localStorage.setItem('trimi_lookbook', JSON.stringify(data.lookbook)); }
-          if (data.bannerConfig) { setBannerConfig(data.bannerConfig); localStorage.setItem('trimi_banner', JSON.stringify(data.bannerConfig)); }
-          if (data.bannerImage) { setBannerImage(data.bannerImage); localStorage.setItem('trimi_banner_img', data.bannerImage); }
-        }
-      } catch (error) {}
+    const unsubConfig = onSnapshot(doc(db, 'config', 'storefront'), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (data.lookbook) { setLookbook(data.lookbook); localStorage.setItem('trimi_lookbook', JSON.stringify(data.lookbook)); }
+        if (data.bannerConfig) { setBannerConfig(data.bannerConfig); localStorage.setItem('trimi_banner', JSON.stringify(data.bannerConfig)); }
+        if (data.bannerImage) { setBannerImage(data.bannerImage); localStorage.setItem('trimi_banner_img', data.bannerImage); }
+      }
       setIsConfigLoaded(true);
-    };
-    fetchGlobalConfig();
+    });
+    return () => unsubConfig();
   }, []);
 
   useEffect(() => {
@@ -297,7 +301,6 @@ export default function App() {
             setAvatarUrl(data.avatar || ''); setCoverUrl(data.cover || '');
             setNickname(data.nickname || baseEmailName);
             setPhone(data.phone || ''); setAddress(data.address || ''); setDistrict(data.district || 'Hải Châu');
-            setIsPhoneVerified(data.isPhoneVerified || false);
             setFriendsList(data.friends || []);
           } else if (!localRole) { setShowSurveyModal(true); setNickname(baseEmailName); }
         } catch (error) {}
@@ -308,7 +311,7 @@ export default function App() {
         return () => { clearInterval(presenceInterval); window.removeEventListener('beforeunload', handleUnload); };
       } else {
         setIsAuthenticated(false); setUser(null); setAvatarUrl(''); setCoverUrl(''); setNickname('');
-        setChatMessages([]); setHasUnreadUser(false); setIsPhoneVerified(false); setFriendsList([]);
+        setChatMessages([]); setHasUnreadUser(false); setFriendsList([]);
       }
     });
     return () => unsubscribe();
@@ -366,7 +369,11 @@ export default function App() {
   };
 
   const openAdminChatWithUser = async (u) => {
-    setAdminChatUser(u); await setDoc(doc(db, 'users', u.uid), { hasUnreadAdmin: false }, { merge: true }).catch(()=>{});
+    setAdminChatUser(u); 
+    setActiveChatTarget(u); 
+    setIsChatBoxOpen(true); 
+    setIsHelpOpen(false); 
+    await setDoc(doc(db, 'users', u.uid), { hasUnreadAdmin: false }, { merge: true }).catch(()=>{});
   };
 
   const handleAddFriend = async (e, targetUid) => {
@@ -381,8 +388,17 @@ export default function App() {
   const handleUserSendMessage = async () => {
     if(!chatInput.trim() || !user || !activeChatTarget) return;
     const userMsgText = chatInput.trim();
-    const newMessage = { sender: user.uid, text: userMsgText, timestamp: Date.now() };
     setChatInput('');
+    
+    if (isAdmin) {
+       const newMessage = { sender: 'bot', text: userMsgText, timestamp: Date.now() };
+       try { 
+         await setDoc(doc(db, 'users', activeChatTarget.uid), { messages: arrayUnion(newMessage), lastUpdated: Date.now(), hasUnreadUser: true }, { merge: true }); 
+       } catch(e) {}
+       return;
+    }
+
+    const newMessage = { sender: user.uid, text: userMsgText, timestamp: Date.now() };
     
     if (activeChatTarget === 'admin') {
       try {
@@ -438,62 +454,16 @@ export default function App() {
     await signOut(auth); setChatMessages([]); setAdminChatUser(null); setActiveChatTarget(null); navigateTo('home', 'all'); 
   };
 
-  const setupRecaptcha = () => {
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
-    }
-  };
-
-  const handleSendOTP = async () => {
-    const phoneInput = tempProfile.phone?.trim();
-    if (!phoneInput || phoneInput.length < 9) return alert("Vui lòng nhập đúng số điện thoại!");
-    
-    setupRecaptcha();
-    const formattedPhone = phoneInput.startsWith('0') ? '+84' + phoneInput.slice(1) : phoneInput;
-    
-    try {
-      const confirmation = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier);
-      setConfirmationResult(confirmation);
-      setShowOtpInput(true);
-      showToast('Đã gửi mã SMS OTP đến điện thoại của bạn!');
-    } catch (error) {
-      alert("CẢNH BÁO FIREBASE: Gói Miễn Phí (Spark) của Google đã khóa gửi SMS thật về số Việt Nam (+84).\n\nĐể tiếp tục, hệ thống sẽ tạm bật chế độ giả lập. Vui lòng nhập mã: 123456");
-      setShowOtpInput(true);
-      setConfirmationResult('mock');
-    }
-  };
-
-  const handleVerifyOTP = async () => {
-    if(otpCode.length < 4) return alert("Mã OTP không hợp lệ!");
-    
-    if (confirmationResult === 'mock') {
-      if (otpCode === '123456') {
-        setIsPhoneVerified(true); setShowOtpInput(false); showToast('Xác nhận SĐT giả lập thành công!');
-      } else {
-        alert('Mã giả lập không đúng. Vui lòng nhập: 123456');
-      }
-      return;
-    }
-
-    try {
-      await confirmationResult.confirm(otpCode);
-      setIsPhoneVerified(true); setShowOtpInput(false); showToast('Xác nhận Số điện thoại thành công!');
-    } catch (error) {
-      alert("Mã OTP không chính xác. Vui lòng thử lại!");
-    }
-  };
-
   const handleSaveSettings = async () => {
-    if(!tempProfile.nickname?.trim() || !tempProfile.phone?.trim() || !tempProfile.address?.trim()) return alert("Vui lòng điền đủ Tên, Số điện thoại và Địa chỉ!");
+    if(!tempProfile.nickname?.trim() || !tempProfile.phone?.trim() || !tempProfile.address?.trim()) return alert("Vui lòng điền đủ Tên hiển thị, Số điện thoại và Địa chỉ!");
     
     const hasLetters = /[a-zA-ZÀ-ỹ]/.test(tempProfile.address);
     if (!hasLetters) return alert("Địa chỉ không hợp lệ! Vui lòng nhập rõ Tên Đường/Phường/Xã (ví dụ: 123 Lê Lợi).");
-    if (!isPhoneVerified) return alert("Bạn bắt buộc phải Xác nhận Số điện thoại bằng OTP!");
 
     setNickname(tempProfile.nickname); setPhone(tempProfile.phone); setAddress(tempProfile.address); setDistrict(tempProfile.district);
     setShowSettingsModal(false);
     if (user) {
-      try { await setDoc(doc(db, "users", user.uid), { nickname: tempProfile.nickname, phone: tempProfile.phone, address: tempProfile.address, district: tempProfile.district, isPhoneVerified: true }, { merge: true }); } catch(e) {}
+      try { await setDoc(doc(db, "users", user.uid), { nickname: tempProfile.nickname, phone: tempProfile.phone, address: tempProfile.address, district: tempProfile.district }, { merge: true }); } catch(e) {}
     }
     showToast('Đã lưu Cài đặt bảo mật!');
   };
@@ -558,25 +528,68 @@ export default function App() {
   
   const handleProceedCheckout = () => {
     requireLogin(() => {
-      if (!isPhoneVerified || !address || !phone) {
-        showToast("BẮT BUỘC: Bạn phải xác thực SĐT và điền địa chỉ để chống boom hàng!");
+      if (!address || !phone) {
+        showToast("Vui lòng điền Số điện thoại và Địa chỉ để chúng tôi giao hàng!");
         navigateTo('profile');
         setTimeout(() => {setTempProfile({nickname, phone, address, district}); setShowSettingsModal(true)}, 800);
       } else {
+        const newOrderId = 'TRIMI' + Date.now().toString().slice(-5) + Math.floor(Math.random() * 1000);
+        setCurrentOrderId(newOrderId);
+        setReceiptImg(null);
         setIsCartOpen(false);
         setShowCheckoutModal(true);
       }
     });
   };
 
-  const handleSimulatePayment = () => {
+  const handleConfirmPayment = async () => {
+    if (!receiptImg) {
+      alert("Vui lòng tải lên biên lai chuyển khoản để hệ thống xác nhận!");
+      return;
+    }
+
     setIsCheckingPayment(true);
-    setTimeout(() => {
+    
+    const orderData = {
+      orderId: currentOrderId,
+      uid: user.uid,
+      customerName: nickname,
+      customerEmail: user.email,
+      customerPhone: phone,
+      customerAddress: `${address}, ${district}, Đà Nẵng`,
+      items: cart,
+      totalAmount: cartProductsTotal,
+      shippingFee: shippingFee,
+      finalAmount: cartFinalTotal,
+      paidAmount: finalPayAmount,
+      paymentMode: paymentMode,
+      status: 'Chờ xác nhận thanh toán',
+      receiptImage: receiptImg,
+      createdAt: Date.now()
+    };
+
+    try {
+      await setDoc(doc(db, 'orders', currentOrderId), orderData);
+
+      setTimeout(() => {
+        setIsCheckingPayment(false);
+        alert(`Đã gửi yêu cầu! Mã đơn: ${currentOrderId}\nChúng tôi sẽ duyệt bill và liên hệ bạn sớm nhất.`);
+        setCart([]); setShowCheckoutModal(false); showToast('Đặt hàng thành công!');
+        navigateTo('profile');
+      }, 1500); 
+
+    } catch (error) {
+      console.error(error);
       setIsCheckingPayment(false);
-      alert("Trimi đã nhận được thông tin chuyển khoản của bạn. Đơn hàng đang được chuẩn bị!");
-      setCart([]); setShowCheckoutModal(false); showToast('Thanh toán thành công!');
-      navigateTo('profile');
-    }, 2500); 
+      alert("Có lỗi xảy ra khi lưu đơn hàng. Vui lòng thử lại.");
+    }
+  };
+
+  const handleReceiptUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      compressImage(file, (base64) => setReceiptImg(base64));
+    }
   };
 
   const handleDeleteProduct = async (id) => {
@@ -618,6 +631,11 @@ export default function App() {
         
         /* ẨN LOGO RECAPTCHA CỦA GOOGLE ĐỂ ĐẢM BẢO THẨM MỸ */
         .grecaptcha-badge { visibility: hidden !important; }
+
+        /* KIỂM SOÁT CURSOR: ĐẢM BẢO CHUỘT LÀ HÌNH NGÓN TAY KHI TRỎ VÀO CÁC PHẦN TỬ CÓ THỂ CLICK */
+        a, button, label, .cursor-pointer, [role="button"] {
+            cursor: pointer !important;
+        }
 
         /* =======================================================
            BỘ QUY TẮC DARK MODE CHUẨN XÁC TỪNG KHUNG GIAO DIỆN
@@ -794,7 +812,7 @@ export default function App() {
                 <div className="flex justify-center mb-2"><span className="text-xs text-slate-400 font-medium bg-white px-3 py-1 rounded-full border border-slate-100">Hôm nay</span></div>
                 
                 {/* HIỂN THỊ TIN NHẮN TÙY VÀO ĐỐI TƯỢNG */}
-                {(activeChatTarget === 'admin' ? chatMessages : p2pMessages).map((msg, idx) => {
+                {(isAdmin && activeChatTarget ? (adminChatUser?.messages || []) : (activeChatTarget === 'admin' ? chatMessages : p2pMessages)).map((msg, idx) => {
                   const isMe = msg.sender === user?.uid || (isAdmin && msg.sender === 'bot');
                   const showAvatar = !isMe;
                   
@@ -802,7 +820,7 @@ export default function App() {
                     <div key={idx} className={`flex gap-2 max-w-[85%] ${isMe ? 'ml-auto flex-row-reverse' : ''}`}>
                       {showAvatar && (
                         <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0 font-bold text-xs mt-auto overflow-hidden shadow-sm">
-                          {activeChatTarget === 'admin' ? <FiShield className="text-sky-500"/> : (activeChatTarget.avatar ? <img src={activeChatTarget.avatar} className="w-full h-full object-cover"/> : activeChatTarget.nickname?.charAt(0).toUpperCase())}
+                          {activeChatTarget === 'admin' || isAdmin ? <FiShield className="text-sky-500"/> : (activeChatTarget.avatar ? <img src={activeChatTarget.avatar} className="w-full h-full object-cover"/> : activeChatTarget.nickname?.charAt(0).toUpperCase())}
                         </div>
                       )}
                       <div className={`p-2.5 rounded-2xl text-sm leading-relaxed shadow-sm ${isMe ? 'bg-slate-900 text-white rounded-br-sm' : 'bg-white text-slate-700 rounded-bl-sm border border-slate-100'}`}>
@@ -1013,8 +1031,8 @@ export default function App() {
             <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 py-8 md:py-10 animate-fade-in">
               
               {currentCategory === 'all' && (
-                <div className="banner-protected rounded-[32px] p-8 md:p-12 mb-10 border border-blue-100 flex flex-col md:flex-row items-center justify-between shadow-sm overflow-hidden relative min-h-[320px] cursor-pointer group bg-[#eef5fc]" onClick={() => { if(!isEditingBanner) navigateTo('shop', 'all'); }}>
-                  <div className="max-w-xl relative z-10 pointer-events-none whitespace-pre-line group-hover:-translate-y-1 transition-transform">
+                <div className="banner-protected rounded-[32px] p-6 md:p-12 mb-6 md:mb-10 border border-blue-100 flex flex-col md:flex-row items-center justify-between shadow-sm overflow-hidden relative min-h-[320px] cursor-pointer group bg-[#eef5fc]" onClick={() => { if(!isEditingBanner) navigateTo('shop', 'all'); }}>
+                  <div className="max-w-[60%] md:max-w-xl relative z-10 pointer-events-none whitespace-pre-line group-hover:-translate-y-1 transition-transform">
                     <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 inline-block">{t('newCol')}</span>
                     <h2 className="text-3xl md:text-5xl font-black keep-dark-text mb-4 leading-tight">{t('heroTitle')}</h2>
                     <p className="keep-dark-text-sub mb-6 font-medium">{t('heroDesc')}</p>
@@ -1027,13 +1045,13 @@ export default function App() {
                   )}
 
                   <div 
-                    className={`absolute right-0 bottom-0 top-0 w-full md:w-1/2 items-center justify-center flex transition-all ${isEditingBanner ? 'z-20 border-4 border-dashed border-sky-400 bg-sky-50/30 cursor-move' : 'pointer-events-none z-0'}`}
+                    className={`absolute md:relative md:flex right-0 bottom-0 top-0 w-full md:w-1/2 items-center justify-end md:justify-center flex transition-all overflow-hidden md:overflow-visible ${isEditingBanner ? 'z-20 border-4 border-dashed border-sky-400 bg-sky-50/30 cursor-move' : 'pointer-events-none z-0'}`}
                     onMouseDown={handleBannerMouseDown} onMouseMove={handleBannerMouseMove} onMouseUp={handleBannerMouseUp} onMouseLeave={handleBannerMouseUp} onWheel={handleBannerWheel}
                   >
                     <img 
                       src={bannerImage} alt="Banner" draggable={false} 
-                      className={`h-[90%] w-auto object-contain drop-shadow-2xl ${isEditingBanner ? 'opacity-100' : 'opacity-90 group-hover:scale-105 transition-transform duration-700 ease-out'}`} 
-                      style={{ transform: `translate(${bannerConfig.x}px, ${bannerConfig.y}px) scale(${bannerConfig.scale})` }}
+                      className={`h-[90%] md:h-[90%] w-auto object-contain object-right md:object-center drop-shadow-2xl ${isEditingBanner ? 'opacity-100' : 'opacity-80 md:opacity-100 group-hover:scale-105 transition-transform duration-700 ease-out'}`} 
+                      style={{ transform: isMobile ? 'scale(1)' : `translate(${bannerConfig.x}px, ${bannerConfig.y}px) scale(${bannerConfig.scale})` }}
                       onError={(e) => { e.target.onerror = null; e.target.src = "https://fakestoreapi.com/img/71YXzeOuslL._AC_UY879_.jpg"; e.target.className = "h-[80%] w-auto object-contain opacity-50 drop-shadow-xl" }} 
                     />
                     
@@ -1067,24 +1085,24 @@ export default function App() {
                   <p className="text-slate-500 mt-2">{t('no_products_desc')}</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-8 px-1 md:px-0">
                   {displayedProducts.map((item) => (
                     <div key={item.id} className="flex flex-col gap-3 group">
                       <div className="bg-slate-100 rounded-[32px] border border-slate-200 relative aspect-[4/5] flex items-center justify-center cursor-pointer hover:shadow-2xl hover:border-slate-300 hover:-translate-y-1 transition-all duration-500 overflow-hidden" onClick={() => navigateTo('productDetail', currentCategory, item)}>
                          <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
-                         <button onClick={(e) => handleAddToCart(item, e)} className="absolute bottom-5 right-5 w-12 h-12 bg-slate-900 text-white rounded-full flex items-center justify-center hover:scale-110 hover:bg-sky-500 transition-all shadow-lg shadow-slate-900/30">
-                           <FiPlus className="text-2xl"/>
+                         <button onClick={(e) => handleAddToCart(item, e)} className="absolute bottom-3 right-3 md:bottom-5 md:right-5 w-9 h-9 md:w-12 md:h-12 bg-slate-900 text-white rounded-full flex items-center justify-center hover:scale-110 hover:bg-sky-500 transition-all shadow-lg shadow-slate-900/30">
+                           <FiPlus className="text-lg md:text-2xl"/>
                          </button>
                       </div>
                       <div className="px-2">
-                        <h3 className="text-slate-800 font-bold text-sm line-clamp-1 mb-1 cursor-pointer hover:text-sky-600 transition-colors" onClick={() => navigateTo('productDetail', currentCategory, item)}>{t_prod(item.id, 'name', item.name)}</h3>
+                        <h3 className="text-slate-800 font-bold text-xs md:text-sm line-clamp-1 mb-1 cursor-pointer hover:text-sky-600 transition-colors" onClick={() => navigateTo('productDetail', currentCategory, item)}>{t_prod(item.id, 'name', item.name)}</h3>
                         <div className="flex items-center justify-between mt-1">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1 md:gap-1.5">
                             {fakeColorSpheres.map((gradient, idx) => (
-                              <div key={idx} className={`w-4 h-4 rounded-full shadow-inner border border-slate-200/50 bg-gradient-to-br ${gradient}`}></div>
+                              <div key={idx} className={`w-3 h-3 md:w-4 md:h-4 rounded-full shadow-inner border border-slate-200/50 bg-gradient-to-br ${gradient}`}></div>
                             ))}
                           </div>
-                          <span className="text-base font-black text-slate-900">{(Number(item.price) || 0).toLocaleString('vi-VN')}đ</span>
+                          <span className="text-sm md:text-base font-black text-slate-900">{(Number(item.price) || 0).toLocaleString('vi-VN')}đ</span>
                         </div>
                       </div>
                     </div>
@@ -1377,9 +1395,9 @@ export default function App() {
           <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 md:p-6 animate-fade-in">
              <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" onClick={() => !isCheckingPayment && setShowCheckoutModal(false)}></div>
              <div className="bg-white rounded-[32px] w-full max-w-4xl relative z-10 shadow-2xl flex flex-col md:flex-row overflow-hidden">
-                <div className="w-full md:w-1/2 bg-slate-50 p-8 border-r border-slate-100 flex flex-col">
+                <div className="w-full md:w-1/2 bg-slate-50 p-6 md:p-8 border-r border-slate-100 flex flex-col">
                     <h3 className="text-2xl font-black mb-6">{t('order_summary')}</h3>
-                    <div className="space-y-4 flex-grow overflow-y-auto custom-scrollbar pr-2 max-h-[250px] md:max-h-[300px]">
+                    <div className="space-y-4 flex-grow overflow-y-auto custom-scrollbar pr-2 max-h-[150px] md:max-h-[300px]">
                         {cart.map((item, idx) => (
                             <div key={idx} className="flex justify-between items-center text-sm font-medium">
                                 <span className="text-slate-600 line-clamp-1 pr-4">{t_prod(item.id, 'name', item.name)} <span className="text-sky-600 font-bold ml-1">x{item.quantity}</span></span>
@@ -1410,20 +1428,33 @@ export default function App() {
                         )}
                     </div>
                 </div>
-                <div className="w-full md:w-1/2 p-8 text-center flex flex-col items-center justify-center relative bg-white">
+                <div className="w-full md:w-1/2 p-6 md:p-8 text-center flex flex-col items-center justify-center relative bg-white">
                     {!isCheckingPayment && <button onClick={() => setShowCheckoutModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-900 bg-slate-100 p-2 rounded-full transition-colors"><FiX className="text-xl"/></button>}
+                    
                     <h3 className="text-2xl font-black mb-2 text-slate-900">{t('qr_pay')}</h3>
-                    <p className="text-sm text-slate-500 mb-6 font-medium px-4">{t('qr_scan_desc')}</p>
-                    <div className="bg-white p-3 rounded-3xl shadow-lg border border-slate-100 mb-8 inline-block transform hover:scale-105 transition-transform relative">
-                        <img src="/qr.png" alt="QR Code" className="w-48 h-48 object-cover rounded-xl"/>
+                    <p className="text-sm text-slate-500 mb-4 font-medium px-4">{t('qr_scan_desc')}</p>
+                    
+                    <div className="bg-white p-2 rounded-3xl shadow-lg border border-slate-100 mb-4 inline-block transform hover:scale-105 transition-transform relative">
+                        <img src="/qr.png" alt="QR Code" className="w-40 h-40 md:w-48 md:h-48 object-cover rounded-xl"/>
+                    </div>
+                    <div className="bg-amber-50 text-amber-700 px-4 py-2 rounded-lg text-xs font-bold mb-4 border border-amber-200">
+                      Nội dung CK: <span className="text-slate-900 font-black text-sm">{currentOrderId}</span>
+                    </div>
+
+                    {/* NÚT UPLOAD HÌNH ẢNH BILL - CHỐNG SPAM */}
+                    <div className="w-full mb-4">
+                       <label className={`w-full py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer border-2 border-dashed ${receiptImg ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-300 bg-slate-50 text-slate-500 hover:border-sky-500 hover:text-sky-600'}`}>
+                         {receiptImg ? <><FiCheckCircle className="text-lg"/> Đã tải lên Bill</> : <><FiUpload className="text-lg"/> 1. Tải lên ảnh Bill chuyển khoản</>}
+                         <input type="file" accept="image/*" onChange={handleReceiptUpload} className="hidden" />
+                       </label>
                     </div>
                     
-                    <button onClick={handleSimulatePayment} disabled={isCheckingPayment} className={`w-full py-4 rounded-full font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${isCheckingPayment ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-slate-900 text-white hover:bg-black shadow-xl'}`}>
-                      {isCheckingPayment ? <><FiLoader className="text-xl animate-spin text-sky-500"/> {t('waiting_payment')}</> : <><FiCheckCircle className="text-xl"/> {t('confirm_paid')}</>}
+                    <button onClick={handleConfirmPayment} disabled={isCheckingPayment || !receiptImg} className={`w-full py-4 rounded-full font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${isCheckingPayment || !receiptImg ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-sky-500 text-white hover:bg-sky-600 shadow-xl cursor-pointer'}`}>
+                      {isCheckingPayment ? <><FiLoader className="text-xl animate-spin text-sky-500"/> {t('waiting_payment')}</> : <><FiCheckCircle className="text-xl"/> 2. {t('confirm_paid')}</>}
                     </button>
                     
-                    <p className="text-[10px] text-slate-400 mt-4 px-8 leading-relaxed">
-                       Quét mã QR và kiểm tra đúng số tiền <b className="text-slate-600">{finalPayAmount.toLocaleString('vi-VN')}đ</b>. Sau khi chuyển, vui lòng bấm nút Xác nhận.
+                    <p className="text-[10px] text-slate-400 mt-4 px-4 leading-relaxed">
+                       Quét mã QR. Bạn bắt buộc phải tải lên ảnh chụp màn hình chuyển khoản để có thể bấm Xác nhận.
                     </p>
                 </div>
              </div>
@@ -1433,7 +1464,7 @@ export default function App() {
         {/* MODAL CÀI ĐẶT BẢO MẬT & ĐỊA CHỈ */}
         {showSettingsModal && (
           <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
-             <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" onClick={() => !showOtpInput && setShowSettingsModal(false)}></div>
+             <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" onClick={() => setShowSettingsModal(false)}></div>
              <div className="bg-white rounded-[32px] p-6 md:p-10 w-full max-w-xl relative z-10 shadow-2xl animate-fade-in-up">
                 <button onClick={() => setShowSettingsModal(false)} className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 bg-slate-100 p-2 rounded-full transition-colors"><FiX className="text-xl"/></button>
                 <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-2"><FiSettings className="text-sky-500"/> Cài đặt bảo mật</h3>
@@ -1446,23 +1477,8 @@ export default function App() {
                    
                    <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Số điện thoại</label>
-                      <div className="flex gap-2">
-                         <input type="tel" value={tempProfile.phone || ''} onChange={e => { setTempProfile({...tempProfile, phone: e.target.value}); setIsPhoneVerified(false); }} placeholder="09xxxx..." className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-sky-500 text-sm font-medium"/>
-                         {(!isPhoneVerified && tempProfile.phone?.length >= 9) && (
-                            <button onClick={handleSendOTP} className="bg-sky-500 hover:bg-sky-600 text-white px-4 rounded-xl font-bold text-xs whitespace-nowrap transition-colors">Nhận mã SMS</button>
-                         )}
-                         {isPhoneVerified && (
-                            <div className="bg-emerald-100 text-emerald-700 px-4 rounded-xl font-bold text-xs flex items-center gap-1 whitespace-nowrap"><FiCheckCircle/> Đã xác nhận</div>
-                         )}
-                      </div>
+                      <input type="tel" value={tempProfile.phone || ''} onChange={e => setTempProfile({...tempProfile, phone: e.target.value})} placeholder="09xxxx..." className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-sky-500 text-sm font-medium"/>
                    </div>
-
-                   {showOtpInput && !isPhoneVerified && (
-                      <div className="bg-sky-50 border border-sky-100 p-4 rounded-xl flex items-center gap-3 animate-fade-in">
-                         <input type="text" value={otpCode} onChange={e => setOtpCode(e.target.value)} placeholder="Nhập 6 số từ SMS" maxLength={6} className="flex-1 bg-white border border-sky-200 rounded-lg px-4 py-2 outline-none text-sm font-bold tracking-widest text-center"/>
-                         <button onClick={handleVerifyOTP} className="bg-slate-900 hover:bg-black text-white px-4 py-2.5 rounded-lg font-bold text-xs transition-colors">Xác nhận OTP</button>
-                      </div>
-                   )}
 
                    <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Khu vực (Đà Nẵng)</label>
@@ -1477,8 +1493,8 @@ export default function App() {
                 </div>
 
                 <div className="mt-8 flex justify-end gap-3">
-                   <button onClick={() => setShowSettingsModal(false)} className="px-6 py-3 rounded-full font-bold text-sm text-slate-500 bg-slate-100 hover:bg-slate-200">Đóng</button>
-                   <button onClick={handleSaveSettings} className="bg-slate-900 hover:bg-black text-white px-8 py-3 rounded-full font-bold text-sm shadow-xl">Lưu Thông Tin</button>
+                   <button onClick={() => setShowSettingsModal(false)} className="px-6 py-3 rounded-full font-bold text-sm text-slate-500 bg-slate-100 hover:bg-slate-200 cursor-pointer">Đóng</button>
+                   <button onClick={handleSaveSettings} className="bg-slate-900 hover:bg-black text-white px-8 py-3 rounded-full font-bold text-sm shadow-xl cursor-pointer">Lưu Thông Tin</button>
                 </div>
              </div>
           </div>
@@ -1536,8 +1552,8 @@ export default function App() {
                   </div>
                </div>
                <div className="pt-8 border-t border-slate-100 mt-4 flex justify-end gap-4">
-                 <button onClick={() => setShowAddModal(false)} className="px-8 py-4 rounded-full font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">Hủy Bỏ</button>
-                 <button onClick={handleSubmitNewProduct} className="px-8 py-4 rounded-full font-bold text-white bg-sky-500 hover:bg-sky-600 transition-colors flex items-center gap-2 shadow-lg shadow-sky-500/30">
+                 <button onClick={() => setShowAddModal(false)} className="px-8 py-4 rounded-full font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer">Hủy Bỏ</button>
+                 <button onClick={handleSubmitNewProduct} className="px-8 py-4 rounded-full font-bold text-white bg-sky-500 hover:bg-sky-600 transition-colors flex items-center gap-2 shadow-lg shadow-sky-500/30 cursor-pointer">
                    <FiCheckCircle className="text-lg"/> Đăng Lên Cửa Hàng
                  </button>
                </div>
@@ -1561,14 +1577,14 @@ export default function App() {
                 <button onClick={() => setShowLoginModal(false)} className="absolute top-6 right-6 p-2 rounded-full transition-colors"><FiX className="text-2xl"/></button>
                 <h3 className="text-3xl font-black text-slate-900 mb-8">{authMode === 'login' ? t('login') : 'Tạo tài khoản'}</h3>
                 <div className="flex flex-col gap-4 mb-8">
-                  <button onClick={handleGoogleLogin} className="w-full bg-[#101828] text-white py-4 font-bold rounded-full flex items-center justify-center gap-3"><FcGoogle className="text-xl bg-white rounded-full p-0.5" /> Google</button>
-                  <button onClick={handleFacebookLogin} className="w-full border-2 py-4 font-bold rounded-full flex items-center justify-center gap-3"><FaFacebook className="text-xl text-[#1877F2]"/> Facebook</button>
+                  <button onClick={handleGoogleLogin} className="w-full bg-[#101828] text-white py-4 font-bold rounded-full flex items-center justify-center gap-3 cursor-pointer"><FcGoogle className="text-xl bg-white rounded-full p-0.5" /> Google</button>
+                  <button onClick={handleFacebookLogin} className="w-full border-2 py-4 font-bold rounded-full flex items-center justify-center gap-3 cursor-pointer"><FaFacebook className="text-xl text-[#1877F2]"/> Facebook</button>
                 </div>
                 <div className="flex items-center mb-6"><div className="flex-grow border-t"></div><span className="mx-4 text-slate-400 text-xs font-bold uppercase">Hoặc</span><div className="flex-grow border-t"></div></div>
                 <div className="flex flex-col gap-4 mb-6">
                   <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="Email" className="bg-slate-50 rounded-2xl px-5 py-4 outline-none focus:ring-1" />
                   <input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="Mật khẩu" className="bg-slate-50 rounded-2xl px-5 py-4 outline-none focus:ring-1" />
-                  <button onClick={handleEmailAuth} className="bg-sky-500 text-white py-4 font-black rounded-full uppercase shadow-lg">{authMode === 'login' ? t('login') : 'Đăng Ký'}</button>
+                  <button onClick={handleEmailAuth} className="bg-sky-500 text-white py-4 font-black rounded-full uppercase shadow-lg cursor-pointer">{authMode === 'login' ? t('login') : 'Đăng Ký'}</button>
                 </div>
                 <div className="text-center text-sm font-medium text-slate-600 mb-8">{authMode === 'login' ? <>Chưa có tài khoản? <button onClick={() => setAuthMode('register')} className="text-sky-600 font-bold underline">Tạo ngay</button></> : <>Đã có tài khoản? <button onClick={() => setAuthMode('login')} className="text-sky-600 font-bold underline">Đăng nhập</button></>}</div>
               </div>
@@ -1593,7 +1609,7 @@ export default function App() {
                       try { await setDoc(doc(db, "users", user.uid), { email: user.email || '', role: role }, { merge: true }); } catch(e){} 
                     }
                     showToast('Cảm ơn bạn đã hoàn thành!');
-                  }} className="bg-white border-2 border-slate-100 text-slate-700 py-5 px-6 rounded-2xl font-bold text-base hover:border-sky-500 hover:text-sky-600 transition-all shadow-sm hover:shadow-md">
+                  }} className="bg-white border-2 border-slate-100 text-slate-700 py-5 px-6 rounded-2xl font-bold text-base hover:border-sky-500 hover:text-sky-600 transition-all shadow-sm hover:shadow-md cursor-pointer">
                     {role}
                   </button>
                 ))}

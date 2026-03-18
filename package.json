@@ -12,6 +12,7 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@react-three/drei": "9.88.0",
     "@react-three/fiber": "8.15.11",
     "firebase": "^12.10.0",
