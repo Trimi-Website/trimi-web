@@ -7,3 +7,24 @@ body, html, #root {
   height: 100%;
   overflow: hidden;
 }
+/* Animation Ảnh Sản Phẩm bay vào giỏ */
+@keyframes add-to-cart-fly {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  20% {
+    /* Nảy lên và xoay nhẹ */
+    transform: translate(0, -30px) scale(1.1) rotate(5deg);
+  }
+  100% {
+    opacity: 0.3;
+    /* Bay vào giỏ, thu nhỏ siêu bé và bo tròn thành viên bi */
+    transform: translate(var(--diff-x), var(--diff-y)) scale(0.2) rotate(-15deg);
+    border-radius: 50%;
+  }
+}
+
+.animate-add-to-cart-fly {
+  animation: add-to-cart-fly 0.8s cubic-bezier(0.25, 1, 0.25, 1) forwards;
+}

@@ -102,10 +102,12 @@ const initialProducts = [
 ];
 
 const defaultLookbookData = [
-  { id: 1, title: 'Men Collection', img: '/men_collection.jpg', targetCategory: 'shirt_1' },
-  { id: 2, title: 'Streetwear', img: '/streetwear.jpg', targetCategory: 'pants_1' },
-  { id: 3, title: 'Accessories', img: '/accessories.jpg', targetCategory: 'acc_2' },
-  { id: 4, title: 'New Arrivals', img: '/new_arrivals.jpg', targetCategory: 'all' }
+  { id: 1, title: 'Men Collection', img: '/1.jpg', targetCategory: 'shirt_1' },
+  { id: 2, title: 'Streetwear', img: '/2.jpg', targetCategory: 'pants_1' },
+  { id: 3, title: 'Accessories', img: '/3.jpg', targetCategory: 'acc_2' },
+  { id: 4, title: 'New Arrivals', img: '/4.jpg', targetCategory: 'all' },
+  // ĐÂY LÀ MỤC THỨ 5 MỚI THÊM VÀO:
+  { id: 5, title: 'Women Collection', img: '/5.jpg', targetCategory: 'shirt_2' } 
 ];
 
 const fakeColorSpheres = ['from-white to-slate-300', 'from-zinc-700 to-black', 'from-amber-200 to-amber-600', 'from-sky-300 to-sky-600'];
@@ -118,7 +120,8 @@ export default function App() {
   const [currentCategory, setCurrentCategory] = useState('all'); 
   const [selectedProduct, setSelectedProduct] = useState(null); 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTag, setSelectedTag] = useState(null); 
+  const [selectedTag, setSelectedTag] = useState(null);
+  const [isUnifiedMenuOpen, setIsUnifiedMenuOpen] = useState(false); 
 
   const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('trimi_theme') === 'dark');
   const [isMobile, setIsMobile] = useState(false);
@@ -129,7 +132,8 @@ export default function App() {
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [authMode, setAuthMode] = useState('login'); 
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [isSettingsDrawerOpen, setIsSettingsDrawerOpen] = useState(false);
+  const [tempSettings, setTempSettings] = useState({}); // State tạm để lưu thay đổi trước khi bấm lưu
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -152,6 +156,9 @@ export default function App() {
   const [myOrders, setMyOrders] = useState([]); 
   const [previewImg, setPreviewImg] = useState(null); 
   const [adminTab, setAdminTab] = useState('products'); 
+  const [cancelOrderTarget, setCancelOrderTarget] = useState(null);
+  const [cancelTag, setCancelTag] = useState('');
+  const [cancelNote, setCancelNote] = useState('');
   const [isLoadingShop, setIsLoadingShop] = useState(true); 
 
   const [showSurveyModal, setShowSurveyModal] = useState(false);
@@ -171,6 +178,7 @@ export default function App() {
   const [isCheckingPayment, setIsCheckingPayment] = useState(false);
   
   const [currentOrderId, setCurrentOrderId] = useState('');
+  const [successOrderInfo, setSuccessOrderInfo] = useState(null);
   const [receiptImg, setReceiptImg] = useState(null);
 
   const [toastMsg, setToastMsg] = useState(''); 
@@ -253,31 +261,39 @@ export default function App() {
   }, [isDarkMode]);
 
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
-  const lastScrollY = useRef(0); // Bắt buộc phải có dòng này để code cuộn hoạt động
-    useEffect(() => {
+  const lastScrollY = useRef(0);
+  const scrollTimeout = useRef(null); // Biến để nhận diện thao tác thả tay
+
+  useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
-      // Bật tắt nút mũi tên cuộn lên đầu trang
       if (currentScrollY > 400) setShowScrollTop(true); 
       else setShowScrollTop(false);
 
-      // Logic Header mượt mà: Thêm độ trễ (15px) để không bị "quá nhạy"
       if (currentScrollY < 80) {
-        setIsHeaderVisible(true); // Khi ở sát đầu trang thì luôn hiện
-      } else if (Math.abs(currentScrollY - lastScrollY.current) > 15) {
-        // Chỉ xử lý ẩn/hiện nếu người dùng cuộn một khoảng > 15px
+        setIsHeaderVisible(true); // Gần đầu trang luôn hiện
+      } else if (Math.abs(currentScrollY - lastScrollY.current) > 10) {
         if (currentScrollY > lastScrollY.current) {
-          setIsHeaderVisible(false); // Cuộn xuống -> Ẩn đi
+          // LƯỚT XUỐNG -> Ẩn ngay lập tức
+          setIsHeaderVisible(false);
+          clearTimeout(scrollTimeout.current);
         } else {
-          setIsHeaderVisible(true);  // Cuộn lên -> Hiện ra
+          // LƯỚT LÊN -> Chờ người dùng thả tay (dừng cuộn 150ms) mới hiện Header
+          clearTimeout(scrollTimeout.current);
+          scrollTimeout.current = setTimeout(() => {
+            setIsHeaderVisible(true);
+          }, 150); 
         }
-        lastScrollY.current = currentScrollY; // Cập nhật lại vị trí cuộn
+        lastScrollY.current = currentScrollY;
       }
     };
     
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(scrollTimeout.current);
+    };
   }, []);
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -594,7 +610,57 @@ export default function App() {
 
   const handleAddToCart = (item, e) => {
     e.stopPropagation(); 
+
+    // 1. ÉP HEADER HIỆN RA KHI MUA HÀNG & TỰ ẨN SAU 2.5 GIÂY
+    setIsHeaderVisible(true);
+    setTimeout(() => {
+      if (window.scrollY > 80) setIsHeaderVisible(false);
+    }, 2500);
+
+    // 2. HIỆU ỨNG ẢNH SẢN PHẨM BAY VÀO GIỎ HÀNG
+    if (e && e.currentTarget) {
+      const button = e.currentTarget;
+      // Tìm ảnh: Nếu ở trang chủ thì tìm gần nút, nếu ở trang chi tiết thì tìm bằng ID
+      let image = button.parentElement?.querySelector('img');
+      if (!image) image = document.getElementById('detail-main-image');
+      const cartIcon = document.getElementById('header-cart-icon');
+
+      if (image && cartIcon) {
+        const imageRect = image.getBoundingClientRect();
+        const cartRect = cartIcon.getBoundingClientRect();
+
+        // Dùng thẻ <img> thay vì <div> để hiển thị ảnh
+        const flyer = document.createElement('img');
+        flyer.src = image.src; // Lấy đúng ảnh của sản phẩm
+        flyer.className = "fixed object-cover shadow-2xl z-[10000] animate-add-to-cart-fly pointer-events-none rounded-xl border-2 border-white/50";
+        
+        // Kích thước ảnh bay (To hơn bi cũ để nhìn rõ ảnh)
+        const size = 60; 
+        flyer.style.width = `${size}px`;
+        flyer.style.height = `${size}px`;
+        
+        const startX = imageRect.left + imageRect.width / 2 - size / 2;
+        const startY = imageRect.top + imageRect.height / 2 - size / 2;
+        flyer.style.left = `${startX}px`;
+        flyer.style.top = `${startY}px`;
+
+        const endX = cartRect.left + cartRect.width / 2 - size / 2;
+        const endY = cartRect.top + cartRect.height / 2 - size / 2;
+        
+        flyer.style.setProperty('--diff-x', `${endX - startX}px`);
+        flyer.style.setProperty('--diff-y', `${endY - startY}px`);
+
+        document.body.appendChild(flyer);
+
+        flyer.addEventListener('animationend', () => {
+          document.body.removeChild(flyer);
+          cartIcon.classList.add('scale-125', 'text-sky-500'); 
+          setTimeout(() => cartIcon.classList.remove('scale-125', 'text-sky-500'), 300);
+        });
+      }
+    }
     
+    // 3. LOGIC XỬ LÝ SỐ LƯỢNG
     const currentStock = item.stock !== undefined ? item.stock : 50; 
     if (currentStock <= 0) return showToast("Sản phẩm này đã hết hàng!");
 
@@ -609,7 +675,6 @@ export default function App() {
       }
       return [...prevCart, { ...item, quantity: 1, addedAt: Date.now() }];
     });
-    showToast(t('addToCart') + '!');
   };
 
   const updateCartQuantity = (id, delta) => setCart(cart.map(i => i.id === id ? { ...i, quantity: Math.max(1, i.quantity + delta) } : i));
@@ -683,7 +748,7 @@ export default function App() {
 
       setTimeout(() => {
         setIsCheckingPayment(false);
-        alert(`Đã gửi yêu cầu! Mã đơn: ${currentOrderId}\nChúng tôi sẽ duyệt bill và liên hệ bạn sớm nhất.`);
+        setSuccessOrderInfo(currentOrderId); // Gọi Popup thành công thay cho alert
         setCart([]); setShowCheckoutModal(false); showToast('Đặt hàng thành công!');
         navigateTo('profile');
       }, 1500); 
@@ -901,171 +966,136 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
           )}
         </div>
 
-        {/* HEADER CHÍNH */}
-        <header className={`fixed top-0 left-0 w-full z-[100] border-b flex-shrink-0 transition-transform duration-300 ease-in-out backdrop-blur-md ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'} ${isDarkMode ? 'bg-[#111111]/50 border-slate-800' : 'bg-white/50 border-slate-200 shadow-sm'}`}>
-           <div className="max-w-[1400px] mx-auto px-4 md:px-8 pt-3 pb-0">
-              <div className="flex items-center justify-between gap-4 pb-2 md:pb-3">
-                 <div className="flex items-center">
-                    <h1 className="text-5xl md:text-[52px] font-brush tracking-wide cursor-pointer text-slate-900 hover:text-sky-600 transition-colors" onClick={() => navigateTo('home', 'all')} style={{ lineHeight: '1' }}>
+        {/* HEADER CHÍNH (ĐÃ DỌN SẠCH CHỈ CÒN 1 Ô TÌM KIẾM Ở SHOP) */}
+        <header className={`fixed top-0 left-0 w-full z-[100] border-b flex-shrink-0 transition-all duration-500 ease-in-out backdrop-blur-md ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'} ${isDarkMode ? 'bg-[#111111]/80 border-slate-800' : 'bg-white/80 border-slate-200 shadow-sm'}`}>
+           <div className={`max-w-[1400px] mx-auto px-4 md:px-8 transition-all duration-500 ${currentView === 'home' ? 'py-2' : 'pt-3 pb-0'}`}>
+              <div className={`flex items-center justify-between gap-3 md:gap-4 transition-all duration-500 ${currentView === 'home' ? 'pb-0' : 'pb-2 md:pb-3'}`}>
+                 
+                 {/* LOGO */}
+                 <div className="flex items-center flex-shrink-0">
+                    <h1 className={`font-brush tracking-wide cursor-pointer transition-all duration-500 ${currentView === 'home' ? 'text-3xl md:text-4xl' : 'text-4xl md:text-[52px]'} ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`} onClick={() => navigateTo('home', 'all')} style={{ lineHeight: '1' }}>
                       Trimi
                     </h1>
                  </div>
-                 <div className="hidden md:flex relative w-full max-w-[400px] flex-grow lg:mx-6">
-                    <div className="flex bg-slate-100 rounded-full h-10 w-full overflow-hidden border border-transparent focus-within:border-slate-300 focus-within:bg-white transition-all shadow-inner z-50 relative">
-                       <input type="text" value={searchQuery} onChange={(e) => {setSearchQuery(e.target.value); setCurrentView('shop');}} placeholder={t('search')} className="w-full px-4 text-sm outline-none bg-transparent text-slate-800 placeholder-slate-400 font-medium"/>
-                       <button className="px-4 text-slate-500 hover:text-sky-500 transition-colors"><FiSearch className="text-lg"/></button>
-                    </div>
-                    {searchQuery && (
-                      <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 max-h-60 overflow-y-auto animate-fade-in-up">
-                         {displayedProducts.length > 0 ? displayedProducts.map(p => (
-                            <div key={p.id} onClick={() => {setSearchQuery(''); navigateTo('productDetail', p.category, p);}} className="px-4 py-2 hover:bg-slate-50 cursor-pointer flex items-center gap-3 transition-colors">
-                               <img src={p.imageUrl} className="w-10 h-10 object-cover rounded-md border border-slate-100" />
-                               <div className="flex-1">
-                                 <p className="text-sm font-bold text-slate-800 line-clamp-1">{t_prod(p.id, 'name', p.name)}</p>
-                                 <p className="text-xs text-sky-600 font-black">{(Number(p.price) || 0).toLocaleString('vi-VN')}đ</p>
-                               </div>
-                            </div>
-                         )) : <div className="px-4 py-3 text-sm text-slate-500 text-center font-medium">Không tìm thấy sản phẩm phù hợp</div>}
+                 
+                 {/* THANH TÌM KIẾM (CHỈ HIỆN Ở SHOP - ĐÃ SỬA LỖI TRÙNG LẶP) */}
+                 {currentView !== 'home' ? (
+                   <div className="flex relative w-full max-w-[400px] flex-grow mx-2 md:mx-6 animate-fade-in">
+                      <div className={`flex rounded-full w-full overflow-hidden border shadow-inner z-50 relative h-9 md:h-10 ${isDarkMode ? 'bg-white/10 border-slate-700 text-white focus-within:border-sky-500' : 'bg-slate-100 border-transparent focus-within:border-slate-300 focus-within:bg-white text-slate-800'}`}>
+                         <input type="text" value={searchQuery} onChange={(e) => {setSearchQuery(e.target.value); setCurrentView('shop');}} placeholder={t('search')} className="w-full px-4 text-xs md:text-sm outline-none bg-transparent placeholder-slate-400 font-medium"/>
+                         <button className="px-3 md:px-4 text-slate-400 hover:text-sky-500 transition-colors"><FiSearch className="text-base md:text-lg"/></button>
                       </div>
-                    )}
-                 </div>
-
-                 <div className="hidden md:flex gap-4 items-center text-sm font-semibold text-slate-700">
-                    <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 text-slate-500 hover:text-sky-500 transition-colors bg-slate-50 rounded-full border border-slate-200">
-                      {isDarkMode ? <FiSun className="text-lg"/> : <FiMoon className="text-lg"/>}
-                    </button>
-                    <div className="relative">
-                      <button onClick={() => setShowLangMenu(!showLangMenu)} className="flex items-center justify-center gap-1.5 font-bold text-slate-500 hover:text-slate-900 transition-colors bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200 min-w-[70px]">
-                        <FiGlobe className="text-lg"/> <span className="uppercase tracking-widest">{lang}</span>
-                      </button>
-                      {showLangMenu && (
-                        <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 z-50 animate-fade-in-up">
-                          {languages.map(l => (
-                            <button key={l.code} onClick={() => {setLang(l.code); setShowLangMenu(false)}} className={`w-full text-left px-4 py-2 rounded-xl text-sm font-bold transition-colors ${lang === l.code ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'}`}>
-                              {l.label}
-                            </button>
-                          ))}
+                      {searchQuery && (
+                        <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 max-h-60 overflow-y-auto animate-fade-in-up">
+                           {displayedProducts.length > 0 ? displayedProducts.map(p => (
+                              <div key={p.id} onClick={() => {setSearchQuery(''); navigateTo('productDetail', p.category, p);}} className="px-4 py-2 hover:bg-slate-50 cursor-pointer flex items-center gap-3 transition-colors">
+                                 <img src={p.imageUrl} className="w-10 h-10 object-cover rounded-md border border-slate-100" />
+                                 <div className="flex-1">
+                                   <p className="text-sm font-bold text-slate-800 line-clamp-1">{t_prod(p.id, 'name', p.name)}</p>
+                                   <p className="text-xs text-sky-600 font-black">{(Number(p.price) || 0).toLocaleString('vi-VN')}đ</p>
+                                 </div>
+                              </div>
+                           )) : <div className="px-4 py-3 text-sm text-slate-500 text-center font-medium">Không tìm thấy sản phẩm</div>}
                         </div>
                       )}
-                    </div>
+                   </div>
+                 ) : (
+                   <div className="flex-grow"></div> /* Thẻ rỗng để đẩy Logo và Menu về 2 góc */
+                 )}
 
-                    {isAuthenticated ? (
-                      <button onClick={() => navigateTo('profile')} className="flex items-center gap-2 hover:text-sky-600 transition-colors pl-2 border-l border-slate-200">
-                         {avatarUrl ? <img src={avatarUrl} className="w-8 h-8 rounded-full object-cover border border-slate-200"/> : <FiUser className="text-xl"/>}
-                         <span className="max-w-[100px] truncate">{nickname}</span>
-                      </button>
-                    ) : (
-                      <button onClick={() => setShowLoginModal(true)} className="bg-slate-900 hover:bg-black text-white px-6 py-2.5 rounded-full font-bold transition-all shadow-md ml-2 border-l border-slate-200">
-                        {t('login')}
-                      </button>
-                    )}
-
-                    <div className="flex items-center gap-2 cursor-pointer hover:text-sky-600 transition-colors relative group" onClick={() => setIsCartOpen(true)}>
-                       <div className="relative p-1">
-                         <FiShoppingCart className="text-2xl"/>
+                 {/* CÁC NÚT ICON BÊN PHẢI */}
+                 <div className="flex items-center gap-3 text-sm font-semibold text-slate-700 flex-shrink-0 relative z-[1001]">
+                    <div className={`flex items-center gap-2 cursor-pointer transition-colors relative group p-1.5 md:p-2 ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`} onClick={() => setIsCartOpen(true)}>
+                       <div id="header-cart-icon" className="relative transition-transform duration-300">
+                         <FiShoppingCart className={`${currentView === 'home' ? 'text-xl' : 'text-2xl'}`}/>
                          {cartItemCount > 0 && (
-                           <span className="absolute -top-1 -right-1 bg-sky-500 text-white w-5 h-5 flex items-center justify-center text-[10px] font-bold rounded-full shadow-sm border-2 border-white transition-all group-hover:scale-110">
+                           <span className="absolute -top-1 -right-2 bg-sky-500 text-white w-4 h-4 flex items-center justify-center text-[10px] font-bold rounded-full shadow-sm border border-white">
                              {cartItemCount}
                            </span>
                          )}
                        </div>
-                       <span>{t('cart')}</span>
                     </div>
-                 </div>
-
-                 <div className="flex md:hidden items-center gap-4 text-slate-800 ml-auto">
-                    <button onClick={() => setIsDarkMode(!isDarkMode)} className="text-slate-500">{isDarkMode ? <FiSun className="text-xl"/> : <FiMoon className="text-xl"/>}</button>
-                    <button className="px-2 text-slate-500"><FiSearch className="text-xl"/></button>
-                    <div className="relative p-1 cursor-pointer" onClick={() => setIsCartOpen(true)}>
-                      <FiShoppingCart className="text-2xl"/>
-                      {cartItemCount > 0 && <span className="absolute -top-1 -right-1 bg-sky-500 text-white w-4 h-4 flex items-center justify-center text-[10px] font-bold rounded-full">{cartItemCount}</span>}
-                    </div>
-                    {isAuthenticated ? (
-                      <button onClick={() => navigateTo('profile')} className="text-slate-800"><FiUser className="text-2xl"/></button>
-                    ) : (
-                      <button onClick={() => setShowLoginModal(true)} className="bg-slate-900 text-white px-4 py-2 rounded-lg text-xs font-bold">{t('login')}</button>
-                    )}
+                    <button onClick={() => setIsUnifiedMenuOpen(true)} className={`p-1.5 md:p-2 transition-colors cursor-pointer relative z-[1100] ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`}>
+                       <FiMenu className={`${currentView === 'home' ? 'text-2xl' : 'text-3xl'}`} />
+                    </button>
                  </div>
               </div>
 
-              <nav className="hidden lg:flex items-center justify-center gap-2 text-[13px] font-bold text-slate-500 uppercase tracking-widest border-t border-slate-100 relative z-30">
-                 <div className="relative group cursor-pointer">
-                   <button onClick={() => navigateTo('shop', 'all')} className={`px-6 py-4 border-b-2 transition-colors ${currentView === 'shop' && currentCategory === 'all' ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('shop')}</button>
-                 </div>
-                 <div className="relative group cursor-pointer">
-                   <button onClick={() => navigateTo('shop', 'shirt_all')} className={`px-6 py-4 border-b-2 transition-colors uppercase ${currentCategory.includes('shirt') ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('nav_shirt')}</button>
-                   <div className="absolute top-full left-1/2 -translate-x-1/2 w-48 pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform origin-top translate-y-2 group-hover:translate-y-0 z-50">
-                     <div className="bg-white rounded-xl shadow-xl border border-slate-100 p-2">
-                       <button onClick={() => navigateTo('shop', 'shirt_all')} className="w-full text-center px-4 py-2.5 rounded-lg text-[13px] font-bold text-sky-600 bg-sky-50 mb-1 hover:bg-sky-100 transition-colors uppercase">{t('shirt_all')}</button>
-                       <button onClick={() => navigateTo('shop', 'shirt_1')} className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors uppercase">{t('shirt_1')}</button>
-                       <button onClick={() => navigateTo('shop', 'shirt_2')} className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors uppercase">{t('shirt_2')}</button>
-                       <button onClick={() => navigateTo('shop', 'shirt_3')} className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors uppercase">{t('shirt_3')}</button>
+              {/* MENU ÁO QUẦN - ẨN ĐI KHI Ở TRANG CHỦ */}
+              <div className={`overflow-hidden transition-all duration-500 ${currentView === 'home' ? 'max-h-0 opacity-0' : 'max-h-[50px] opacity-100'}`}>
+                  <nav className="flex overflow-x-auto custom-scrollbar lg:justify-center gap-6 md:gap-2 text-[11px] md:text-[13px] font-bold text-slate-500 uppercase tracking-widest border-t border-slate-100 relative z-30 pb-2 md:pb-0 pt-2 md:pt-0 whitespace-nowrap">
+                     <div className="relative group cursor-pointer flex-shrink-0">
+                       <button onClick={() => navigateTo('shop', 'all')} className={`md:px-6 md:py-4 border-b-2 transition-colors ${currentView === 'shop' && currentCategory === 'all' ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('shop')}</button>
                      </div>
-                   </div>
-                 </div>
-                 <div className="relative group cursor-pointer">
-                   <button onClick={() => navigateTo('shop', 'pants_all')} className={`px-6 py-4 border-b-2 transition-colors uppercase ${currentCategory.includes('pants') ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('nav_pants')}</button>
-                   <div className="absolute top-full left-1/2 -translate-x-1/2 w-48 pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform origin-top translate-y-2 group-hover:translate-y-0 z-50">
-                     <div className="bg-white rounded-xl shadow-xl border border-slate-100 p-2">
-                       <button onClick={() => navigateTo('shop', 'pants_all')} className="w-full text-center px-4 py-2.5 rounded-lg text-[13px] font-bold text-sky-600 bg-sky-50 mb-1 hover:bg-sky-100 transition-colors uppercase">{t('pants_all')}</button>
-                       <button onClick={() => navigateTo('shop', 'pants_1')} className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors uppercase">{t('pants_1')}</button>
-                       <button onClick={() => navigateTo('shop', 'pants_2')} className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors uppercase">{t('pants_2')}</button>
-                       <button onClick={() => navigateTo('shop', 'pants_3')} className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors uppercase">{t('pants_3')}</button>
+                     <div className="relative group cursor-pointer flex-shrink-0">
+                       <button onClick={() => navigateTo('shop', 'shirt_all')} className={`md:px-6 md:py-4 border-b-2 transition-colors uppercase ${currentCategory.includes('shirt') ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('nav_shirt')}</button>
                      </div>
-                   </div>
-                 </div>
-                 <div className="relative group cursor-pointer">
-                   <button onClick={() => navigateTo('shop', 'acc_all')} className={`px-6 py-4 border-b-2 transition-colors uppercase ${currentCategory.includes('acc') ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('nav_acc')}</button>
-                   <div className="absolute top-full left-1/2 -translate-x-1/2 w-48 pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform origin-top translate-y-2 group-hover:translate-y-0 z-50">
-                     <div className="bg-white rounded-xl shadow-xl border border-slate-100 p-2">
-                       <button onClick={() => navigateTo('shop', 'acc_all')} className="w-full text-center px-4 py-2.5 rounded-lg text-[13px] font-bold text-sky-600 bg-sky-50 mb-1 hover:bg-sky-100 transition-colors uppercase">{t('acc_all')}</button>
-                       <button onClick={() => navigateTo('shop', 'acc_1')} className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors uppercase">{t('acc_1')}</button>
-                       <button onClick={() => navigateTo('shop', 'acc_2')} className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors uppercase">{t('acc_2')}</button>
-                       <button onClick={() => navigateTo('shop', 'acc_3')} className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors uppercase">{t('acc_3')}</button>
+                     <div className="relative group cursor-pointer flex-shrink-0">
+                       <button onClick={() => navigateTo('shop', 'pants_all')} className={`md:px-6 md:py-4 border-b-2 transition-colors uppercase ${currentCategory.includes('pants') ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('nav_pants')}</button>
                      </div>
-                   </div>
-                 </div>
-              </nav>
+                     <div className="relative group cursor-pointer flex-shrink-0">
+                       <button onClick={() => navigateTo('shop', 'acc_all')} className={`md:px-6 md:py-4 border-b-2 transition-colors uppercase ${currentCategory.includes('acc') ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('nav_acc')}</button>
+                     </div>
+                  </nav>
+              </div>
            </div>
         </header>
 
-        <main className="flex-grow flex flex-col pt-[90px] md:pt-[110px]">
+        <main className={`flex-grow flex flex-col transition-all duration-500 ${currentView === 'home' ? 'pt-[50px] md:pt-[60px]' : 'pt-[110px] md:pt-[130px]'}`}>
           {currentView === 'home' && (
             <div className="w-full flex flex-col animate-fade-in">
-               <div className="w-full h-[70vh] md:h-[80vh] flex flex-col md:flex-row">
-                  {lookbook.map((block, index) => (
-                    <div key={block.id} className="flex-1 relative group cursor-pointer overflow-hidden border-r border-slate-200/20" onClick={(e) => navigateTo('shop', block.targetCategory || 'all')}>
-                      <img src={block.img} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" alt={block.title} />
-                      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/50 transition-colors duration-500"></div>
-                      <div className="absolute bottom-10 left-0 w-full text-center md:text-left md:left-8 z-10 pointer-events-none">
-                        <h3 className="text-white text-2xl md:text-3xl font-black uppercase tracking-widest transform translate-y-4 md:translate-y-8 opacity-100 md:opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 drop-shadow-lg">
+                
+                {/* 1. HOME HERO SECTION (ẢNH NỀN FULL - CHỈNH LẠI GRADIENT TỐI ĐỂ TƯƠNG THÍCH) */}
+                  <div className="w-full min-h-[calc(100vh-50px)] md:minh-h-screen relative flex flex-col justify-center px-6 md:px-16 lg:px-24 overflow-hidden group border-b border-slate-200/10">
+                      
+                      {/* Ảnh nền Full-width - SỬ DỤNG BANNER MODEL 1 CHO LIGHT, BANNER MODEL 2 CHO DARK */}
+                      <img id="detail-main-image" src={isDarkMode ? '/banner_model_dark.jpg' : '/banner_model_light.jpg'} className="absolute inset-0 w-full h-full object-cover object-right-top md:object-right transition-transform duration-[2s] group-hover:scale-105 z-0" alt="Trimi Hero" />
+                      
+                      {/* LỚP PHỦ GRADIENT TỐI ĐỂ TƯƠNG THÍCH TRONG CẢ 2 CHẾ ĐỘ - Giảm độ chói */}
+                      <div className="absolute inset-0 z-0 bg-black/50 md:bg-gradient-to-r md:from-black/90 md:to-transparent"></div>
+
+                      {/* NỘI DUNG CHỮ (Luôn sử dụng chữ sáng màu để nổi bật trên nền tối) */}
+                      <div className="relative z-10 w-full max-w-2xl animate-fade-in-up mt-10 md:mt-0">
+                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-brush mb-6 leading-[0.9] text-white drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)]">Dám Khác Biệt.<br/>Dám Là Trimi.</h1>
+                        
+                        <p className="mb-10 font-medium text-sm md:text-base leading-relaxed text-slate-200 drop-shadow-md max-w-lg">Chúng tôi tin rằng thời trang là ngôn ngữ không lời để thể hiện cá tính thực sự của bạn. Trải nghiệm sự khác biệt ngay hôm nay.</p>
+                        
+                        {/* NÚT BẤM (Luôn sử dụng nút sáng màu) */}
+                        <button onClick={() => navigateTo('shop', 'all')} className="bg-white text-slate-900 px-10 py-4 rounded-full font-black uppercase tracking-widest hover:bg-sky-500 hover:text-white transition-all hover:scale-105 shadow-xl flex items-center justify-center gap-3 w-fit text-sm cursor-pointer shadow-xl shadow-sky-500/20">
+                            Khám phá ngay <FiArrowUp className="rotate-45 text-lg"/>
+                        </button>
+                      </div>
+                  </div>
+
+                {/* 2. LOOKBOOK GRID (5 MỤC - LƯỚT XUỐNG MỚI THẤY) */}
+                <div className="w-full h-auto md:h-[70vh] grid grid-cols-2 md:grid-cols-5 relative transition-all duration-300">
+                  {lookbook.map((block) => (
+                    <div key={block.id} className="w-full h-[30vh] md:h-full relative group cursor-pointer overflow-hidden" onClick={() => navigateTo('shop', block.targetCategory || 'all')}>
+                      <img src={block.img} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[1.5s] ease-out" alt={block.title} />
+                      <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-colors duration-500"></div>
+                      <div className="absolute inset-0 flex items-center justify-center md:items-end md:justify-start md:bottom-10 md:left-6 lg:left-8 z-10 pointer-events-none p-4">
+                        <h3 className="text-white text-center md:text-left text-base md:text-xl lg:text-2xl font-black uppercase tracking-widest transform md:translate-y-6 opacity-100 md:opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 drop-shadow-md">
                           {block.title.split(' ').map((word, i) => <span key={i} className="block">{word}</span>)}
                         </h3>
                       </div>
                     </div>
                   ))}
-               </div>
-               <div className="w-full bg-white py-20 px-6 text-center border-b border-slate-100 transition-colors duration-300">
-                 <h2 className="text-4xl md:text-6xl font-black text-slate-900 mb-6 uppercase tracking-tighter">{t('sloganTitle')}</h2>
-                 <p className="text-slate-500 max-w-2xl mx-auto mb-10 font-medium">{t('sloganDesc')}</p>
-                 <button onClick={() => navigateTo('shop', 'all')} className="bg-slate-900 text-white px-10 py-4 rounded-full font-bold uppercase tracking-widest hover:bg-black transition-transform hover:scale-105 shadow-xl shadow-slate-900/20">
-                   {t('explore')}
-                 </button>
-               </div>
+                </div>
             </div>
           )}
           
           {currentView === 'shop' && (
             <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 py-8 md:py-10 animate-fade-in">
               {currentCategory === 'all' && (
-                <div className={`rounded-[32px] p-6 md:p-12 mb-6 md:mb-10 border flex flex-col md:flex-row items-center justify-between shadow-2xl overflow-hidden relative min-h-[320px] cursor-pointer group transition-colors duration-500 ${!isDarkMode ? 'bg-slate-200' : 'bg-white'} border-slate-200`} onClick={() => navigateTo('shop', 'all')}>
-                  <div className="max-w-[60%] md:max-w-xl relative z-10 pointer-events-none whitespace-pre-line group-hover:-translate-y-1 transition-transform">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 inline-block shadow-lg bg-sky-100 text-sky-600`}>{t('newCol')}</span>
-                    <h2 className={`text-3xl md:text-5xl font-black mb-4 leading-tight drop-shadow-md text-slate-900`}>{t('heroTitle')}</h2>
-                    <p className={`mb-6 font-medium text-slate-600`}>{t('heroDesc')}</p>
+                <div className={`rounded-[24px] md:rounded-[32px] px-6 pt-6 pb-0 md:px-10 md:pt-8 md:pb-0 mb-6 md:mb-10 border flex flex-col md:flex-row items-center justify-between shadow-lg overflow-hidden relative min-h-[160px] md:min-h-[240px] cursor-pointer group transition-colors duration-500 ${!isDarkMode ? 'bg-slate-100' : 'bg-slate-800'} border-slate-200`} onClick={() => navigateTo('shop', 'all')}>
+                  <div className="w-full md:w-1/2 relative z-10 pointer-events-none whitespace-pre-line group-hover:-translate-y-1 transition-transform text-center md:text-left pb-6 md:pb-8">
+                    <span className={`px-3 py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider mb-3 inline-block shadow-sm bg-sky-100 text-sky-600`}>{t('newCol')}</span>
+                    <h2 className={`text-2xl md:text-4xl font-black mb-2 md:mb-4 leading-tight drop-shadow-sm ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{t('heroTitle')}</h2>
+                    <p className={`hidden md:block mb-0 font-medium text-sm ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>{t('heroDesc')}</p>
                   </div>
-                  <div className="absolute inset-y-0 right-0 w-full md:w-1/2 flex items-end justify-end md:pr-16 pointer-events-none overflow-hidden z-0">
-                    <img src={isDarkMode ? "/banner1.png" : "/banner2.png"} alt="Banner" draggable={false} className="h-[95%] md:h-[100%] max-h-[280px] md:max-h-full w-auto object-contain object-bottom drop-shadow-[0_20px_30px_rgba(0,0,0,0.3)] opacity-90 md:opacity-100 group-hover:scale-105 transition-transform duration-700 ease-out origin-bottom" />
+                  {/* CĂN ẢNH CHẠM ĐÁY */}
+                  <div className="relative md:absolute md:inset-y-0 md:right-0 w-full md:w-1/2 h-32 md:h-full flex items-end justify-end pointer-events-none overflow-hidden z-0">
+                    <img src={isDarkMode ? "/banner1.png" : "/banner2.png"} alt="Banner" draggable={false} className="h-full w-auto object-contain object-bottom md:object-right-bottom drop-shadow-md opacity-95 group-hover:scale-105 transition-transform duration-700 ease-out origin-bottom" />
                   </div>
                 </div>
               )}
@@ -1127,22 +1157,19 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
           )}
 
           {currentView === 'productDetail' && selectedProduct && (
-            <div className="max-w-[1200px] mx-auto w-full px-4 md:px-8 py-6 md:py-8 animate-fade-in">
-              <div className="text-xs font-bold text-slate-400 mb-6 tracking-wider uppercase flex items-center gap-2">
-                <button onClick={() => { setActiveImageIdx(0); navigateTo('shop', currentCategory); }} className="hover:text-slate-800 transition-colors flex items-center gap-1 cursor-pointer"><FiCornerUpLeft/> {t('shop')}</button>
-                <span>/</span><span>{currentCategory.includes('_all') ? t(currentCategory) : (currentCategory === 'all' ? t('all_products') : t(selectedProduct.category))}</span><span>/</span><span className="text-slate-800 truncate">{t_prod(selectedProduct.id, 'name', selectedProduct.name)}</span>
-              </div>
-              <div className="bg-white rounded-[40px] border border-slate-100 p-6 md:p-8 flex flex-col md:flex-row gap-8 lg:gap-12 shadow-sm">
+            <div className="max-w-[1200px] mx-auto w-full px-4 md:px-8 py-2 md:py-4 animate-fade-in flex items-center justify-center min-h-[calc(100vh-120px)]">
+              
+              <div className="bg-white rounded-3xl md:rounded-[40px] border border-slate-100 p-4 md:p-6 lg:p-8 flex flex-col md:flex-row gap-6 lg:gap-10 shadow-sm w-full">
                 
-                {/* ẢNH SẢN PHẨM & GALLERY */}
-                <div className="w-full md:w-[45%] lg:w-[40%] flex flex-col gap-4 flex-shrink-0">
-                  <div className="w-full h-[400px] lg:h-[500px] bg-slate-50 border border-slate-100 rounded-[32px] flex items-center justify-center relative group overflow-hidden">
-                     <img src={(selectedProduct.images && selectedProduct.images.length > 0) ? selectedProduct.images[activeImgIdx] : selectedProduct.imageUrl} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" alt={selectedProduct.name}/>
+                {/* ẢNH SẢN PHẨM (Đã gắn ID để bay vào giỏ và ép chiều cao lọt màn hình) */}
+                <div className="w-full md:w-[45%] lg:w-[40%] flex flex-col gap-3 flex-shrink-0">
+                  <div className="w-full h-[300px] md:h-[350px] lg:h-[450px] bg-slate-50 border border-slate-100 rounded-2xl md:rounded-[32px] flex items-center justify-center relative group overflow-hidden">
+                     <img id="detail-main-image" src={(selectedProduct.images && selectedProduct.images.length > 0) ? selectedProduct.images[activeImgIdx] : selectedProduct.imageUrl} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" alt={selectedProduct.name}/>
                   </div>
                   {(selectedProduct.images && selectedProduct.images.length > 1) && (
-                    <div className="flex gap-2 overflow-x-auto custom-scrollbar py-2">
+                    <div className="flex gap-2 overflow-x-auto custom-scrollbar py-1">
                       {selectedProduct.images.map((img, idx) => (
-                        <div key={idx} onClick={() => setActiveImageIdx(idx)} className={`w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 cursor-pointer border-2 transition-all ${activeImgIdx === idx ? 'border-sky-500 shadow-md' : 'border-transparent hover:border-slate-300'}`}>
+                        <div key={idx} onClick={() => setActiveImageIdx(idx)} className={`w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 cursor-pointer border-2 transition-all ${activeImgIdx === idx ? 'border-sky-500 shadow-md' : 'border-transparent hover:border-slate-300'}`}>
                           <img src={img} className="w-full h-full object-cover" />
                         </div>
                       ))}
@@ -1150,36 +1177,37 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                   )}
                 </div>
 
-                <div className="w-full md:w-[55%] lg:w-[60%] flex flex-col justify-start relative">
+                {/* THÔNG TIN SẢN PHẨM */}
+                <div className="w-full md:w-[55%] lg:w-[60%] flex flex-col justify-center relative">
                   {isAdmin && (
-                    <button onClick={() => { setEditFormData({ ...selectedProduct, images: selectedProduct.images || [selectedProduct.imageUrl] }); setShowEditModal(true); }} className="absolute top-0 right-0 bg-white border border-slate-200 text-slate-800 p-3 rounded-full hover:text-sky-600 hover:border-sky-300 shadow-sm transition-all cursor-pointer z-10" title="Chỉnh sửa sản phẩm">
-                      <FiEdit3 className="text-xl" />
+                    <button onClick={() => { setEditFormData({ ...selectedProduct, images: selectedProduct.images || [selectedProduct.imageUrl] }); setShowEditModal(true); }} className="absolute top-0 right-0 bg-white border border-slate-200 text-slate-800 p-2.5 rounded-full hover:text-sky-600 hover:border-sky-300 shadow-sm transition-all cursor-pointer z-10" title="Chỉnh sửa sản phẩm">
+                      <FiEdit3 className="text-lg" />
                     </button>
                   )}
-                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-slate-900 mb-3 leading-tight pr-12">{t_prod(selectedProduct.id, 'name', selectedProduct.name)}</h1>
-                  <div className="flex items-center text-sm gap-4 mb-6">
-                    <span className="text-amber-400 font-bold flex items-center gap-1 text-base"><FiStar className="fill-current"/> {selectedProduct.rating}</span>
+                  <h1 className="text-2xl md:text-3xl font-black text-slate-900 mb-2 leading-tight pr-10">{t_prod(selectedProduct.id, 'name', selectedProduct.name)}</h1>
+                  <div className="flex items-center text-xs gap-3 mb-4">
+                    <span className="text-amber-400 font-bold flex items-center gap-1 text-sm"><FiStar className="fill-current"/> {selectedProduct.rating}</span>
                     <span className="text-slate-300">|</span>
                     <span className="text-slate-500 font-medium underline underline-offset-4">{selectedProduct.reviews} Đánh giá</span>
                   </div>
-                  <div className="text-3xl lg:text-4xl font-black text-sky-600 mb-8">{(Number(selectedProduct.price) || 0).toLocaleString('vi-VN')}đ</div>
+                  <div className="text-3xl font-black text-sky-600 mb-6">{(Number(selectedProduct.price) || 0).toLocaleString('vi-VN')}đ</div>
 
-                  <div className="flex gap-3 md:gap-4 mb-10 w-full">
-                    <button onClick={(e) => handleAddToCart(selectedProduct, e)} className="flex-1 md:flex-none md:px-8 bg-sky-50 text-sky-600 border border-sky-200 py-4 rounded-[20px] font-black text-sm tracking-widest uppercase hover:bg-sky-100 transition-transform active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm whitespace-nowrap cursor-pointer">
-                      <FiShoppingCart className="text-xl"/> Thêm giỏ
+                  <div className="flex gap-3 mb-6 w-full">
+                    <button onClick={(e) => handleAddToCart(selectedProduct, e)} className="flex-1 md:flex-none md:px-6 bg-sky-50 text-sky-600 border border-sky-200 py-3 rounded-2xl font-black text-xs tracking-widest uppercase hover:bg-sky-100 transition-transform active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm cursor-pointer">
+                      <FiShoppingCart className="text-lg"/> Thêm
                     </button>
-                    <button onClick={(e) => { handleAddToCart(selectedProduct, e); setIsCartOpen(true); }} className="flex-[2] bg-slate-900 text-white py-4 rounded-[20px] font-black text-sm tracking-widest uppercase hover:bg-black transition-transform active:scale-[0.98] flex items-center justify-center gap-2 shadow-xl shadow-slate-900/20 cursor-pointer">
-                      <FiCheckCircle className="text-xl"/> Mua Ngay
+                    <button onClick={(e) => { handleAddToCart(selectedProduct, e); setIsCartOpen(true); }} className="flex-[2] bg-slate-900 text-white py-3 rounded-2xl font-black text-xs tracking-widest uppercase hover:bg-black transition-transform active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg shadow-slate-900/20 cursor-pointer">
+                      <FiCheckCircle className="text-lg"/> Mua Ngay
                     </button>
                   </div>
 
-                  <div className="space-y-3 text-sm font-medium text-slate-700 mb-8 bg-slate-50 p-5 rounded-3xl border border-slate-100">
-                    <div className="flex items-center gap-3"><FiTruck className="text-xl text-sky-500"/> {t('ship')}</div>
-                    <div className="flex items-center gap-3"><FiShield className="text-xl text-emerald-500"/> {t('return')}</div>
+                  <div className="space-y-2 text-xs font-medium text-slate-700 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <div className="flex items-center gap-2"><FiTruck className="text-lg text-sky-500"/> {t('ship')}</div>
+                    <div className="flex items-center gap-2"><FiShield className="text-lg text-emerald-500"/> {t('return')}</div>
                   </div>
-                  <div className="mb-4">
-                    <p className="text-sm font-bold text-slate-900 mb-2 uppercase tracking-wider">{t('desc')}</p>
-                    <p className="text-sm text-slate-600 leading-relaxed font-medium whitespace-pre-line">{t_prod(selectedProduct.id, 'desc', selectedProduct.description)}</p>
+                  <div>
+                    <p className="text-xs font-bold text-slate-900 mb-1.5 uppercase tracking-wider">{t('desc')}</p>
+                    <p className="text-xs text-slate-600 leading-relaxed font-medium whitespace-pre-line line-clamp-3 hover:line-clamp-none transition-all">{t_prod(selectedProduct.id, 'desc', selectedProduct.description)}</p>
                   </div>
                 </div>
               </div>
@@ -1228,7 +1256,17 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                       <h2 className="text-3xl md:text-4xl font-black text-slate-900 flex items-center gap-3">
                         {nickname}
                         <button onClick={() => {setTempName(nickname); setIsEditingName(true)}} className="text-sm text-slate-400 hover:text-sky-500 transition-colors p-1.5 bg-slate-50 rounded-full border border-slate-100" title="Đổi biệt danh"><FiEdit3/></button>
-                        <button onClick={() => {setTempProfile({nickname, phone, address, district}); setShowSettingsModal(true);}} className="text-sm text-slate-400 hover:text-sky-500 transition-colors p-1.5 bg-slate-50 rounded-full border border-slate-100 ml-1" title="Cài đặt bảo mật & Địa chỉ"><FiSettings/></button>
+                        <button onClick={() => {
+                           setTempSettings({
+                              nickname: nickname,
+                              phone: phone,
+                              address: address,
+                              district: district,
+                              theme: isDarkMode ? 'dark' : 'light',
+                              lang: lang
+                           });
+                           setIsSettingsDrawerOpen(true);
+                        }} className="text-sm text-slate-400 hover:text-sky-500 transition-colors p-1.5 bg-slate-50 rounded-full border border-slate-100 ml-1" title="Cài đặt Profile, Giao diện & Ngôn ngữ"><FiSettings/></button>
                       </h2>
                     ) : (
                       <div className="flex items-center gap-3 mb-2">
@@ -1300,20 +1338,27 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                   <button onClick={() => navigateTo('profile')} className="hover:text-slate-800 transition-colors flex items-center gap-1 cursor-pointer"><FiCornerUpLeft/> {t('account')}</button>
                   <span>/</span><span className="text-slate-800 truncate">{t('adminDashboard')}</span>
                 </div>
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                   <h2 className="text-3xl md:text-4xl font-black text-slate-900 flex items-center gap-3"><FiArchive className="text-sky-500"/> {t('adminDashboard')}</h2>
-                   <div className="bg-slate-100 p-1.5 rounded-full flex gap-1">
-                      <button onClick={() => setAdminTab('products')} className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all cursor-pointer ${adminTab === 'products' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>Kho Hàng</button>
-                      <button onClick={() => setAdminTab('orders')} className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${adminTab === 'orders' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>
-                         Đơn Đặt Hàng 
-                         {adminOrders.length > 0 && <span className="bg-red-500 text-white w-5 h-5 flex items-center justify-center rounded-full text-[10px]">{adminOrders.length}</span>}
-                      </button>
+                <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-4">
+                   <h2 className="text-3xl md:text-4xl font-black text-slate-900 flex items-center gap-3 justify-start"><FiArchive className="text-sky-500"/> {t('adminDashboard')}</h2>
+                   
+                   <div className="flex justify-center">
+                     <div className="bg-slate-100 p-1.5 rounded-full flex gap-1 w-fit">
+                        <button onClick={() => setAdminTab('products')} className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all cursor-pointer ${adminTab === 'products' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>Kho Hàng</button>
+                        <button onClick={() => setAdminTab('orders')} className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${adminTab === 'orders' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>
+                           Đơn Đặt Hàng 
+                           {adminOrders.length > 0 && <span className="bg-red-500 text-white w-5 h-5 flex items-center justify-center rounded-full text-[10px]">{adminOrders.length}</span>}
+                        </button>
+                        <button onClick={() => setAdminTab('feedback')} className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all cursor-pointer ${adminTab === 'feedback' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>Phản Hồi & Hủy</button>
+                     </div>
                    </div>
-                   {adminTab === 'products' && (
-                     <button onClick={() => setShowAddModal(true)} className="bg-sky-500 text-white px-6 py-3.5 rounded-full font-bold shadow-lg flex items-center justify-center gap-2 cursor-pointer hover:bg-sky-600 transition-colors">
-                       <FiPlus className="text-xl"/> Thêm Sản Phẩm
-                     </button>
-                   )}
+
+                   <div className="flex justify-end">
+                     {adminTab === 'products' && (
+                       <button onClick={() => setShowAddModal(true)} className="bg-sky-500 text-white px-6 py-3.5 rounded-full font-bold shadow-lg flex items-center justify-center gap-2 cursor-pointer hover:bg-sky-600 transition-colors">
+                         <FiPlus className="text-xl"/> Thêm Sản Phẩm
+                       </button>
+                     )}
+                   </div>
                 </div>
               </div>
               
@@ -1330,66 +1375,18 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                         </tr>
                       </thead>
                       <tbody>
-                        {adminOrders.length === 0 ? (
-                           <tr><td colSpan="6" className="p-10 text-center text-slate-400 font-medium">Chưa có đơn hàng nào.</td></tr>
-                        ) : (
-                          adminOrders.map((order) => {
-                            const customerUser = usersList.find(u => u.uid === order.uid);
-                            return (
-                            <tr key={order.id} className={`border-b transition-colors ${isDarkMode ? 'border-slate-700/50 hover:bg-white/5' : 'border-slate-100 hover:bg-slate-50'}`}>
-                              <td className="p-5 pl-8">
-                                <span className={`font-black block ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{order.orderId}</span>
-                                <span className={`text-xs font-medium mt-1 block ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{new Date(order.createdAt).toLocaleString('vi-VN')}</span>
-                              </td>
-                              <td className="p-5 text-sm">
-                                <span className={`font-bold block ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{order.customerName}</span>
-                                <span className={`block ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{order.customerPhone}</span>
-                                <span className={`text-xs mt-1 block max-w-[200px] line-clamp-2 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{order.customerAddress}</span>
-                                {customerUser && (
-                                  <button onClick={() => openAdminChatWithUser(customerUser)} className="mt-3 text-xs font-bold bg-sky-500/10 text-sky-500 hover:bg-sky-500 hover:text-white px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5 w-fit cursor-pointer border border-sky-500/20">
-                                    <FiMessageCircle/> Nhắn tin
-                                  </button>
-                                )}
-                              </td>
-                              <td className="p-5 text-sm">
-                                <div className="space-y-1 max-w-[250px]">
-                                  {order.items.map((it, idx) => (
-                                    <div key={idx} className={`font-medium truncate ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>- {it.name} <b className="text-sky-500">x{it.quantity}</b></div>
-                                  ))}
-                                </div>
-                              </td>
-                              <td className="p-5">
-                                <span className="font-black text-sky-500 block text-base">{order.paidAmount.toLocaleString('vi-VN')}đ</span>
-                                <span className={`text-xs font-bold px-2 py-0.5 rounded inline-block mt-1 ${isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-600'}`}>{order.paymentMode === 'full' ? 'Đã CK 100%' : 'Đã Cọc 30%'}</span>
-                              </td>
-                              <td className="p-5 text-center">
-                                {order.receiptImage ? (
-                                  <div onClick={() => setPreviewImg(order.receiptImage)} className="inline-block relative group">
-                                    <img src={order.receiptImage} className={`w-16 h-16 object-cover rounded-xl border shadow-sm transition-transform cursor-pointer group-hover:scale-105 ${isDarkMode ? 'border-slate-600' : 'border-slate-200'}`} alt="Bill"/>
-                                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"><FiSearch className="text-white text-xl"/></div>
-                                  </div>
-                                ) : <span className={`text-xs ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Không có</span>}
-                              </td>
-                              <td className="p-5 text-right pr-8">
-                                 <select 
-                                    value={order.status}
-                                    onChange={async (e) => {
-                                      await setDoc(doc(db, 'orders', order.id), { status: e.target.value }, { merge: true });
-                                      showToast('Đã cập nhật trạng thái đơn!');
-                                    }}
-                                    className={`border text-sm font-bold rounded-xl px-4 py-2 outline-none cursor-pointer transition-colors focus:border-sky-500 ${isDarkMode ? 'bg-[#111111] border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
-                                 >
-                                    <option value="Chờ xác nhận thanh toán">Chờ duyệt Bill</option>
-                                    <option value="Đang chuẩn bị hàng">Đang chuẩn bị hàng</option>
-                                    <option value="Đang giao hàng">Đang giao hàng</option>
-                                    <option value="Hoàn thành">Hoàn thành</option>
-                                    <option value="Đã hủy">Đã hủy</option>
-                                 </select>
-                              </td>
-                            </tr>
-                            );
-                          })
-                        )}
+                        {localProducts.map((item) => (
+                          <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                            <td className="p-5 pl-8">
+                              <div className="w-16 h-16 bg-white border border-slate-200 rounded-2xl p-1 shadow-sm"><img src={item.imageUrl} className="w-full h-full object-cover rounded-xl" alt=""/></div>
+                            </td>
+                            <td className="p-5 font-bold text-base text-slate-800 max-w-[250px] truncate">{item.name}</td>
+                            <td className="p-5 font-black text-slate-900 text-lg">{(Number(item.price) || 0).toLocaleString('vi-VN')}đ</td>
+                            <td className="p-5 text-right pr-8">
+                              <button onClick={() => handleDeleteProduct(item.id)} className="text-red-500 bg-red-50 hover:bg-red-500 hover:text-white px-5 py-2.5 rounded-full transition-colors font-bold text-xs flex items-center justify-center gap-2 ml-auto cursor-pointer"><FiTrash2 className="text-sm"/> {t('adminDel')}</button>
+                            </td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   )}
@@ -1464,7 +1461,14 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                                  </select>
                                  <div className="flex flex-wrap justify-end gap-1.5 mt-2">
                                    <button onClick={async () => { await setDoc(doc(db, 'orders', order.id), { status: 'Hoàn thành' }, { merge: true }); showToast('Đã đánh dấu Hoàn Thành'); }} className="bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-500 hover:text-white px-2 py-1 rounded-md text-[10px] font-bold transition-colors cursor-pointer">Thành công</button>
-                                   <button onClick={async () => { await setDoc(doc(db, 'orders', order.id), { status: 'Đơn không đạt yêu cầu' }, { merge: true }); showToast('Đã Từ chối'); }} className="bg-red-50 text-red-600 border border-red-200 hover:bg-red-500 hover:text-white px-2 py-1 rounded-md text-[10px] font-bold transition-colors cursor-pointer">Hủy/Lỗi</button>
+                                   <button onClick={async () => { await setDoc(doc(db, 'orders', order.id), { status: 'Đơn không đạt yêu cầu' }, { merge: true }); showToast('Đã Từ chối'); }} className="bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-500 hover:text-white px-2 py-1 rounded-md text-[10px] font-bold transition-colors cursor-pointer">Từ chối</button>
+                                   
+                                   <button onClick={async () => { 
+                                     if(window.confirm('Xóa vĩnh viễn đơn hàng này khỏi hệ thống?')) {
+                                       await deleteDoc(doc(db, 'orders', order.id));
+                                       showToast('Đã xóa đơn hàng!');
+                                     }
+                                   }} className="bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white px-2 py-1 rounded-md text-[10px] font-bold transition-colors cursor-pointer w-full mt-1 flex justify-center items-center gap-1"><FiTrash2/> Xóa Đơn</button>
                                  </div>
                               </td>
                             </tr>
@@ -1473,6 +1477,49 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                         )}
                       </tbody>
                     </table>
+                  )}
+                  {adminTab === 'feedback' && (
+                    <div className="p-6 md:p-8 flex flex-col gap-8 text-slate-800">
+                      {/* DANH SÁCH LÝ DO HỦY ĐƠN */}
+                      <div>
+                        <h3 className="text-xl font-black mb-4 flex items-center gap-2"><FiArchive className="text-red-500"/> Các đơn bị khách hủy</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {adminOrders.filter(o => o.cancelReason).length === 0 ? <p className="text-slate-500 text-sm">Chưa có đơn hàng nào bị hủy.</p> : 
+                            adminOrders.filter(o => o.cancelReason).map(o => (
+                              <div key={o.id} className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                                <div className="flex justify-between items-start mb-2">
+                                  <span className="font-bold text-slate-900">{o.orderId}</span>
+                                  <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-md font-bold">{o.cancelReason}</span>
+                                </div>
+                                <p className="text-sm font-medium">Khách: {o.customerName} - {o.customerPhone}</p>
+                                <div className="mt-3 text-sm text-slate-600 bg-white p-3 rounded-xl border border-slate-100 italic">
+                                  "{o.cancelComment || 'Không để lại lời nhắn.'}"
+                                </div>
+                              </div>
+                            ))
+                          }
+                        </div>
+                      </div>
+                      
+                      <hr className="border-slate-200"/>
+
+                      {/* DANH SÁCH KHẢO SÁT USER */}
+                      <div>
+                        <h3 className="text-xl font-black mb-4 flex items-center gap-2"><FiUsers className="text-sky-500"/> Dữ liệu Khảo sát Khách hàng</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          {usersList.filter(u => u.isSurveyCompleted).length === 0 ? <p className="text-slate-500 text-sm">Chưa có ai làm khảo sát.</p> : 
+                            usersList.filter(u => u.isSurveyCompleted).map(u => (
+                              <div key={u.uid} className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col gap-2">
+                                <p className="font-bold text-base flex items-center gap-2">{u.avatar ? <img src={u.avatar} className="w-6 h-6 rounded-full"/> : <FiUser/>} {u.nickname || u.email?.split('@')[0]}</p>
+                                <p className="text-sm"><span className="text-slate-500 text-xs uppercase block">Nghề nghiệp</span> <span className="font-medium">{u.role}</span></p>
+                                <p className="text-sm"><span className="text-slate-500 text-xs uppercase block">Nguồn biết đến</span> <span className="font-medium bg-sky-100 text-sky-700 px-2 py-0.5 rounded text-xs">{u.discoverySource}</span></p>
+                                <p className="text-sm"><span className="text-slate-500 text-xs uppercase block">Sở thích Mua sắm</span> <span className="font-medium bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs">{u.interests}</span></p>
+                              </div>
+                            ))
+                          }
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
@@ -1667,43 +1714,104 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
           </div>
         )}
 
-        {/* MODAL CÀI ĐẶT BẢO MẬT & ĐỊA CHỈ */}
-        {showSettingsModal && (
-          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
-             <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" onClick={() => setShowSettingsModal(false)}></div>
-             <div className="bg-white rounded-[32px] p-6 md:p-10 w-full max-w-xl relative z-10 shadow-2xl animate-fade-in-up">
-                <button onClick={() => setShowSettingsModal(false)} className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 bg-slate-100 p-2 rounded-full transition-colors"><FiX className="text-xl"/></button>
-                <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-2"><FiSettings className="text-sky-500"/> Cài đặt bảo mật</h3>
-                
-                <div className="space-y-5">
-                   <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Tên hiển thị</label>
-                      <input type="text" value={tempProfile.nickname || ''} onChange={e => setTempProfile({...tempProfile, nickname: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-sky-500 text-sm font-bold"/>
-                   </div>
-                   
-                   <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Số điện thoại</label>
-                      <input type="tel" value={tempProfile.phone || ''} onChange={e => setTempProfile({...tempProfile, phone: e.target.value})} placeholder="09xxxx..." className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-sky-500 text-sm font-medium"/>
-                   </div>
+        {/* UNIFIED SETTINGS DRAWER (CÀI ĐẶT HỢP NHẤT) */}
+        {isSettingsDrawerOpen && isAuthenticated && user && (
+           <div className="fixed inset-0 z-[100000] flex justify-end animate-fade-in">
+              {/* Lớp nền mờ */}
+              <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsSettingsDrawerOpen(false)}></div>
+              
+              {/* Khung Drawer - Chứa Profile, Giao diện, Ngôn ngữ */}
+              <div className={`relative w-full max-w-[400px] h-full flex flex-col shadow-2xl animate-fade-in-right backdrop-blur-xl border-l overflow-y-auto custom-scrollbar ${isDarkMode ? 'bg-[#181512]/90 border-white/10 text-white' : 'bg-[#f7f3ed]/95 border-black/10 text-slate-900'}`}>
+                 
+                 {/* Header Drawer */}
+                 <div className={`flex justify-between items-center p-5 border-b ${isDarkMode ? 'border-white/10 bg-white/5' : 'border-black/5 bg-white'}`}>
+                    <h2 className="text-xl font-black flex items-center gap-2"><FiSettings className="text-sky-500"/> Cài đặt hợp nhất</h2>
+                    <button onClick={() => setIsSettingsDrawerOpen(false)} className={`p-2 rounded-full transition-colors cursor-pointer ${isDarkMode ? 'bg-white/10 hover:bg-white/20 text-slate-300' : 'bg-black/5 hover:bg-black/10 text-slate-500'}`}><FiX className="text-xl"/></button>
+                 </div>
 
-                   <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Khu vực (Đà Nẵng)</label>
-                      <select value={tempProfile.district || 'Hải Châu'} onChange={e => setTempProfile({...tempProfile, district: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-sky-500 text-sm font-medium">
-                         {daNangDistricts.map(d => <option key={d.name} value={d.name}>{d.name} ({d.fee === 0 ? 'Free Ship' : 'Ship 20k'})</option>)}
-                      </select>
-                   </div>
-                   <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Số nhà, Tên đường</label>
-                      <input type="text" value={tempProfile.address || ''} onChange={e => setTempProfile({...tempProfile, address: e.target.value})} placeholder="Ví dụ: 123 Đường ABC..." className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-sky-500 text-sm font-medium"/>
-                   </div>
-                </div>
+                 {/* NỘI DUNG CÀI ĐẶT */}
+                 <div className="flex-grow p-6 flex flex-col gap-8">
+                    
+                    {/* KHỐI 1: THÔNG TIN CÁ NHÂN */}
+                    <div>
+                       <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2"><FiUser/> {t('account')}</p>
+                       <div className="space-y-4">
+                          <div>
+                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Biệt danh hiển thị</label>
+                             <input type="text" value={tempSettings.nickname || ''} onChange={e => setTempSettings({...tempSettings, nickname: e.target.value})} className={`w-full border rounded-xl px-4 py-2.5 outline-none focus:border-sky-500 text-sm font-bold ${isDarkMode ? 'bg-black/30 border-white/10' : 'bg-white border-black/10 shadow-inner'}`}/>
+                          </div>
+                          <div>
+                             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">{t('f_contact')}</label>
+                             <input type="tel" value={tempSettings.phone || ''} onChange={e => setTempSettings({...tempSettings, phone: e.target.value})} placeholder="09xxxx..." className={`w-full border rounded-xl px-4 py-2.5 outline-none focus:border-sky-500 text-sm font-medium ${isDarkMode ? 'bg-black/30 border-white/10' : 'bg-white border-black/10 shadow-inner'}`}/>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                 <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Số nhà, Tên đường</label>
+                                 <input type="text" value={tempSettings.address || ''} onChange={e => setTempSettings({...tempSettings, address: e.target.value})} placeholder="123 ABC..." className={`w-full border rounded-xl px-4 py-2.5 outline-none focus:border-sky-500 text-sm font-medium ${isDarkMode ? 'bg-black/30 border-white/10' : 'bg-white border-black/10 shadow-inner'}`}/>
+                              </div>
+                              <div>
+                                 <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Khu vực (Đà Nẵng)</label>
+                                 <select value={tempSettings.district || 'Hải Châu'} onChange={e => setTempSettings({...tempSettings, district: e.target.value})} className={`w-full border rounded-xl px-3 py-2.5 outline-none focus:border-sky-500 text-xs font-medium cursor-pointer ${isDarkMode ? 'bg-black/30 border-white/10' : 'bg-white border-black/10 shadow-inner'}`}>
+                                    {daNangDistricts.map(d => <option key={d.name} value={d.name}>{d.name} ({d.fee === 0 ? 'Freeship' : 'Ship 20k'})</option>)}
+                                 </select>
+                              </div>
+                          </div>
+                       </div>
+                    </div>
 
-                <div className="mt-8 flex justify-end gap-3">
-                   <button onClick={() => setShowSettingsModal(false)} className="px-6 py-3 rounded-full font-bold text-sm text-slate-500 bg-slate-100 hover:bg-slate-200 cursor-pointer">Đóng</button>
-                   <button onClick={handleSaveSettings} className="bg-slate-900 hover:bg-black text-white px-8 py-3 rounded-full font-bold text-sm shadow-xl cursor-pointer">Lưu Thông Tin</button>
-                </div>
-             </div>
-          </div>
+                    <hr className={isDarkMode ? 'border-white/10' : 'border-black/5'}/>
+
+                    {/* KHỐI 2: GIAO DIỆN (THEME) */}
+                    <div>
+                        <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2"><FiImage/> Giao diện</p>
+                        <div className={`flex gap-2 p-1.5 rounded-2xl border ${isDarkMode ? 'bg-black/40 border-white/10' : 'bg-white/50 border-black/5 shadow-inner'}`}>
+                           {['dark', 'light'].map(mode => (
+                              <button key={mode} onClick={() => setTempSettings({...tempSettings, theme: mode})} className={`flex-1 py-3 rounded-xl border flex items-center justify-center gap-2 transition-all cursor-pointer ${tempSettings.theme === mode ? (isDarkMode ? 'bg-white text-black border-white font-bold shadow-lg' : 'bg-slate-900 text-white border-slate-900 font-bold shadow-lg') : (isDarkMode ? 'border-transparent text-slate-400 hover:border-sky-500 hover:text-sky-400' : 'border-transparent text-slate-500 hover:border-sky-500 hover:text-sky-600 hover:bg-sky-50')}`}>
+                                 {mode === 'dark' ? <FiMoon/> : <FiSun/>} {mode === 'dark' ? 'Dark Mode' : 'Light Mode'}
+                              </button>
+                           ))}
+                        </div>
+                    </div>
+
+                    <hr className={isDarkMode ? 'border-white/10' : 'border-black/5'}/>
+
+                    {/* KHỐI 3: NGÔN NGỮ (LANGUAGE) */}
+                    <div>
+                        <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2"><FiGlobe/> Ngôn ngữ</p>
+                        <div className={`flex gap-2 p-1.5 rounded-2xl border ${isDarkMode ? 'bg-black/40 border-white/10' : 'bg-white/50 border-black/5 shadow-inner'}`}>
+                           {languages.map(l => (
+                              <button key={l.code} onClick={() => setTempSettings({...tempSettings, lang: l.code})} className={`flex-1 py-3 rounded-xl border flex items-center justify-center gap-2 transition-all cursor-pointer ${tempSettings.lang === l.code ? (isDarkMode ? 'bg-white text-black border-white font-bold shadow-lg' : 'bg-slate-900 text-white border-slate-900 font-bold shadow-lg') : (isDarkMode ? 'border-transparent text-slate-400 hover:border-sky-500 hover:text-sky-400' : 'border-transparent text-slate-500 hover:border-sky-500 hover:text-sky-600 hover:bg-sky-50')}`}>
+                                 {l.label}
+                              </button>
+                           ))}
+                        </div>
+                    </div>
+
+                 </div>
+
+                 {/* FOOTER DRAWER: NÚT LƯU */}
+                 <div className={`p-5 border-t mt-auto sticky bottom-0 ${isDarkMode ? 'border-white/10 bg-[#181512]/90' : 'border-black/10 bg-[#f7f3ed]/95'}`}>
+                    <button onClick={async () => {
+                        // Logic Lưu hợp nhất
+                        if(!tempSettings.nickname?.trim()) return alert("Biệt danh không được để trống!");
+                        const hasLetters = /[a-zA-ZÀ-ỹ]/.test(tempSettings.address);
+                        if (!hasLetters && tempSettings.address) return alert("Địa chỉ không hợp lệ! Vui lòng nhập rõ Tên Đường/Phường/Xã.");
+
+                        // 1. Cập nhật state UI
+                        setNickname(tempSettings.nickname); setPhone(tempSettings.phone); setAddress(tempSettings.address); setDistrict(tempSettings.district);
+                        setIsDarkMode(tempSettings.theme === 'dark'); setLang(tempSettings.lang);
+
+                        // 2. Lưu lên Firestore
+                        try { await setDoc(doc(db, "users", user.uid), tempSettings, { merge: true }); } catch(e) {}
+                        
+                        showToast('Đã lưu tất cả cài đặt!');
+                        setIsSettingsDrawerOpen(false); // Đóng Drawer
+                    }} className="w-full bg-sky-500 hover:bg-sky-600 text-white py-4 rounded-full font-black text-sm tracking-widest uppercase shadow-xl shadow-sky-500/30 transition-all flex justify-center items-center gap-2 cursor-pointer">
+                       <FiSave className="text-xl"/> Lưu Thay Đổi
+                    </button>
+                 </div>
+              </div>
+           </div>
         )}
 
         {/* MODAL THÊM SẢN PHẨM ADMIN */}
@@ -1835,7 +1943,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                 
                 <div className="flex flex-col gap-4 mb-8">
                   <button onClick={(e) => handleGoogleLogin(e)} type="button" className="w-full bg-[#101828] text-white py-4 font-bold rounded-full flex items-center justify-center gap-3 cursor-pointer hover:bg-black transition-colors"><FcGoogle className="text-xl bg-white rounded-full p-0.5" /> Google</button>
-                  <button onClick={(e) => handleFacebookLogin(e)} type="button" className="w-full border-2 py-4 font-bold rounded-full flex items-center justify-center gap-3 cursor-pointer hover:bg-slate-50 transition-colors"><FaFacebook className="text-xl text-[#1877F2]"/> Facebook</button>
+                  <button onClick={(e) => handleFacebookLogin(e)} type="button" className="w-full bg-[#1877F2] hover:bg-[#166fe5] text-white py-4 font-bold rounded-full flex items-center justify-center gap-3 cursor-pointer transition-colors shadow-md"><FaFacebook className="text-xl"/> Facebook</button>
                 </div>
                 <div className="flex items-center mb-6"><div className="flex-grow border-t border-slate-100"></div><span className="mx-4 text-slate-400 text-xs font-bold uppercase">Hoặc</span><div className="flex-grow border-t border-slate-100"></div></div>
                 <div className="flex flex-col gap-4 mb-6">
@@ -2014,25 +2122,48 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
             <img src={previewImg} className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl" onClick={(e) => e.stopPropagation()} alt="Bill Preview" />
           </div>
         )}
-        
-        {/* BẢNG THÔNG BÁO COOKIE & CHÍNH SÁCH BẢO MẬT (CHỈ HIỆN LẦN ĐẦU) */}
-        {showCookieConsent && (
-          <div className="fixed bottom-0 left-0 w-full bg-slate-900 text-white p-4 md:px-8 z-[99999] flex flex-col md:flex-row justify-between items-center text-sm shadow-[0_-10px_40px_rgba(0,0,0,0.2)] animate-fade-in-up">
-            <p className="mb-4 md:mb-0 font-medium text-slate-300 text-center md:text-left">
-              Trimi sử dụng cookie để theo dõi trải nghiệm nhằm cung cấp các đề xuất AI chính xác nhất. Khi tiếp tục, bạn đồng ý với <span onClick={() => setShowPrivacyModal(true)} className="text-sky-400 cursor-pointer font-bold hover:underline">Chính sách bảo mật</span> của chúng tôi.
-            </p>
-            <button 
-              onClick={() => {
-                localStorage.setItem('trimi_cookies', 'true');
-                setShowCookieConsent(false);
-              }} 
-              className="bg-sky-500 hover:bg-sky-600 px-8 py-2.5 rounded-full font-bold text-white shadow-lg transition-colors whitespace-nowrap cursor-pointer"
-            >
-              Tôi đồng ý
-            </button>
-          </div>
+        {/* MODAL THÔNG BÁO ĐẶT HÀNG THÀNH CÔNG (DÁN VÀO ĐÂY) */}
+        {successOrderInfo && (
+           <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-fade-in">
+              <div className="bg-white rounded-[32px] p-8 text-center max-w-sm w-full shadow-2xl transform transition-all animate-fade-in-up">
+                 <div className="w-20 h-20 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                    <FiCheckCircle className="text-5xl" />
+                 </div>
+                 <h3 className="text-2xl font-black text-slate-900 mb-2">Tuyệt vời!</h3>
+                 <p className="text-slate-500 text-sm mb-6 leading-relaxed">
+                   Đơn hàng <strong className="text-sky-600 font-bold">{successOrderInfo}</strong> của bạn đã được ghi nhận.<br/>Chúng tôi sẽ duyệt bill và chuẩn bị hàng ngay!
+                 </p>
+                 <button onClick={() => setSuccessOrderInfo(null)} className="w-full bg-slate-900 text-white font-bold py-4 rounded-full hover:bg-sky-500 transition-colors shadow-lg cursor-pointer">Xác nhận</button>
+              </div>
+           </div>
         )}
+        {/* MENU 3 GẠCH (TRẢI NGANG, HÌNH VUÔNG KHÔNG GÂY BLUR) */}
+        {isUnifiedMenuOpen && (
+           <>
+              {/* Lớp nền tàng hình để click ra ngoài thì đóng menu */}
+              <div className="fixed inset-0 z-[99998]" onClick={() => setIsUnifiedMenuOpen(false)}></div>
+              
+              {/* 3 Icon xổ ngang (flex-row), bo góc hình vuông (rounded-2xl) */}
+              <div className={`fixed top-[70px] right-4 md:right-8 z-[99999] flex flex-row gap-2 p-2 rounded-2xl shadow-2xl animate-fade-in border ${isDarkMode ? 'bg-[#181512] border-slate-800' : 'bg-white border-slate-100'}`}>
+                 
+                 {/* 1. Icon Tài Khoản */}
+                 <button onClick={() => { setIsUnifiedMenuOpen(false); requireLogin(() => navigateTo('profile')); }} className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl transition-all ${isDarkMode ? 'text-slate-300 hover:bg-slate-800 hover:text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-sky-600'}`} title="Tài khoản">
+                    <FiUser />
+                 </button>
 
+                 {/* 2. Icon Đổi Nền (Sáng/Tối) */}
+                 <button onClick={() => {setIsDarkMode(!isDarkMode); setIsUnifiedMenuOpen(false);}} className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl transition-all ${isDarkMode ? 'text-sky-400 hover:bg-slate-800' : 'text-sky-500 hover:bg-slate-100'}`} title="Đổi giao diện">
+                    {isDarkMode ? <FiSun /> : <FiMoon />}
+                 </button>
+
+                 {/* 3. Icon Đổi Ngôn Ngữ */}
+                 <button onClick={() => {setLang(lang === 'VI' ? 'EN' : 'VI'); setIsUnifiedMenuOpen(false);}} className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-black transition-all ${isDarkMode ? 'text-slate-300 hover:bg-slate-800 hover:text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-sky-600'}`} title="Đổi ngôn ngữ">
+                    {lang}
+                 </button>
+
+              </div>
+           </>
+        )}
       </div>
     </>
   );
