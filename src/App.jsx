@@ -42,13 +42,10 @@ const daNangDistricts = [
 ];
 
 const dict = {
-  VI: { home: "Trang chủ", shop: "Cửa hàng", nav_shirt: "Áo", nav_pants: "Quần", nav_acc: "Linh kiện", shirt_all: "Tất cả Áo", pants_all: "Tất cả Quần", acc_all: "Tất cả Phụ kiện", shirt_1: "Áo thun", shirt_2: "Áo sơ mi", shirt_3: "Áo khoác", pants_1: "Quần Jeans", pants_2: "Quần Kaki", pants_3: "Quần Short", acc_1: "Mũ / Nón", acc_2: "Túi xách", acc_3: "Trang sức", login: "Đăng nhập", search: "Tìm kiếm...", cart: "Giỏ hàng", account: "Tài khoản", logout: "Đăng xuất", adminMenu: "Quản Trị Kho", sloganTitle: "Đậm chất riêng.", sloganDesc: "Chúng tôi tin rằng thời trang không chỉ là áo quần, mà là ngôn ngữ không lời để thể hiện cá tính thực sự của bạn.", explore: "Khám phá ngay", newCol: "New Collection 2026", heroTitle: "Thời trang phong cách,\nđậm chất riêng.", heroDesc: "Khám phá hàng trăm mẫu áo thun, áo khoác và phụ kiện chất lượng cao với mức giá không thể tuyệt vời hơn.", addToCart: "THÊM VÀO GIỎ HÀNG", desc: "Mô tả chi tiết", ship: "Giao hàng miễn phí toàn quốc", return: "Đổi trả miễn phí 30 ngày", myOrders: "Đơn hàng của tôi", wishlist: "Yêu thích", noOrders: "Chưa có đơn hàng nào", noOrdersDesc: "Khi bạn mua sắm, danh sách hóa đơn sẽ hiển thị tại đây.", total: "Tổng thanh toán", checkout: "Thanh Toán Ngay", emptyCart: "Giỏ hàng của bạn đang trống.", startShop: "Mua sắm ngay", f_prod: "Sản phẩm", f_all: "Tất cả sản phẩm", f_men: "Thời trang Nam", f_women: "Thời trang Nữ", f_acc: "Phụ kiện", f_sup: "Hỗ trợ khách hàng", f_track: "Theo dõi đơn hàng", f_ret: "Chính sách đổi trả", f_ship: "Chính sách giao hàng", f_size: "Hướng dẫn chọn size", f_serv: "Dịch vụ", f_print: "In ấn theo yêu cầu", f_b2b: "Khách hàng doanh nghiệp", f_gift: "Thẻ quà tặng", f_about: "Về Trimi", f_story: "Câu chuyện thương hiệu", f_career: "Tuyển dụng", f_contact: "Liên hệ chúng tôi", f_priv: "Chính sách bảo mật", f_term: "Điều khoản", chatHelp: "Trạm hỗ trợ Trimi", chatHow: "👋 Chúng tôi có thể giúp gì cho bạn?", chatWithUs: "Chat Với Admin", sendMsg: "Gửi tin nhắn", replyFast: "Phản hồi ngay lập tức", faqs: "Câu hỏi thường gặp", faqAcc: "Tài khoản của tôi", faqBill: "Thanh toán & Đơn hàng", faqShip: "Vận chuyển", chatInput: "Nhập tin nhắn...", roleCustomer: "Khách hàng", roleVerified: "Thành viên", roleAdmin: "Quản trị viên", changeCover: "Đổi ảnh bìa", adminDashboard: "Trạm Quản Trị", adminAdd: "Đăng Sản Phẩm", adminUsers: "Khách hàng", adminNoData: "Chưa có dữ liệu", adminImg: "Hình ảnh", adminName: "Tên sản phẩm", adminPrice: "Giá bán", adminAction: "Hành động", adminDel: "Xóa Bỏ", adminCare: "Chăm Sóc Khách Hàng", adminWait: "Chưa có khách hàng", online: "Đang trực tuyến", offline: "Ngoại tuyến", adminInbox: "Hộp thư khách hàng", all_products: "Tất cả sản phẩm", no_products: "Chưa có sản phẩm nào trong danh mục này", no_products_desc: "Vui lòng quay lại sau hoặc chọn danh mục khác.", order_summary: "Thông tin đơn hàng", qr_pay: "Thanh toán QR", qr_scan_desc: "Vui lòng quét mã QR bằng ứng dụng ngân hàng. Hệ thống sẽ tự động xác nhận khi nhận được tiền.", order_price: "Tiền hàng", shipping_fee: "Phí vận chuyển", deposit: "Cần cọc (30%)", waiting_payment: "Đang xử lý đơn hàng...", confirm_paid: "Xác nhận đã chuyển khoản", community: "Cộng đồng Trimi", add_friend: "Kết bạn" },
-  EN: { home: "Home", shop: "Shop", nav_shirt: "Shirts", nav_pants: "Pants", nav_acc: "Accessories", shirt_all: "All Shirts", pants_all: "All Pants", acc_all: "All Accessories", shirt_1: "T-Shirts", shirt_2: "Dress Shirts", shirt_3: "Jackets", pants_1: "Jeans", pants_2: "Khakis", pants_3: "Shorts", acc_1: "Hats", acc_2: "Bags", acc_3: "Jewelry", login: "Login", search: "Search...", cart: "Cart", account: "Account", logout: "Logout", adminMenu: "Admin Panel", sloganTitle: "Your Unique Vibe.", sloganDesc: "We believe fashion is not just clothing, but a silent language to express your true self.", explore: "Explore Now", newCol: "New Collection 2026", heroTitle: "Stylish fashion,\nunique vibe.", heroDesc: "Discover hundreds of high-quality items.", addToCart: "ADD TO CART", desc: "Description", ship: "Free Nationwide Shipping", return: "30-Day Free Returns", myOrders: "My Orders", wishlist: "Wishlist", noOrders: "No orders yet", noOrdersDesc: "Your invoices will appear here.", total: "Total", checkout: "Checkout Now", emptyCart: "Your cart is empty.", startShop: "Start Shopping", f_prod: "Products", f_all: "All Products", f_men: "Men's Fashion", f_women: "Women's Fashion", f_acc: "Accessories", f_sup: "Support", f_track: "Track Order", f_ret: "Return Policy", f_ship: "Shipping", f_size: "Size Guide", f_serv: "Services", f_print: "Print on Demand", f_b2b: "Corporate Clients", f_gift: "Gift Cards", f_about: "About", f_story: "Brand Story", f_career: "Careers", f_contact: "Contact Us", f_priv: "Privacy Policy", f_term: "Terms of Service", chatHelp: "Trimi Help", chatHow: "👋 How can we help you today?", chatWithUs: "Chat With Admin", sendMsg: "Send a message", replyFast: "Instant reply", faqs: "FAQs", faqAcc: "My Account", faqBill: "Billing", faqShip: "Shipping", chatInput: "Type a message...", roleCustomer: "Customer", roleVerified: "Member", roleAdmin: "Admin", changeCover: "Change Cover", adminDashboard: "Dashboard", adminAdd: "Add Product", adminUsers: "Customers", adminNoData: "No data", adminImg: "Image", adminName: "Name", adminPrice: "Price", adminAction: "Action", adminDel: "Delete", adminCare: "Customer Care", adminWait: "No customers yet", online: "Online", offline: "Offline", adminInbox: "Inbox", all_products: "All Products", no_products: "No products in this category", no_products_desc: "Please come back later.", order_summary: "Order Summary", qr_pay: "QR Payment", qr_scan_desc: "Scan the QR code. System will auto-verify.", order_price: "Subtotal", shipping_fee: "Shipping", deposit: "Deposit (30%)", waiting_payment: "Processing order...", confirm_paid: "Confirm Transfer", community: "Community", add_friend: "Add Friend" }
+  VI: { home: "Trang chủ", shop: "Cửa hàng", nav_shirt: "Áo", nav_pants: "Quần", nav_acc: "Linh kiện", shirt_all: "Tất cả Áo", pants_all: "Tất cả Quần", acc_all: "Tất cả Phụ kiện", shirt_1: "Áo thun", shirt_2: "Áo sơ mi", shirt_3: "Áo khoác", pants_1: "Quần Jeans", pants_2: "Quần Kaki", pants_3: "Quần Short", acc_1: "Mũ / Nón", acc_2: "Túi xách", acc_3: "Trang sức", login: "Đăng nhập", search: "Tìm kiếm...", cart: "Giỏ hàng", account: "Tài khoản", logout: "Đăng xuất", adminMenu: "Quản Trị Kho", sloganTitle: "Đậm chất riêng.", sloganDesc: "Chúng tôi tin rằng thời trang không chỉ là áo quần, mà là ngôn ngữ không lời để thể hiện cá tính thực sự của bạn.", explore: "Khám phá ngay", newCol: "New Collection 2026", heroTitle: "Thời trang phong cách,\nđậm chất riêng.", heroDesc: "Khám phá hàng trăm mẫu áo thun, áo khoác và phụ kiện chất lượng cao với mức giá không thể tuyệt vời hơn.", addToCart: "THÊM VÀO GIỎ HÀNG", desc: "Mô tả chi tiết", ship: "Chỉ giao trong địa phận Đà Nẵng", return: "Đổi trả miễn phí 5 ngày", myOrders: "Đơn hàng của tôi", wishlist: "Yêu thích", noOrders: "Chưa có đơn hàng nào", noOrdersDesc: "Khi bạn mua sắm, danh sách hóa đơn sẽ hiển thị tại đây.", total: "Tổng thanh toán", checkout: "Thanh Toán Ngay", emptyCart: "Giỏ hàng của bạn đang trống.", startShop: "Mua sắm ngay", f_prod: "Sản phẩm", f_all: "Tất cả sản phẩm", f_men: "Thời trang Nam", f_women: "Thời trang Nữ", f_acc: "Phụ kiện", f_sup: "Hỗ trợ khách hàng", f_track: "Theo dõi đơn hàng", f_ret: "Chính sách đổi trả", f_ship: "Chính sách giao hàng", f_size: "Hướng dẫn chọn size", f_serv: "Dịch vụ", f_print: "In ấn theo yêu cầu", f_b2b: "Khách hàng doanh nghiệp", f_gift: "Thẻ quà tặng", f_about: "Về Trimi", f_story: "Câu chuyện thương hiệu", f_career: "Tuyển dụng", f_contact: "Liên hệ chúng tôi", f_priv: "Chính sách bảo mật", f_term: "Điều khoản", chatHelp: "Trạm hỗ trợ Trimi", chatHow: "👋 Chúng tôi có thể giúp gì cho bạn?", chatWithUs: "Chat Với Admin", sendMsg: "Gửi tin nhắn", replyFast: "Phản hồi ngay lập tức", faqs: "Câu hỏi thường gặp", faqAcc: "Tài khoản của tôi", faqBill: "Thanh toán & Đơn hàng", faqShip: "Vận chuyển", chatInput: "Nhập tin nhắn...", roleCustomer: "Khách hàng", roleVerified: "Thành viên", roleAdmin: "Quản trị viên", changeCover: "Đổi ảnh bìa", adminDashboard: "Trạm Quản Trị", adminAdd: "Đăng Sản Phẩm", adminUsers: "Khách hàng", adminNoData: "Chưa có dữ liệu", adminImg: "Hình ảnh", adminName: "Tên sản phẩm", adminPrice: "Giá bán", adminAction: "Hành động", adminDel: "Xóa Bỏ", adminCare: "Chăm Sóc Khách Hàng", adminWait: "Chưa có khách hàng", online: "Đang trực tuyến", offline: "Ngoại tuyến", adminInbox: "Hộp thư khách hàng", all_products: "Tất cả sản phẩm", no_products: "Chưa có sản phẩm nào trong danh mục này", no_products_desc: "Vui lòng quay lại sau hoặc chọn danh mục khác.", order_summary: "Thông tin đơn hàng", qr_pay: "Thanh toán QR", qr_scan_desc: "Vui lòng quét mã QR bằng ứng dụng ngân hàng. Hệ thống sẽ tự động xác nhận khi nhận được tiền.", order_price: "Tiền hàng", shipping_fee: "Phí vận chuyển", deposit: "Cần cọc (30%)", waiting_payment: "Đang xử lý đơn hàng...", confirm_paid: "Xác nhận đã chuyển khoản", community: "Cộng đồng Trimi", add_friend: "Kết bạn" },
+  EN: { home: "Home", shop: "Shop", nav_shirt: "Shirts", nav_pants: "Pants", nav_acc: "Accessories", shirt_all: "All Shirts", pants_all: "All Pants", acc_all: "All Accessories", shirt_1: "T-Shirts", shirt_2: "Dress Shirts", shirt_3: "Jackets", pants_1: "Jeans", pants_2: "Khakis", pants_3: "Shorts", acc_1: "Hats", acc_2: "Bags", acc_3: "Jewelry", login: "Login", search: "Search...", cart: "Cart", account: "Account", logout: "Logout", adminMenu: "Admin Panel", sloganTitle: "Your Unique Vibe.", sloganDesc: "We believe fashion is not just clothing, but a silent language to express your true self.", explore: "Explore Now", newCol: "New Collection 2026", heroTitle: "Stylish fashion,\nunique vibe.", heroDesc: "Discover hundreds of high-quality items.", addToCart: "ADD TO CART", desc: "Description", ship: "Shipping within Da Nang only", return: "5-Day Free Returns", myOrders: "My Orders", wishlist: "Wishlist", noOrders: "No orders yet", noOrdersDesc: "Your invoices will appear here.", total: "Total", checkout: "Checkout Now", emptyCart: "Your cart is empty.", startShop: "Start Shopping", f_prod: "Products", f_all: "All Products", f_men: "Men's Fashion", f_women: "Women's Fashion", f_acc: "Accessories", f_sup: "Support", f_track: "Track Order", f_ret: "Return Policy", f_ship: "Shipping", f_size: "Size Guide", f_serv: "Services", f_print: "Print on Demand", f_b2b: "Corporate Clients", f_gift: "Gift Cards", f_about: "About", f_story: "Brand Story", f_career: "Careers", f_contact: "Contact Us", f_priv: "Privacy Policy", f_term: "Terms of Service", chatHelp: "Trimi Help", chatHow: "👋 How can we help you today?", chatWithUs: "Chat With Admin", sendMsg: "Send a message", replyFast: "Instant reply", faqs: "FAQs", faqAcc: "My Account", faqBill: "Billing", faqShip: "Shipping", chatInput: "Type a message...", roleCustomer: "Customer", roleVerified: "Member", roleAdmin: "Admin", changeCover: "Change Cover", adminDashboard: "Dashboard", adminAdd: "Add Product", adminUsers: "Customers", adminNoData: "No data", adminImg: "Image", adminName: "Name", adminPrice: "Price", adminAction: "Action", adminDel: "Delete", adminCare: "Customer Care", adminWait: "No customers yet", online: "Online", offline: "Offline", adminInbox: "Inbox", all_products: "All Products", no_products: "No products in this category", no_products_desc: "Please come back later.", order_summary: "Order Summary", qr_pay: "QR Payment", qr_scan_desc: "Scan the QR code. System will auto-verify.", order_price: "Subtotal", shipping_fee: "Shipping", deposit: "Deposit (30%)", waiting_payment: "Processing order...", confirm_paid: "Confirm Transfer", community: "Community", add_friend: "Add Friend" }
 };
 
-// ==========================================
-// TỪ ĐIỂN DỊCH TÊN VÀ NỘI DUNG SẢN PHẨM
-// ==========================================
 const productDict = {
   VI: {
     '101_name': 'Áo Thun Basic Premium', '101_desc': 'Áo thun basic cao cấp, chất liệu cotton 100% thoáng mát, form dáng chuẩn.',
@@ -105,17 +102,15 @@ const initialProducts = [
 ];
 
 const defaultLookbookData = [
-  { id: 1, title: 'Men Collection', img: 'https://images.unsplash.com/photo-1520975954732-57dd22299614?q=80&w=800&auto=format&fit=crop', targetCategory: 'shirt_1' },
-  { id: 2, title: 'Streetwear', img: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=800&auto=format&fit=crop', targetCategory: 'pants_1' },
-  { id: 3, title: 'Accessories', img: 'https://images.unsplash.com/photo-1509319117193-57bab727e09d?q=80&w=800&auto=format&fit=crop', targetCategory: 'acc_2' },
-  { id: 4, title: 'New Arrivals', img: 'https://images.unsplash.com/photo-1529139574466-a303027c028b?q=80&w=800&auto=format&fit=crop', targetCategory: 'all' }
+  { id: 1, title: 'Men Collection', img: '/men_collection.jpg', targetCategory: 'shirt_1' },
+  { id: 2, title: 'Streetwear', img: '/streetwear.jpg', targetCategory: 'pants_1' },
+  { id: 3, title: 'Accessories', img: '/accessories.jpg', targetCategory: 'acc_2' },
+  { id: 4, title: 'New Arrivals', img: '/new_arrivals.jpg', targetCategory: 'all' }
 ];
 
-const surveyRoles = ["Tín đồ Thời trang", "Thiết kế viên", "Sinh viên", "Chủ doanh nghiệp", "Khác"];
 const fakeColorSpheres = ['from-white to-slate-300', 'from-zinc-700 to-black', 'from-amber-200 to-amber-600', 'from-sky-300 to-sky-600'];
 
 export default function App() {
-  const [isConfigLoaded, setIsConfigLoaded] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   
@@ -123,13 +118,17 @@ export default function App() {
   const [currentCategory, setCurrentCategory] = useState('all'); 
   const [selectedProduct, setSelectedProduct] = useState(null); 
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTag, setSelectedTag] = useState(null); 
 
   const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('trimi_theme') === 'dark');
   const [isMobile, setIsMobile] = useState(false);
+  
+  const [showCookieConsent, setShowCookieConsent] = useState(() => !localStorage.getItem('trimi_cookies'));
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [authMode, setAuthMode] = useState('login'); 
-  const [showSurveyModal, setShowSurveyModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -149,7 +148,15 @@ export default function App() {
   const [tempProfile, setTempProfile] = useState({});
 
   const [localProducts, setLocalProducts] = useState([]); 
+  const [adminOrders, setAdminOrders] = useState([]); 
+  const [myOrders, setMyOrders] = useState([]); 
+  const [previewImg, setPreviewImg] = useState(null); 
+  const [adminTab, setAdminTab] = useState('products'); 
   const [isLoadingShop, setIsLoadingShop] = useState(true); 
+
+  const [showSurveyModal, setShowSurveyModal] = useState(false);
+  const [surveyStep, setSurveyStep] = useState(1);
+  const [surveyData, setSurveyData] = useState({ name: '', theme: 'System', source: '', occupation: '', interests: '' });
   
   const [cart, setCart] = useState(() => {
     try { const saved = localStorage.getItem('trimi_cart'); return saved ? JSON.parse(saved) : []; } 
@@ -173,11 +180,28 @@ export default function App() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newProd, setNewProd] = useState({ name: '', price: '', category: 'shirt_1', desc: '', imagePreview: null });
   
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editFormData, setEditFormData] = useState(null);
+  const [activeImgIdx, setActiveImageIdx] = useState(0); 
+  
   const [lang, setLang] = useState('VI');
   const [showLangMenu, setShowLangMenu] = useState(false);
   const languages = [{ code: 'VI', label: 'Tiếng Việt' }, { code: 'EN', label: 'English' }];
   const t = (key) => dict[lang]?.[key] || dict['VI'][key] || key;
   const t_prod = (id, field, defaultValue) => productDict[lang]?.[`${id}_${field}`] || defaultValue;
+
+  const translateTag = (tag) => {
+    if (!tag) return '';
+    const t = tag.toLowerCase().trim().replace('#', '');
+    const map = {
+      'nam': { VI: 'Nam', EN: 'Men' }, 'nu': { VI: 'Nữ', EN: 'Women' }, 'nữ': { VI: 'Nữ', EN: 'Women' },
+      'ao': { VI: 'Áo', EN: 'Shirt' }, 'áo': { VI: 'Áo', EN: 'Shirt' },
+      'quan': { VI: 'Quần', EN: 'Pants' }, 'quần': { VI: 'Quần', EN: 'Pants' },
+      'linhkien': { VI: 'Linh kiện', EN: 'Parts' }, 'linh kiện': { VI: 'Linh kiện', EN: 'Parts' },
+      'phukien': { VI: 'Phụ kiện', EN: 'Accessories' }, 'phụ kiện': { VI: 'Phụ kiện', EN: 'Accessories' }
+    };
+    return map[t] ? map[t][lang] : tag;
+  };
 
   const [usersList, setUsersList] = useState([]);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
@@ -194,14 +218,7 @@ export default function App() {
   const chatContainerRef = useRef(null);
   const adminChatContainerRef = useRef(null);
 
-  const [isEditingBanner, setIsEditingBanner] = useState(false);
-  const [bannerConfig, setBannerConfig] = useState(() => JSON.parse(localStorage.getItem('trimi_banner')) || { x: 0, y: 0, scale: 1 });
-  const [bannerImage, setBannerImage] = useState(() => localStorage.getItem('trimi_banner_img') || '/banner.png');
-  const [lookbook, setLookbook] = useState(() => JSON.parse(localStorage.getItem('trimi_lookbook')) || defaultLookbookData);
-
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-
+  const [lookbook, setLookbook] = useState(defaultLookbookData);
   const cartItemCount = cart.reduce((t, i) => t + (Number(i.quantity) || 0), 0);
   const cartProductsTotal = cart.reduce((t, i) => t + ((Number(i.price) || 0) * (Number(i.quantity) || 1)), 0);
   const shippingFee = (district === 'Hải Châu' || district === 'Thanh Khê' || district === 'Sơn Trà') ? 0 : 20000;
@@ -226,17 +243,42 @@ export default function App() {
     }
   }, [isDarkMode]);
 
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const lastScrollY = useRef(0);
+
   useEffect(() => {
-    const handleScroll = () => { if (window.scrollY > 400) setShowScrollTop(true); else setShowScrollTop(false); };
-    window.addEventListener('scroll', handleScroll);
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY > 400) setShowScrollTop(true); 
+      else setShowScrollTop(false);
+
+      if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+        setIsHeaderVisible(false);
+      } else {
+        setIsHeaderVisible(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  const navigateTo = (view, category = 'all', product = null) => {
+  const navigateTo = async (view, category = 'all', product = null) => {
     setCurrentView(view); setCurrentCategory(category);
-    if(view === 'productDetail') setSelectedProduct(product);
+    if(view === 'productDetail') {
+      setSelectedProduct(product);
+      if (user && product) {
+        try {
+          await setDoc(doc(db, 'users', user.uid), {
+            viewHistory: arrayUnion(product.category)
+          }, { merge: true });
+        } catch (e) {}
+      }
+    }
     window.history.pushState({ view, category, product }, '', `?view=${view}`);
     window.scrollTo({ top: 0, behavior: 'smooth' }); 
   };
@@ -257,39 +299,57 @@ export default function App() {
   useEffect(() => { if(adminChatContainerRef.current) adminChatContainerRef.current.scrollTop = adminChatContainerRef.current.scrollHeight; }, [adminChatUser?.messages]);
 
   useEffect(() => {
-    const unsubConfig = onSnapshot(doc(db, 'config', 'storefront'), (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        if (data.lookbook) { setLookbook(data.lookbook); localStorage.setItem('trimi_lookbook', JSON.stringify(data.lookbook)); }
-        if (data.bannerConfig) { setBannerConfig(data.bannerConfig); localStorage.setItem('trimi_banner', JSON.stringify(data.bannerConfig)); }
-        if (data.bannerImage) { setBannerImage(data.bannerImage); localStorage.setItem('trimi_banner_img', data.bannerImage); }
+    let isMounted = true;
+    const failsafe = setTimeout(() => {
+      if (isMounted && isLoadingShop) {
+        setLocalProducts(initialProducts);
+        setIsLoadingShop(false);
       }
-      setIsConfigLoaded(true);
-    });
-    return () => unsubConfig();
+    }, 3000);
+
+    const unsub = onSnapshot(collection(db, 'products'), 
+      (snapshot) => {
+        clearTimeout(failsafe);
+        if (!isMounted) return;
+        if (snapshot.empty) {
+          initialProducts.forEach(p => setDoc(doc(db, "products", p.id), p).catch(()=>{}));
+          setLocalProducts(initialProducts);
+        } else {
+          const prods = [];
+          snapshot.forEach((doc) => prods.push({ ...doc.data(), id: doc.id }));
+          setLocalProducts(prods.sort((a,b) => b.id - a.id));
+        }
+        setIsLoadingShop(false);
+      },
+      (error) => {
+        clearTimeout(failsafe);
+        if (isMounted) {
+          setLocalProducts(initialProducts); 
+          setIsLoadingShop(false);
+        }
+      }
+    );
+    return () => { isMounted = false; clearTimeout(failsafe); unsub(); };
   }, []);
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'products'), (snapshot) => {
-      if (snapshot.empty) {
-        initialProducts.forEach(p => setDoc(doc(db, "products", p.id), p).catch(()=>{}));
-        setLocalProducts(initialProducts);
-      } else {
-        const prods = [];
-        snapshot.forEach((doc) => prods.push({ ...doc.data(), id: doc.id }));
-        setLocalProducts(prods.sort((a,b) => b.id - a.id));
-      }
-      setIsLoadingShop(false);
-    });
+    if (!user) return;
+    const unsub = onSnapshot(collection(db, 'orders'), (snapshot) => {
+      const ordersData = [];
+      snapshot.forEach((doc) => ordersData.push({ id: doc.id, ...doc.data() }));
+      const sorted = ordersData.sort((a, b) => b.createdAt - a.createdAt);
+      if (isAdmin) setAdminOrders(sorted);
+      setMyOrders(sorted.filter(o => o.uid === user.uid)); 
+    }, (error) => {});
     return () => unsub();
-  }, []);
+  }, [user, isAdmin]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        setUser(currentUser); setIsAuthenticated(true); setShowLoginModal(false);
-        const localRole = localStorage.getItem(`trimi_role_${currentUser.uid}`);
-        if(localRole) setUserRole(localRole);
+        setUser(currentUser);
+        setIsAuthenticated(true);
+        setShowLoginModal(false);
 
         const baseEmailName = currentUser.email ? currentUser.email.split('@')[0] : 'Guest';
         try {
@@ -297,13 +357,30 @@ export default function App() {
           const docSnap = await getDoc(doc(db, 'users', currentUser.uid));
           if (docSnap.exists()) {
             const data = docSnap.data();
-            if (data.role) setUserRole(data.role); else if (!localRole) setShowSurveyModal(true);
-            setAvatarUrl(data.avatar || ''); setCoverUrl(data.cover || '');
+            setAvatarUrl(data.avatar || currentUser.photoURL || '');
+            setCoverUrl(data.cover || '');
             setNickname(data.nickname || baseEmailName);
-            setPhone(data.phone || ''); setAddress(data.address || ''); setDistrict(data.district || 'Hải Châu');
+            setPhone(data.phone || '');
+            setAddress(data.address || '');
+            setDistrict(data.district || 'Hải Châu');
             setFriendsList(data.friends || []);
-          } else if (!localRole) { setShowSurveyModal(true); setNickname(baseEmailName); }
-        } catch (error) {}
+
+            const isSurveyDoneLocal = localStorage.getItem(`trimi_survey_done_${currentUser.uid}`);
+            if (!data.isSurveyCompleted && !isSurveyDoneLocal) {
+              setSurveyData(prev => ({ ...prev, name: data.nickname || baseEmailName }));
+              setShowSurveyModal(true);
+              setSurveyStep(1);
+            } else {
+              setUserRole(data.role || 'Khách hàng');
+            }
+          } else {
+            setSurveyData(prev => ({ ...prev, name: baseEmailName }));
+            setShowSurveyModal(true);
+            setSurveyStep(1);
+          }
+        } catch (error) {
+          console.error("Lỗi đồng bộ DB:", error);
+        }
 
         const presenceInterval = setInterval(() => { setDoc(doc(db, 'users', currentUser.uid), { lastActive: Date.now(), isOnline: true }, { merge: true }).catch(()=>{}); }, 30000);
         const handleUnload = () => { setDoc(doc(db, 'users', currentUser.uid), { isOnline: false }, { merge: true }).catch(()=>{}); };
@@ -427,27 +504,41 @@ export default function App() {
     }
   };
 
-  const handleAdminSendMessage = async () => {
-    if(!adminChatInput.trim() || !adminChatUser) return;
-    const newMessage = { sender: 'bot', text: adminChatInput, timestamp: Date.now() };
-    setAdminChatInput('');
-    try { await setDoc(doc(db, 'users', adminChatUser.uid), { messages: arrayUnion(newMessage), lastUpdated: Date.now(), hasUnreadUser: true }, { merge: true }); } catch(e) {}
-  };
-
   const showToast = (msg) => { setToastMsg(msg); setTimeout(() => setToastMsg(''), 2500); };
   const requireLogin = (action) => { if (!isAuthenticated) { setShowLoginModal(true); return; } action(); };
 
-  const handleEmailAuth = async () => {
+  const handleEmailAuth = async (e) => {
+    if (e) e.preventDefault();
     if (!email || !email.includes('@')) return alert("Vui lòng nhập email hợp lệ.");
     if (password.length < 6) return alert("Mật khẩu ít nhất 6 ký tự!");
     try {
       if (authMode === 'login') await signInWithEmailAndPassword(auth, email, password);
       else await createUserWithEmailAndPassword(auth, email, password);
-    } catch (error) {}
+      setShowLoginModal(false);
+    } catch (error) { alert("Lỗi đăng nhập: Sai email hoặc mật khẩu."); }
   };
 
-  const handleFacebookLogin = async () => { try { await signInWithPopup(auth, new FacebookAuthProvider()); } catch (error) {} };
-  const handleGoogleLogin = async () => { try { await signInWithPopup(auth, googleProvider); } catch (error) {} };
+  const handleFacebookLogin = async (e) => { 
+    if (e) e.preventDefault();
+    try { 
+      await signInWithPopup(auth, new FacebookAuthProvider()); 
+      setShowLoginModal(false);
+    } catch (error) { console.error("Lỗi FB:", error); alert("Không thể đăng nhập Facebook lúc này."); } 
+  };
+
+  const handleGoogleLogin = async (e) => { 
+    if (e) e.preventDefault();
+    try { 
+      const result = await signInWithPopup(auth, googleProvider); 
+      if (result.user) {
+        setShowLoginModal(false);
+        showToast("Đăng nhập thành công!");
+      }
+    } catch (error) { 
+      console.error("Lỗi Google:", error); 
+      alert("⚠️ LỖI TRÌNH DUYỆT CHẶN (COOP/CORS) ⚠️\nBạn đang chạy bằng 'localhost'. Vui lòng nhìn lên thanh địa chỉ của Chrome và đổi chữ 'localhost' thành '127.0.0.1' rồi Enter để đăng nhập Google được nhé!"); 
+    } 
+  };
 
   const handleLogout = async () => {
     if(user) await setDoc(doc(db, 'users', user.uid), { isOnline: false }, { merge: true }).catch(()=>{});
@@ -486,38 +577,21 @@ export default function App() {
     e.target.value = null;
   };
 
-  const handleLookbookUpload = (e, index) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    compressImage(file, async (compressedBase64) => {
-      const updatedLookbook = [...lookbook]; updatedLookbook[index].img = compressedBase64;
-      setLookbook(updatedLookbook); localStorage.setItem('trimi_lookbook', JSON.stringify(updatedLookbook)); 
-      try { await setDoc(doc(db, "config", "storefront"), { lookbook: updatedLookbook }, { merge: true }); showToast('Đã cập nhật trang chủ!'); } catch (err) {}
-    });
-    e.target.value = null;
-  };
-
-  const handleBannerImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    compressImage(file, async (compressedBase64) => {
-      setBannerImage(compressedBase64); localStorage.setItem('trimi_banner_img', compressedBase64); 
-      try { await setDoc(doc(db, "config", "storefront"), { bannerImage: compressedBase64 }, { merge: true }); showToast('Đã đổi ảnh Banner thành công!'); } catch(err) {}
-    });
-    e.target.value = null;
-  };
-
-  const handleBannerMouseDown = (e) => { if (!isEditingBanner) return; setIsDragging(true); setDragStart({ x: e.clientX - bannerConfig.x, y: e.clientY - bannerConfig.y }); };
-  const handleBannerMouseMove = (e) => { if (!isDragging || !isEditingBanner) return; setBannerConfig({ ...bannerConfig, x: e.clientX - dragStart.x, y: e.clientY - dragStart.y }); };
-  const handleBannerMouseUp = () => { setIsDragging(false); };
-  const handleBannerWheel = (e) => { if (!isEditingBanner) return; e.preventDefault(); const scaleChange = e.deltaY > 0 ? -0.1 : 0.1; setBannerConfig(prev => ({ ...prev, scale: Math.max(0.3, prev.scale + scaleChange) })); };
-  const handleSaveBanner = async () => { setIsEditingBanner(false); localStorage.setItem('trimi_banner', JSON.stringify(bannerConfig)); try { await setDoc(doc(db, "config", "storefront"), { bannerConfig: bannerConfig }, { merge: true }); showToast('Đã lưu cấu hình Banner!'); } catch(err) {} };
-
   const handleAddToCart = (item, e) => {
     e.stopPropagation(); 
+    
+    const currentStock = item.stock !== undefined ? item.stock : 50; 
+    if (currentStock <= 0) return showToast("Sản phẩm này đã hết hàng!");
+
     setCart((prevCart) => {
       const existingItem = prevCart.find(i => i.id === item.id);
-      if (existingItem) return prevCart.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1, addedAt: Date.now() } : i);
+      if (existingItem) {
+        if (existingItem.quantity >= currentStock) {
+          showToast(`Chỉ còn ${currentStock} sản phẩm trong kho!`);
+          return prevCart;
+        }
+        return prevCart.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1, addedAt: Date.now() } : i);
+      }
       return [...prevCart, { ...item, quantity: 1, addedAt: Date.now() }];
     });
     showToast(t('addToCart') + '!');
@@ -525,6 +599,13 @@ export default function App() {
 
   const updateCartQuantity = (id, delta) => setCart(cart.map(i => i.id === id ? { ...i, quantity: Math.max(1, i.quantity + delta) } : i));
   const removeFromCart = (id) => setCart(cart.filter(i => i.id !== id));
+  
+  useEffect(() => {
+    if (cart.length === 0 && showCheckoutModal) {
+      setShowCheckoutModal(false);
+      showToast("Giỏ hàng trống!");
+    }
+  }, [cart, showCheckoutModal]);
   
   const handleProceedCheckout = () => {
     requireLogin(() => {
@@ -571,6 +652,20 @@ export default function App() {
     try {
       await setDoc(doc(db, 'orders', currentOrderId), orderData);
 
+      cart.forEach(async (item) => {
+        const productRef = doc(db, 'products', item.id);
+        const currentStock = item.stock !== undefined ? item.stock : 50;
+        const newStock = Math.max(0, currentStock - item.quantity);
+        await setDoc(productRef, { stock: newStock }, { merge: true }).catch(()=>{});
+      });
+
+      if (user) {
+        const purchasedIds = cart.map(item => item.id);
+        await setDoc(doc(db, 'users', user.uid), { 
+          purchaseHistory: arrayUnion(...purchasedIds) 
+        }, { merge: true }).catch(()=>{});
+      }
+
       setTimeout(() => {
         setIsCheckingPayment(false);
         alert(`Đã gửi yêu cầu! Mã đơn: ${currentOrderId}\nChúng tôi sẽ duyệt bill và liên hệ bạn sớm nhất.`);
@@ -602,7 +697,8 @@ export default function App() {
   const handleSubmitNewProduct = async () => {
     if (!newProd.name || !newProd.price || !newProd.imagePreview) return alert("Vui lòng điền đủ thông tin!");
     const newId = Date.now().toString();
-    const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price), rating: 5.0, reviews: 0, category: newProd.category, imageUrl: newProd.imagePreview, description: newProd.desc || 'Sản phẩm chính hãng.' };
+    const tagsArray = newProd.tags ? newProd.tags.split(',').map(t => t.trim().replace('#','')) : [];
+const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price), rating: 5.0, reviews: 0, category: newProd.category, imageUrl: newProd.imagePreview, description: newProd.desc || 'Sản phẩm chính hãng.', tags: tagsArray };
     setLocalProducts([product, ...localProducts]); 
     setShowAddModal(false); setNewProd({ name: '', price: '', category: 'shirt_1', desc: '', imagePreview: null });
     try { await setDoc(doc(db, 'products', newId), product); showToast('Đã thêm sản phẩm lên cửa hàng!'); } catch(e) {}
@@ -619,8 +715,10 @@ export default function App() {
   if (searchQuery.trim()) {
     displayedProducts = displayedProducts.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase()));
   }
-
-  if (!isConfigLoaded) return <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center"><FiRefreshCcw className="text-4xl text-sky-500 animate-spin" /></div>;
+  
+  if (selectedTag) {
+    displayedProducts = displayedProducts.filter(p => p.tags && p.tags.some(t => t.toLowerCase().includes(selectedTag.toLowerCase())));
+  }
 
   return (
     <>
@@ -629,87 +727,36 @@ export default function App() {
         .font-brush { font-family: 'Water Brush', cursive; }
         html, body, #root { overflow: visible !important; overflow-y: auto !important; height: auto !important; min-height: 100vh !important; }
         
-        /* ẨN LOGO RECAPTCHA CỦA GOOGLE ĐỂ ĐẢM BẢO THẨM MỸ */
         .grecaptcha-badge { visibility: hidden !important; }
 
-        /* KIỂM SOÁT CURSOR: ĐẢM BẢO CHUỘT LÀ HÌNH NGÓN TAY KHI TRỎ VÀO CÁC PHẦN TỬ CÓ THỂ CLICK */
-        a, button, label, .cursor-pointer, [role="button"] {
-            cursor: pointer !important;
-        }
+        a, button, label, .cursor-pointer, [role="button"] { cursor: pointer !important; }
 
-        /* =======================================================
-           BỘ QUY TẮC DARK MODE CHUẨN XÁC TỪNG KHUNG GIAO DIỆN
-           ======================================================= */
-        body.dark-mode { background-color: #0f172a !important; color: #f8fafc !important; }
-        
-        /* Mảng nền của App (màu #f8fafc) -> Dark Slate */
-        .dark-mode .bg-\[\#f8fafc\] { background-color: #0f172a !important; }
-        
-        /* Đổi tất cả các khung viền Trắng / Xám nhạt -> Dark Slate sang trọng */
-        .dark-mode .bg-white, 
-        .dark-mode .bg-slate-50, 
-        .dark-mode .bg-slate-100 { 
-           background-color: #1e293b !important; 
-           border-color: #334155 !important; 
-        }
-        
-        /* Màu viền */
-        .dark-mode .border-slate-100, 
-        .dark-mode .border-slate-200,
-        .dark-mode .border-blue-100 { border-color: #334155 !important; }
-
-        /* Đổi chữ màu tối -> Màu trắng sáng */
-        .dark-mode .text-slate-900, 
-        .dark-mode .text-slate-800 { color: #ffffff !important; }
-        
-        .dark-mode .text-slate-700, 
-        .dark-mode .text-slate-600, 
-        .dark-mode .text-slate-500 { color: #cbd5e1 !important; }
-        
-        /* Ô nhập liệu */
-        .dark-mode input, 
-        .dark-mode select, 
-        .dark-mode textarea { 
-           background-color: #0f172a !important; 
-           color: #ffffff !important; 
-           border-color: #334155 !important; 
-        }
-        
-        /* Nút Khám Phá màu Đen -> Màu xanh sáng */
+        body.dark-mode { background-color: #111111 !important; color: #f8fafc !important; }
+        .dark-mode .bg-\[\#f8fafc\] { background-color: #111111 !important; }
+        .dark-mode .bg-white, .dark-mode .bg-slate-50, .dark-mode .bg-slate-100 { background-color: #1e293b !important; border-color: #334155 !important; }
+        .dark-mode .border-slate-100, .dark-mode .border-slate-200, .dark-mode .border-blue-100 { border-color: #334155 !important; }
+        .dark-mode .text-slate-900, .dark-mode .text-slate-800 { color: #ffffff !important; }
+        .dark-mode .text-slate-700, .dark-mode .text-slate-600, .dark-mode .text-slate-500 { color: #cbd5e1 !important; }
+        .dark-mode input, .dark-mode select, .dark-mode textarea { background-color: #0f172a !important; color: #ffffff !important; border-color: #334155 !important; }
         .dark-mode button.bg-slate-900 { background-color: #38bdf8 !important; color: #0f172a !important; }
-        
-        /* BẢO VỆ BANNER LUÔN GIỮ GIAO DIỆN GỐC (DÙ DARK MODE HAY LIGHT MODE) */
         .dark-mode .banner-protected { background-color: #eef5fc !important; border-color: #dbeafe !important;}
         .dark-mode .banner-protected h2 { color: #0f172a !important; }
         .dark-mode .banner-protected p { color: #334155 !important; }
         .dark-mode .banner-protected span { background-color: #dbeafe !important; color: #1d4ed8 !important; }
       `}</style>
 
-      <div className={`min-h-screen w-full font-sans flex flex-col relative transition-colors duration-300 ${isDarkMode ? 'dark-mode text-white bg-[#0f172a]' : 'text-slate-900 bg-[#f8fafc]'}`}>
+      <div className={`min-h-screen w-full font-sans flex flex-col relative transition-colors duration-300 ${isDarkMode ? 'dark-mode text-white bg-[#111111]' : 'text-slate-900 bg-[#f8fafc]'}`}>
         
-        {/* NÚT CUỘN VÀ GIỎ HÀNG NỔI CHỐNG MỎI TAY */}
+        {/* NÚT CUỘN CHỐNG MỎI TAY */}
         <div className="fixed bottom-24 right-6 md:bottom-28 md:right-8 z-[8500] flex flex-col gap-3">
           {showScrollTop && (
-            <>
-              <button onClick={() => setIsCartOpen(true)} className="bg-slate-900 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-2xl hover:bg-sky-500 hover:scale-110 transition-all relative">
-                 <FiShoppingCart className="text-2xl"/>
-                 {cartItemCount > 0 && (
-                   <span className="absolute -top-1 -right-1 bg-sky-500 text-white w-5 h-5 flex items-center justify-center text-[10px] font-bold rounded-full shadow-sm border-2 border-white transition-all">
-                     {cartItemCount}
-                   </span>
-                 )}
-              </button>
-              <button onClick={scrollToTop} className="bg-slate-900 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-2xl hover:bg-sky-500 hover:scale-110 transition-all">
-                 <FiArrowUp className="text-2xl"/>
-              </button>
-            </>
+            <button onClick={scrollToTop} className="bg-slate-900 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-2xl hover:bg-sky-500 hover:scale-110 transition-all">
+               <FiArrowUp className="text-2xl"/>
+            </button>
           )}
         </div>
-
         {/* BONG BÓNG CHAT VÀ CỘNG ĐỒNG */}
         <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-[9000] flex flex-col items-end">
-          
-          {/* DANH SÁCH CHAT KHÁCH HÀNG / CỘNG ĐỒNG */}
           {!isAdmin && isHelpOpen && !isChatBoxOpen && (
             <div className="bg-white w-[340px] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] mb-4 overflow-hidden border border-slate-200 animate-fade-in-up origin-bottom-right">
               <div className="bg-slate-900 text-white p-5 pr-4 flex justify-between items-start">
@@ -719,7 +766,6 @@ export default function App() {
                 </div>
                 <button onClick={() => setIsHelpOpen(false)} className="text-slate-400 hover:text-white transition-colors p-1"><FiX className="text-xl"/></button>
               </div>
-              
               <div className="p-4 border-b border-slate-100">
                  <p className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mb-3">HỖ TRỢ TRỰC TUYẾN</p>
                  <div onClick={() => requireLogin(openAdminChat)} className="flex items-center gap-3 bg-white border border-slate-200 p-3 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer shadow-sm group relative">
@@ -733,13 +779,11 @@ export default function App() {
                     {hasUnreadUser && <div className="absolute top-1/2 -translate-y-1/2 right-4 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>}
                  </div>
               </div>
-
               <div className="p-4 flex-grow overflow-y-auto max-h-[300px] custom-scrollbar">
                  <div className="flex justify-between items-center mb-3">
                    <p className="text-[13px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2"><FiUsers/> {t('community')}</p>
                    <FiSearch className="text-slate-400"/>
                  </div>
-                 
                  <div className="space-y-2">
                    {usersList.length === 0 ? <p className="text-xs text-slate-400 italic">Chưa có ai tham gia.</p> : 
                      usersList.map(u => (
@@ -767,7 +811,6 @@ export default function App() {
             </div>
           )}
 
-          {/* GIAO DIỆN CHAT CỦA ADMIN (XEM TẤT CẢ USER) */}
           {isAdmin && isHelpOpen && !activeChatTarget && (
             <div className="bg-white w-[340px] h-[480px] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] mb-4 overflow-hidden border border-slate-200 animate-fade-in-up origin-bottom-right flex flex-col">
               <div className="bg-slate-900 text-white p-4 flex justify-between items-center rounded-t-2xl shadow-md z-10">
@@ -795,7 +838,6 @@ export default function App() {
             </div>
           )}
 
-          {/* KHUNG CHAT RIÊNG BIỆT (DÙNG CHUNG CHO KHÁCH & ADMIN) */}
           {isChatBoxOpen && activeChatTarget && (
             <div className="bg-white w-[340px] h-[480px] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] mb-4 overflow-hidden border border-slate-200 animate-fade-in-up origin-bottom-right flex flex-col">
               <div className="bg-slate-900 text-white p-4 flex justify-between items-center rounded-t-2xl shadow-md z-10">
@@ -807,15 +849,11 @@ export default function App() {
                    <span className="text-sm font-bold truncate max-w-[120px]">{activeChatTarget === 'admin' ? t('chatWithUs') : activeChatTarget.nickname}</span>
                 </div>
               </div>
-              
               <div ref={chatContainerRef} className="flex-grow bg-slate-50 p-4 overflow-y-auto flex flex-col gap-4 custom-scrollbar">
                 <div className="flex justify-center mb-2"><span className="text-xs text-slate-400 font-medium bg-white px-3 py-1 rounded-full border border-slate-100">Hôm nay</span></div>
-                
-                {/* HIỂN THỊ TIN NHẮN TÙY VÀO ĐỐI TƯỢNG */}
                 {(isAdmin && activeChatTarget ? (adminChatUser?.messages || []) : (activeChatTarget === 'admin' ? chatMessages : p2pMessages)).map((msg, idx) => {
                   const isMe = msg.sender === user?.uid || (isAdmin && msg.sender === 'bot');
                   const showAvatar = !isMe;
-                  
                   return (
                     <div key={idx} className={`flex gap-2 max-w-[85%] ${isMe ? 'ml-auto flex-row-reverse' : ''}`}>
                       {showAvatar && (
@@ -830,7 +868,6 @@ export default function App() {
                   );
                 })}
               </div>
-
               <div className="p-3 bg-white border-t border-slate-100 flex items-center gap-2">
                  <input type="text" value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleUserSendMessage()} placeholder={t('chatInput')} className="flex-grow bg-slate-100 text-slate-800 rounded-full px-4 py-2.5 text-sm outline-none focus:ring-1 focus:ring-slate-300" />
                  <button onClick={handleUserSendMessage} className={`p-2.5 rounded-full flex items-center justify-center transition-colors ${chatInput.trim() ? 'bg-sky-500 text-white shadow-md' : 'bg-slate-100 text-slate-400'}`}><FiSend/></button>
@@ -838,7 +875,6 @@ export default function App() {
             </div>
           )}
 
-          {/* NÚT BONG BÓNG MẶC ĐỊNH */}
           {(!isChatBoxOpen && (!isAdmin || (!isHelpOpen && !adminChatUser))) && (
             <button onClick={() => setIsHelpOpen(!isHelpOpen)} className="relative w-14 h-14 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-2xl hover:bg-black hover:scale-105 transition-all">
                {isHelpOpen ? <FiX className="text-2xl" /> : <FiMessageCircle className="text-2xl" />}
@@ -849,16 +885,14 @@ export default function App() {
         </div>
 
         {/* HEADER CHÍNH */}
-        <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm flex-shrink-0 transition-colors duration-300">
+        <header className={`fixed top-0 left-0 w-full z-[100] border-b flex-shrink-0 transition-all duration-500 backdrop-blur-md ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'} ${isDarkMode ? 'bg-[#111111]/50 border-slate-800' : 'bg-white/50 border-slate-200 shadow-sm'}`}>
            <div className="max-w-[1400px] mx-auto px-4 md:px-8 pt-3 pb-0">
-              
               <div className="flex items-center justify-between gap-4 pb-2 md:pb-3">
                  <div className="flex items-center">
                     <h1 className="text-5xl md:text-[52px] font-brush tracking-wide cursor-pointer text-slate-900 hover:text-sky-600 transition-colors" onClick={() => navigateTo('home', 'all')} style={{ lineHeight: '1' }}>
                       Trimi
                     </h1>
                  </div>
-
                  <div className="hidden md:flex relative w-full max-w-[400px] flex-grow lg:mx-6">
                     <div className="flex bg-slate-100 rounded-full h-10 w-full overflow-hidden border border-transparent focus-within:border-slate-300 focus-within:bg-white transition-all shadow-inner z-50 relative">
                        <input type="text" value={searchQuery} onChange={(e) => {setSearchQuery(e.target.value); setCurrentView('shop');}} placeholder={t('search')} className="w-full px-4 text-sm outline-none bg-transparent text-slate-800 placeholder-slate-400 font-medium"/>
@@ -880,11 +914,9 @@ export default function App() {
                  </div>
 
                  <div className="hidden md:flex gap-4 items-center text-sm font-semibold text-slate-700">
-                    
                     <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 text-slate-500 hover:text-sky-500 transition-colors bg-slate-50 rounded-full border border-slate-200">
                       {isDarkMode ? <FiSun className="text-lg"/> : <FiMoon className="text-lg"/>}
                     </button>
-
                     <div className="relative">
                       <button onClick={() => setShowLangMenu(!showLangMenu)} className="flex items-center justify-center gap-1.5 font-bold text-slate-500 hover:text-slate-900 transition-colors bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200 min-w-[70px]">
                         <FiGlobe className="text-lg"/> <span className="uppercase tracking-widest">{lang}</span>
@@ -939,13 +971,10 @@ export default function App() {
                  </div>
               </div>
 
-              {/* MỞ RỘNG VÙNG CLICK MENU DANH MỤC LÊN THÀNH PADDING LỚN */}
               <nav className="hidden lg:flex items-center justify-center gap-2 text-[13px] font-bold text-slate-500 uppercase tracking-widest border-t border-slate-100 relative z-30">
-                 
                  <div className="relative group cursor-pointer">
                    <button onClick={() => navigateTo('shop', 'all')} className={`px-6 py-4 border-b-2 transition-colors ${currentView === 'shop' && currentCategory === 'all' ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('shop')}</button>
                  </div>
-                 
                  <div className="relative group cursor-pointer">
                    <button onClick={() => navigateTo('shop', 'shirt_all')} className={`px-6 py-4 border-b-2 transition-colors uppercase ${currentCategory.includes('shirt') ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('nav_shirt')}</button>
                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-48 pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform origin-top translate-y-2 group-hover:translate-y-0 z-50">
@@ -957,7 +986,6 @@ export default function App() {
                      </div>
                    </div>
                  </div>
-
                  <div className="relative group cursor-pointer">
                    <button onClick={() => navigateTo('shop', 'pants_all')} className={`px-6 py-4 border-b-2 transition-colors uppercase ${currentCategory.includes('pants') ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('nav_pants')}</button>
                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-48 pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform origin-top translate-y-2 group-hover:translate-y-0 z-50">
@@ -969,7 +997,6 @@ export default function App() {
                      </div>
                    </div>
                  </div>
-
                  <div className="relative group cursor-pointer">
                    <button onClick={() => navigateTo('shop', 'acc_all')} className={`px-6 py-4 border-b-2 transition-colors uppercase ${currentCategory.includes('acc') ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('nav_acc')}</button>
                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-48 pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform origin-top translate-y-2 group-hover:translate-y-0 z-50">
@@ -981,23 +1008,16 @@ export default function App() {
                      </div>
                    </div>
                  </div>
-
               </nav>
            </div>
         </header>
 
-        <main className="flex-grow flex flex-col">
-
-          {/* TRANG CHỦ MỘC MẠC */}
+        <main className="flex-grow flex flex-col pt-[90px] md:pt-[110px]">
           {currentView === 'home' && (
             <div className="w-full flex flex-col animate-fade-in">
                <div className="w-full h-[70vh] md:h-[80vh] flex flex-col md:flex-row">
                   {lookbook.map((block, index) => (
-                    <div key={block.id} className="flex-1 relative group cursor-pointer overflow-hidden border-r border-slate-200/20" onClick={(e) => {
-                      if(e.target.tagName !== 'INPUT' && e.target.tagName !== 'svg' && e.target.tagName !== 'LABEL') {
-                        navigateTo('shop', block.targetCategory || 'all');
-                      }
-                    }}>
+                    <div key={block.id} className="flex-1 relative group cursor-pointer overflow-hidden border-r border-slate-200/20" onClick={(e) => navigateTo('shop', block.targetCategory || 'all')}>
                       <img src={block.img} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" alt={block.title} />
                       <div className="absolute inset-0 bg-black/20 group-hover:bg-black/50 transition-colors duration-500"></div>
                       <div className="absolute bottom-10 left-0 w-full text-center md:text-left md:left-8 z-10 pointer-events-none">
@@ -1005,14 +1025,6 @@ export default function App() {
                           {block.title.split(' ').map((word, i) => <span key={i} className="block">{word}</span>)}
                         </h3>
                       </div>
-                      {isAdmin && (
-                        <div className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <label className="bg-white/90 hover:bg-white text-slate-900 p-3 rounded-full cursor-pointer shadow-lg flex items-center justify-center transition-colors" title="Đổi ảnh cột này">
-                            <FiCamera className="text-xl"/>
-                            <input type="file" accept="image/*" onClick={(e) => e.target.value = null} onChange={(e) => handleLookbookUpload(e, index)} className="hidden" />
-                          </label>
-                        </div>
-                      )}
                     </div>
                   ))}
                </div>
@@ -1026,54 +1038,31 @@ export default function App() {
             </div>
           )}
           
-          {/* CỬA HÀNG */}
           {currentView === 'shop' && (
             <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 py-8 md:py-10 animate-fade-in">
-              
               {currentCategory === 'all' && (
-                <div className="banner-protected rounded-[32px] p-6 md:p-12 mb-6 md:mb-10 border border-blue-100 flex flex-col md:flex-row items-center justify-between shadow-sm overflow-hidden relative min-h-[320px] cursor-pointer group bg-[#eef5fc]" onClick={() => { if(!isEditingBanner) navigateTo('shop', 'all'); }}>
+                <div className={`rounded-[32px] p-6 md:p-12 mb-6 md:mb-10 border flex flex-col md:flex-row items-center justify-between shadow-2xl overflow-hidden relative min-h-[320px] cursor-pointer group transition-colors duration-500 ${!isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200'}`} onClick={() => navigateTo('shop', 'all')}>
                   <div className="max-w-[60%] md:max-w-xl relative z-10 pointer-events-none whitespace-pre-line group-hover:-translate-y-1 transition-transform">
-                    <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 inline-block">{t('newCol')}</span>
-                    <h2 className="text-3xl md:text-5xl font-black keep-dark-text mb-4 leading-tight">{t('heroTitle')}</h2>
-                    <p className="keep-dark-text-sub mb-6 font-medium">{t('heroDesc')}</p>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 inline-block shadow-lg ${!isDarkMode ? 'bg-sky-500 text-white' : 'bg-sky-100 text-sky-600'}`}>{t('newCol')}</span>
+                    <h2 className={`text-3xl md:text-5xl font-black mb-4 leading-tight drop-shadow-md ${!isDarkMode ? 'text-white' : 'text-slate-900'}`}>{t('heroTitle')}</h2>
+                    <p className={`mb-6 font-medium ${!isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>{t('heroDesc')}</p>
                   </div>
-                  
-                  {isAdmin && !isEditingBanner && (
-                    <button onClick={(e) => { e.stopPropagation(); setIsEditingBanner(true); }} className="absolute top-4 right-4 z-30 bg-white/90 backdrop-blur text-slate-900 p-2 px-3 rounded-lg shadow-sm border border-slate-200 hover:text-sky-600 text-xs font-bold flex items-center gap-2 transition-colors">
-                      <FiEdit3/> Chỉnh Banner
-                    </button>
-                  )}
-
-                  <div 
-                    className={`absolute md:relative md:flex right-0 bottom-0 top-0 w-full md:w-1/2 items-center justify-end md:justify-center flex transition-all overflow-hidden md:overflow-visible ${isEditingBanner ? 'z-20 border-4 border-dashed border-sky-400 bg-sky-50/30 cursor-move' : 'pointer-events-none z-0'}`}
-                    onMouseDown={handleBannerMouseDown} onMouseMove={handleBannerMouseMove} onMouseUp={handleBannerMouseUp} onMouseLeave={handleBannerMouseUp} onWheel={handleBannerWheel}
-                  >
-                    <img 
-                      src={bannerImage} alt="Banner" draggable={false} 
-                      className={`h-[90%] md:h-[90%] w-auto object-contain object-right md:object-center drop-shadow-2xl ${isEditingBanner ? 'opacity-100' : 'opacity-80 md:opacity-100 group-hover:scale-105 transition-transform duration-700 ease-out'}`} 
-                      style={{ transform: isMobile ? 'scale(1)' : `translate(${bannerConfig.x}px, ${bannerConfig.y}px) scale(${bannerConfig.scale})` }}
-                      onError={(e) => { e.target.onerror = null; e.target.src = "https://fakestoreapi.com/img/71YXzeOuslL._AC_UY879_.jpg"; e.target.className = "h-[80%] w-auto object-contain opacity-50 drop-shadow-xl" }} 
-                    />
-                    
-                    {isEditingBanner && (
-                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white p-2 px-4 rounded-full shadow-2xl flex items-center gap-4 cursor-default animate-fade-in-up" onMouseDown={e => e.stopPropagation()} onClick={e => e.stopPropagation()}>
-                        <FiMove className="text-xl text-slate-400"/>
-                        <span className="text-xs font-bold text-slate-300 whitespace-nowrap hidden sm:inline">Kéo & Cuộn</span>
-                        <div className="w-px h-6 bg-slate-700 mx-1"></div>
-                        <label className="bg-slate-700 hover:bg-slate-600 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-1 cursor-pointer transition-colors whitespace-nowrap">
-                           <FiCamera/> Đổi ảnh
-                           <input type="file" accept="image/*" onClick={(e) => e.target.value = null} onChange={handleBannerImageUpload} className="hidden" />
-                        </label>
-                        <button onClick={handleSaveBanner} className="bg-sky-500 hover:bg-sky-600 px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-1 transition-colors"><FiSave/> Lưu</button>
-                      </div>
-                    )}
+                  <div className="absolute inset-y-0 right-0 w-full md:w-1/2 flex items-end justify-end md:pr-16 pointer-events-none overflow-hidden z-0">
+                    <img src="/banner.png" alt="Banner" draggable={false} className="h-[95%] md:h-[100%] max-h-[280px] md:max-h-full w-auto object-contain object-bottom drop-shadow-[0_20px_30px_rgba(0,0,0,0.3)] opacity-90 md:opacity-100 group-hover:scale-105 transition-transform duration-700 ease-out origin-bottom" />
                   </div>
                 </div>
               )}
 
               <div className="mb-8 flex items-center gap-2">
                  <div className="w-2 h-8 bg-sky-500 rounded-full"></div>
-                 <h2 className="text-2xl font-black text-slate-800 uppercase tracking-widest">{currentCategory.includes('_all') ? t(currentCategory) : (currentCategory === 'all' ? t('all_products') : t(currentCategory))}</h2>
+                 <h2 className={`text-2xl font-black uppercase tracking-widest ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
+                   {currentCategory.includes('_all') ? t(currentCategory) : (currentCategory === 'all' ? t('all_products') : t(currentCategory))}
+                 </h2>
+                 {selectedTag && (
+                   <button onClick={() => setSelectedTag(null)} className="ml-4 bg-sky-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 hover:bg-red-500 transition-colors">
+                     #{translateTag(selectedTag)} <FiX/>
+                   </button>
+                 )}
               </div>
 
               {isLoadingShop ? (
@@ -1085,7 +1074,7 @@ export default function App() {
                   <p className="text-slate-500 mt-2">{t('no_products_desc')}</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-8 px-1 md:px-0">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-5 px-1 md:px-0">
                   {displayedProducts.map((item) => (
                     <div key={item.id} className="flex flex-col gap-3 group">
                       <div className="bg-slate-100 rounded-[32px] border border-slate-200 relative aspect-[4/5] flex items-center justify-center cursor-pointer hover:shadow-2xl hover:border-slate-300 hover:-translate-y-1 transition-all duration-500 overflow-hidden" onClick={() => navigateTo('productDetail', currentCategory, item)}>
@@ -1095,7 +1084,15 @@ export default function App() {
                          </button>
                       </div>
                       <div className="px-2">
-                        <h3 className="text-slate-800 font-bold text-xs md:text-sm line-clamp-1 mb-1 cursor-pointer hover:text-sky-600 transition-colors" onClick={() => navigateTo('productDetail', currentCategory, item)}>{t_prod(item.id, 'name', item.name)}</h3>
+                        {/* HIỂN THỊ TAGS */}
+                        {item.tags && item.tags.length > 0 && (
+                          <div className="flex gap-1 mb-1 mt-2 flex-wrap">
+                            {item.tags.map((t, idx) => (
+                              <span key={idx} onClick={(e) => { e.stopPropagation(); setSelectedTag(t); }} className="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-md hover:bg-sky-100 hover:text-sky-600 transition-colors cursor-pointer border border-slate-300 shadow-sm font-bold">#{translateTag(t)}</span>
+                            ))}
+                          </div>
+                        )}
+                        <h3 className={`font-bold text-xs md:text-sm line-clamp-1 mb-1 cursor-pointer transition-colors hover:text-sky-500 mt-1 ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`} onClick={() => navigateTo('productDetail', currentCategory, item)}>{t_prod(item.id, 'name', item.name)}</h3>
                         <div className="flex items-center justify-between mt-1">
                           <div className="flex items-center gap-1 md:gap-1.5">
                             {fakeColorSpheres.map((gradient, idx) => (
@@ -1112,44 +1109,66 @@ export default function App() {
             </div>
           )}
 
-          {/* CHI TIẾT SẢN PHẨM */}
           {currentView === 'productDetail' && selectedProduct && (
             <div className="max-w-[1200px] mx-auto w-full px-4 md:px-8 py-6 md:py-8 animate-fade-in">
               <div className="text-xs font-bold text-slate-400 mb-6 tracking-wider uppercase flex items-center gap-2">
-                <button onClick={() => navigateTo('shop', currentCategory)} className="hover:text-slate-800 transition-colors flex items-center gap-1"><FiCornerUpLeft/> {t('shop')}</button>
+                <button onClick={() => { setActiveImageIdx(0); navigateTo('shop', currentCategory); }} className="hover:text-slate-800 transition-colors flex items-center gap-1 cursor-pointer"><FiCornerUpLeft/> {t('shop')}</button>
                 <span>/</span><span>{currentCategory.includes('_all') ? t(currentCategory) : (currentCategory === 'all' ? t('all_products') : t(selectedProduct.category))}</span><span>/</span><span className="text-slate-800 truncate">{t_prod(selectedProduct.id, 'name', selectedProduct.name)}</span>
               </div>
               <div className="bg-white rounded-[40px] border border-slate-100 p-6 md:p-8 flex flex-col md:flex-row gap-8 lg:gap-12 shadow-sm">
                 
-                <div className="w-full md:w-[45%] lg:w-[40%] max-h-[400px] lg:max-h-[500px] bg-slate-50 border border-slate-100 rounded-[32px] flex items-center justify-center relative group overflow-hidden">
-                   <img src={selectedProduct.imageUrl} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" alt={selectedProduct.name}/>
+                {/* ẢNH SẢN PHẨM & GALLERY */}
+                <div className="w-full md:w-[45%] lg:w-[40%] flex flex-col gap-4 flex-shrink-0">
+                  <div className="w-full h-[400px] lg:h-[500px] bg-slate-50 border border-slate-100 rounded-[32px] flex items-center justify-center relative group overflow-hidden">
+                     <img src={(selectedProduct.images && selectedProduct.images.length > 0) ? selectedProduct.images[activeImgIdx] : selectedProduct.imageUrl} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" alt={selectedProduct.name}/>
+                  </div>
+                  {(selectedProduct.images && selectedProduct.images.length > 1) && (
+                    <div className="flex gap-2 overflow-x-auto custom-scrollbar py-2">
+                      {selectedProduct.images.map((img, idx) => (
+                        <div key={idx} onClick={() => setActiveImageIdx(idx)} className={`w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 cursor-pointer border-2 transition-all ${activeImgIdx === idx ? 'border-sky-500 shadow-md' : 'border-transparent hover:border-slate-300'}`}>
+                          <img src={img} className="w-full h-full object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                <div className="w-full md:w-[55%] lg:w-[60%] flex flex-col justify-center">
-                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-slate-900 mb-3 leading-tight">{t_prod(selectedProduct.id, 'name', selectedProduct.name)}</h1>
+                <div className="w-full md:w-[55%] lg:w-[60%] flex flex-col justify-start relative">
+                  {isAdmin && (
+                    <button onClick={() => { setEditFormData({ ...selectedProduct, images: selectedProduct.images || [selectedProduct.imageUrl] }); setShowEditModal(true); }} className="absolute top-0 right-0 bg-white border border-slate-200 text-slate-800 p-3 rounded-full hover:text-sky-600 hover:border-sky-300 shadow-sm transition-all cursor-pointer z-10" title="Chỉnh sửa sản phẩm">
+                      <FiEdit3 className="text-xl" />
+                    </button>
+                  )}
+                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-slate-900 mb-3 leading-tight pr-12">{t_prod(selectedProduct.id, 'name', selectedProduct.name)}</h1>
                   <div className="flex items-center text-sm gap-4 mb-6">
                     <span className="text-amber-400 font-bold flex items-center gap-1 text-base"><FiStar className="fill-current"/> {selectedProduct.rating}</span>
                     <span className="text-slate-300">|</span>
                     <span className="text-slate-500 font-medium underline underline-offset-4">{selectedProduct.reviews} Đánh giá</span>
                   </div>
-                  <div className="text-3xl lg:text-4xl font-black text-sky-600 mb-6">{(Number(selectedProduct.price) || 0).toLocaleString('vi-VN')}đ</div>
+                  <div className="text-3xl lg:text-4xl font-black text-sky-600 mb-8">{(Number(selectedProduct.price) || 0).toLocaleString('vi-VN')}đ</div>
+
+                  <div className="flex gap-3 md:gap-4 mb-10 w-full">
+                    <button onClick={(e) => handleAddToCart(selectedProduct, e)} className="flex-1 md:flex-none md:px-8 bg-sky-50 text-sky-600 border border-sky-200 py-4 rounded-[20px] font-black text-sm tracking-widest uppercase hover:bg-sky-100 transition-transform active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm whitespace-nowrap cursor-pointer">
+                      <FiShoppingCart className="text-xl"/> Thêm giỏ
+                    </button>
+                    <button onClick={(e) => { handleAddToCart(selectedProduct, e); setIsCartOpen(true); }} className="flex-[2] bg-slate-900 text-white py-4 rounded-[20px] font-black text-sm tracking-widest uppercase hover:bg-black transition-transform active:scale-[0.98] flex items-center justify-center gap-2 shadow-xl shadow-slate-900/20 cursor-pointer">
+                      <FiCheckCircle className="text-xl"/> Mua Ngay
+                    </button>
+                  </div>
+
                   <div className="space-y-3 text-sm font-medium text-slate-700 mb-8 bg-slate-50 p-5 rounded-3xl border border-slate-100">
                     <div className="flex items-center gap-3"><FiTruck className="text-xl text-sky-500"/> {t('ship')}</div>
                     <div className="flex items-center gap-3"><FiShield className="text-xl text-emerald-500"/> {t('return')}</div>
                   </div>
-                  <div className="mb-10">
+                  <div className="mb-4">
                     <p className="text-sm font-bold text-slate-900 mb-2 uppercase tracking-wider">{t('desc')}</p>
-                    <p className="text-sm text-slate-600 leading-relaxed font-medium">{t_prod(selectedProduct.id, 'desc', selectedProduct.description)}</p>
+                    <p className="text-sm text-slate-600 leading-relaxed font-medium whitespace-pre-line">{t_prod(selectedProduct.id, 'desc', selectedProduct.description)}</p>
                   </div>
-                  <button onClick={(e) => handleAddToCart(selectedProduct, e)} className="mt-auto w-full md:w-[80%] bg-slate-900 text-white py-4 rounded-full font-black text-sm tracking-widest uppercase hover:bg-black transition-transform active:scale-[0.98] flex items-center justify-center gap-3 shadow-xl shadow-slate-900/20">
-                    <FiShoppingCart className="text-xl"/> {t('addToCart')}
-                  </button>
                 </div>
               </div>
             </div>
           )}
 
-          {/* TRANG CÁ NHÂN VÀ CÀI ĐẶT */}
           {currentView === 'profile' && user && (
             <div className="max-w-5xl mx-auto w-full px-4 py-8 animate-fade-in-up relative z-30">
               <div className="bg-white rounded-[40px] overflow-hidden shadow-sm border border-slate-200 mb-6 relative">
@@ -1162,7 +1181,6 @@ export default function App() {
                     <input type="file" id="coverUpload" accept="image/*" onClick={(e) => e.target.value = null} onChange={(e) => handleProfileUpload(e, 'cover')} className="hidden" />
                   </div>
                 </div>
-                
                 <div className="px-6 md:px-12 pb-8 relative">
                   <div className="w-32 h-32 md:w-44 md:h-44 bg-white rounded-full p-1.5 absolute -top-16 md:-top-24 border border-slate-100 shadow-xl z-10">
                     <div className="w-full h-full bg-slate-900 text-white rounded-full flex items-center justify-center text-5xl font-black relative overflow-hidden group">
@@ -1173,18 +1191,21 @@ export default function App() {
                       <input type="file" id="avatarUpload" accept="image/*" onClick={(e) => e.target.value = null} onChange={(e) => handleProfileUpload(e, 'avatar')} className="hidden" />
                     </div>
                   </div>
-
-                  <div className="flex justify-end pt-6 pb-2 gap-3 relative z-20">
+                  <div className="flex justify-end pt-6 pb-2 gap-3 relative z-20 flex-wrap">
                     <button onClick={handleLogout} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-3 rounded-full font-bold text-sm transition-colors flex items-center gap-2 border border-slate-200">
                       <FiLogOut/> {t('logout')}
                     </button>
                     {isAdmin && (
-                      <button onClick={() => navigateTo('admin')} className="bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-full font-bold text-sm transition-colors flex items-center gap-2 shadow-md">
-                        <FiSettings/> {t('adminMenu')}
-                      </button>
+                      <>
+                        <button onClick={() => { setSurveyStep(1); setShowSurveyModal(true); }} className="bg-sky-500 hover:bg-sky-600 text-white px-6 py-3 rounded-full font-bold text-sm transition-colors flex items-center gap-2 shadow-md">
+                          <FiMonitor/> Test Khảo sát
+                        </button>
+                        <button onClick={() => navigateTo('admin')} className="bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-full font-bold text-sm transition-colors flex items-center gap-2 shadow-md">
+                          <FiSettings/> {t('adminMenu')}
+                        </button>
+                      </>
                     )}
                   </div>
-
                   <div className="mt-4 md:mt-0 relative z-20">
                     {!isEditingName ? (
                       <h2 className="text-3xl md:text-4xl font-black text-slate-900 flex items-center gap-3">
@@ -1200,74 +1221,179 @@ export default function App() {
                       </div>
                     )}
                     <p className="text-slate-500 font-medium mb-4 mt-2">{user?.email || 'Đăng nhập bằng Số điện thoại'}</p>
-                    
                     <div className="flex flex-wrap gap-2 mb-8">
                       <span className="bg-slate-100 text-slate-700 px-4 py-1.5 rounded-full text-xs font-bold border border-slate-200">{t('roleCustomer')}</span>
                       <span className="bg-sky-100 text-sky-700 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1"><FiCheckCircle/> {t('roleVerified')}</span>
                       {isAdmin && <span className="bg-amber-100 text-amber-700 px-4 py-1.5 rounded-full text-xs font-bold">Admin</span>}
                     </div>
                   </div>
-                  
-                  <div className="flex gap-8 border-b border-slate-100 pt-6 overflow-x-auto custom-scrollbar relative z-20">
-                     {['Tất cả', 'Chờ thanh toán', 'Vận chuyển', 'Chờ giao hàng', 'Hoàn thành', 'Đã hủy', 'Trả hàng/Hoàn tiền'].map((tab, idx) => (
-                       <button key={idx} className={`pb-3 whitespace-nowrap font-bold text-sm tracking-wide transition-colors ${idx === 0 ? 'text-slate-900 border-b-2 border-slate-900' : 'text-slate-400 hover:text-slate-900'}`}>
-                         {tab}
-                       </button>
+                  <div className={`flex gap-8 border-b pt-6 overflow-x-auto custom-scrollbar relative z-20 ${isDarkMode ? 'border-slate-800' : 'border-slate-100'}`}>
+                     {['Đơn hàng của tôi'].map((tab, idx) => (
+                       <button key={idx} className={`pb-3 whitespace-nowrap font-bold text-sm tracking-wide transition-colors ${isDarkMode ? 'text-white border-b-2 border-white' : 'text-slate-900 border-b-2 border-slate-900'}`}>{tab}</button>
                      ))}
                   </div>
                 </div>
               </div>
-
-              <div className="bg-white rounded-[40px] p-8 border border-slate-200 shadow-sm text-center py-24">
-                <FiArchive className="text-6xl text-slate-200 mx-auto mb-6"/>
-                <h3 className="text-2xl font-black text-slate-800 mb-2">{t('noOrders')}</h3>
-                <p className="text-slate-500 text-base font-medium">{t('noOrdersDesc')}</p>
-              </div>
+              
+              {myOrders.length === 0 ? (
+                <div className={`rounded-[40px] p-8 border shadow-sm text-center py-24 ${isDarkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+                  <FiArchive className={`text-6xl mx-auto mb-6 ${isDarkMode ? 'text-slate-600' : 'text-slate-200'}`}/>
+                  <h3 className={`text-2xl font-black mb-2 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{t('noOrders')}</h3>
+                  <p className={isDarkMode ? 'text-slate-400' : 'text-slate-500'}>{t('noOrdersDesc')}</p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {myOrders.map(order => (
+                    <div key={order.id} className={`p-6 rounded-[32px] border shadow-sm flex flex-col md:flex-row gap-6 justify-between items-start md:items-center ${isDarkMode ? 'bg-[#1e293b] border-slate-700' : 'bg-white border-slate-200'}`}>
+                      <div>
+                        <h4 className={`font-black text-lg ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Mã đơn: {order.orderId}</h4>
+                        <p className={`text-sm mb-3 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{new Date(order.createdAt).toLocaleString('vi-VN')}</p>
+                        <div className="space-y-1">
+                          {order.items.map((it, idx) => <p key={idx} className={`text-sm ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>- {it.name} <span className="text-sky-500 font-bold ml-1">x{it.quantity}</span></p>)}
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-start md:items-end gap-3 mt-4 md:mt-0">
+                        <span className="text-xl font-black text-sky-500">{order.paidAmount.toLocaleString('vi-VN')}đ <span className="text-xs text-slate-500 font-medium">({order.paymentMode === 'full' ? '100%' : 'Cọc 30%'})</span></span>
+                        <span className={`px-5 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest shadow-sm ${
+                          order.status.includes('Hoàn thành') ? 'bg-emerald-500 text-white' : 
+                          order.status.includes('hủy') ? 'bg-red-500 text-white' : 'bg-amber-400 text-amber-950'
+                        }`}>{order.status}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
-          {/* QUẢN TRỊ ADMIN */}
           {currentView === 'admin' && isAdmin && (
-            <div className="max-w-6xl mx-auto w-full px-4 py-8 md:py-12 animate-fade-in flex flex-col gap-8">
+            <div className="max-w-[1400px] mx-auto w-full px-4 py-8 md:py-12 animate-fade-in flex flex-col gap-8">
               <div>
                 <div className="text-xs font-bold text-slate-400 mb-6 tracking-wider uppercase flex items-center gap-2">
-                  <button onClick={() => navigateTo('profile')} className="hover:text-slate-800 transition-colors flex items-center gap-1"><FiCornerUpLeft/> {t('account')}</button>
+                  <button onClick={() => navigateTo('profile')} className="hover:text-slate-800 transition-colors flex items-center gap-1 cursor-pointer"><FiCornerUpLeft/> {t('account')}</button>
                   <span>/</span><span className="text-slate-800 truncate">{t('adminDashboard')}</span>
                 </div>
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                   <h2 className="text-3xl md:text-4xl font-black text-slate-900 flex items-center gap-3"><FiArchive className="text-slate-900"/> {t('adminDashboard')}</h2>
-                   <button onClick={() => setShowAddModal(true)} className="bg-sky-500 text-white px-6 py-3.5 rounded-full font-bold shadow-lg flex items-center gap-2">
-                     <FiPlus className="text-xl"/> {t('adminAdd')}
-                   </button>
+                   <h2 className="text-3xl md:text-4xl font-black text-slate-900 flex items-center gap-3"><FiArchive className="text-sky-500"/> {t('adminDashboard')}</h2>
+                   <div className="bg-slate-100 p-1.5 rounded-full flex gap-1">
+                      <button onClick={() => setAdminTab('products')} className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all cursor-pointer ${adminTab === 'products' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>Kho Hàng</button>
+                      <button onClick={() => setAdminTab('orders')} className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${adminTab === 'orders' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>
+                         Đơn Đặt Hàng 
+                         {adminOrders.length > 0 && <span className="bg-red-500 text-white w-5 h-5 flex items-center justify-center rounded-full text-[10px]">{adminOrders.length}</span>}
+                      </button>
+                   </div>
+                   {adminTab === 'products' && (
+                     <button onClick={() => setShowAddModal(true)} className="bg-sky-500 text-white px-6 py-3.5 rounded-full font-bold shadow-lg flex items-center justify-center gap-2 cursor-pointer hover:bg-sky-600 transition-colors">
+                       <FiPlus className="text-xl"/> Thêm Sản Phẩm
+                     </button>
+                   )}
                 </div>
               </div>
               
               <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto custom-scrollbar">
-                  <table className="w-full text-left border-collapse min-w-[600px]">
-                    <thead>
-                      <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-widest font-black border-b border-slate-200">
-                        <th className="p-5 pl-8">{t('adminImg')}</th>
-                        <th className="p-5">{t('adminName')}</th>
-                        <th className="p-5">{t('adminPrice')}</th>
-                        <th className="p-5 text-right pr-8">{t('adminAction')}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {localProducts.map((item) => (
-                        <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                          <td className="p-5 pl-8">
-                            <div className="w-16 h-16 bg-white border border-slate-200 rounded-2xl p-1 shadow-sm"><img src={item.imageUrl} className="w-full h-full object-cover rounded-xl" alt=""/></div>
-                          </td>
-                          <td className="p-5 font-bold text-base text-slate-800 max-w-[250px] truncate">{item.name}</td>
-                          <td className="p-5 font-black text-slate-900 text-lg">{(Number(item.price) || 0).toLocaleString('vi-VN')}đ</td>
-                          <td className="p-5 text-right pr-8">
-                            <button onClick={() => handleDeleteProduct(item.id)} className="text-red-500 bg-red-50 hover:bg-red-500 hover:text-white px-5 py-2.5 rounded-full transition-colors font-bold text-xs flex items-center gap-2 ml-auto"><FiTrash2 className="text-sm"/> {t('adminDel')}</button>
-                          </td>
+                  {adminTab === 'products' && (
+                    <table className="w-full text-left border-collapse min-w-[600px]">
+                      <thead>
+                        <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-widest font-black border-b border-slate-200">
+                          <th className="p-5 pl-8">{t('adminImg')}</th>
+                          <th className="p-5">{t('adminName')}</th>
+                          <th className="p-5">{t('adminPrice')}</th>
+                          <th className="p-5 text-right pr-8">{t('adminAction')}</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {localProducts.map((item) => (
+                          <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                            <td className="p-5 pl-8">
+                              <div className="w-16 h-16 bg-white border border-slate-200 rounded-2xl p-1 shadow-sm"><img src={item.imageUrl} className="w-full h-full object-cover rounded-xl" alt=""/></div>
+                            </td>
+                            <td className="p-5 font-bold text-base text-slate-800 max-w-[250px] truncate">{item.name}</td>
+                            <td className="p-5 font-black text-slate-900 text-lg">{(Number(item.price) || 0).toLocaleString('vi-VN')}đ</td>
+                            <td className="p-5 text-right pr-8">
+                              <button onClick={() => handleDeleteProduct(item.id)} className="text-red-500 bg-red-50 hover:bg-red-500 hover:text-white px-5 py-2.5 rounded-full transition-colors font-bold text-xs flex items-center justify-center gap-2 ml-auto cursor-pointer"><FiTrash2 className="text-sm"/> {t('adminDel')}</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                  {adminTab === 'orders' && (
+                    <table className="w-full text-left border-collapse min-w-[1000px]">
+                      <thead>
+                        <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-widest font-black border-b border-slate-200">
+                          <th className="p-5 pl-8">Mã Đơn / Thời gian</th>
+                          <th className="p-5">Khách hàng</th>
+                          <th className="p-5">Sản phẩm</th>
+                          <th className="p-5">Thanh toán</th>
+                          <th className="p-5 text-center">Ảnh Bill</th>
+                          <th className="p-5 text-right pr-8">Trạng thái</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {adminOrders.length === 0 ? (
+                           <tr><td colSpan="6" className="p-10 text-center text-slate-400 font-medium">Chưa có đơn hàng nào.</td></tr>
+                        ) : (
+                          adminOrders.map((order) => {
+                            const customerUser = usersList.find(u => u.uid === order.uid);
+                            return (
+                            <tr key={order.id} className={`border-b transition-colors ${isDarkMode ? 'border-slate-700/50 hover:bg-white/5' : 'border-slate-100 hover:bg-slate-50'}`}>
+                              <td className="p-5 pl-8">
+                                <span className={`font-black block ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{order.orderId}</span>
+                                <span className={`text-xs font-medium mt-1 block ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{new Date(order.createdAt).toLocaleString('vi-VN')}</span>
+                              </td>
+                              <td className="p-5 text-sm">
+                                <span className={`font-bold block ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{order.customerName}</span>
+                                <span className={`block ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{order.customerPhone}</span>
+                                <span className={`text-xs mt-1 block max-w-[200px] line-clamp-2 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{order.customerAddress}</span>
+                                {customerUser && (
+                                  <button onClick={() => openAdminChatWithUser(customerUser)} className="mt-3 text-xs font-bold bg-sky-500/10 text-sky-500 hover:bg-sky-500 hover:text-white px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5 w-fit cursor-pointer border border-sky-500/20">
+                                    <FiMessageCircle/> Nhắn tin
+                                  </button>
+                                )}
+                              </td>
+                              <td className="p-5 text-sm">
+                                <div className="space-y-1 max-w-[250px]">
+                                  {order.items.map((it, idx) => (
+                                    <div key={idx} className={`font-medium truncate ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>- {it.name} <b className="text-sky-500">x{it.quantity}</b></div>
+                                  ))}
+                                </div>
+                              </td>
+                              <td className="p-5">
+                                <span className="font-black text-sky-500 block text-base">{order.paidAmount.toLocaleString('vi-VN')}đ</span>
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded inline-block mt-1 ${isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-600'}`}>{order.paymentMode === 'full' ? 'Đã CK 100%' : 'Đã Cọc 30%'}</span>
+                              </td>
+                              <td className="p-5 text-center">
+                                {order.receiptImage ? (
+                                  <div onClick={() => setPreviewImg(order.receiptImage)} className="inline-block relative group">
+                                    <img src={order.receiptImage} className={`w-16 h-16 object-cover rounded-xl border shadow-sm transition-transform cursor-pointer group-hover:scale-105 ${isDarkMode ? 'border-slate-600' : 'border-slate-200'}`} alt="Bill"/>
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"><FiSearch className="text-white text-xl"/></div>
+                                  </div>
+                                ) : <span className={`text-xs ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Không có</span>}
+                              </td>
+                              <td className="p-5 text-right pr-8">
+                                 <select 
+                                    value={order.status}
+                                    onChange={async (e) => {
+                                      await setDoc(doc(db, 'orders', order.id), { status: e.target.value }, { merge: true });
+                                      showToast('Đã cập nhật trạng thái đơn!');
+                                    }}
+                                    className={`border text-sm font-bold rounded-xl px-4 py-2 outline-none cursor-pointer transition-colors focus:border-sky-500 ${isDarkMode ? 'bg-[#111111] border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
+                                 >
+                                    <option value="Chờ xác nhận thanh toán">Chờ duyệt Bill</option>
+                                    <option value="Đang chuẩn bị hàng">Đang chuẩn bị hàng</option>
+                                    <option value="Đang giao hàng">Đang giao hàng</option>
+                                    <option value="Hoàn thành">Hoàn thành</option>
+                                    <option value="Đã hủy">Đã hủy</option>
+                                 </select>
+                              </td>
+                            </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               </div>
             </div>
@@ -1276,14 +1402,14 @@ export default function App() {
 
         <footer className="bg-[#111111] text-white pt-16 pb-8 mt-auto border-t border-slate-800 flex-shrink-0 z-30 relative transition-colors duration-300">
           <div className="max-w-[1400px] mx-auto px-4 md:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-16">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-16">
               <div className="lg:col-span-1">
                 <h2 className="text-[65px] font-brush mb-2 leading-[0.8] tracking-wider">Trimi</h2>
                 <div className="flex gap-4 text-slate-400 mt-6">
-                   <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 cursor-pointer transition-colors"><FiInstagram className="text-lg"/></div>
+                   <div onClick={() => showToast('Đang chuyển đến Instagram!')} className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 cursor-pointer transition-colors"><FiInstagram className="text-lg"/></div>
                    <a href="https://www.facebook.com/profile.php?id=61578555688928" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 cursor-pointer transition-colors"><FaFacebook className="text-lg"/></a>
-                   <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 cursor-pointer transition-colors"><FiLinkedin className="text-lg"/></div>
-                   <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 cursor-pointer transition-colors"><FiYoutube className="text-lg"/></div>
+                   <div onClick={() => showToast('Đang chuyển đến LinkedIn!')} className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 cursor-pointer transition-colors"><FiLinkedin className="text-lg"/></div>
+                   <div onClick={() => showToast('Đang chuyển đến YouTube!')} className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 cursor-pointer transition-colors"><FiYoutube className="text-lg"/></div>
                 </div>
               </div>
               <div>
@@ -1298,91 +1424,87 @@ export default function App() {
               <div>
                 <h4 className="font-bold text-lg mb-6">{t('f_sup')}</h4>
                 <ul className="space-y-4 text-sm text-slate-400 font-medium">
-                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_track')}</li>
-                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_ret')}</li>
-                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_ship')}</li>
-                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_size')}</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-bold text-lg mb-6">{t('f_serv')}</h4>
-                <ul className="space-y-4 text-sm text-slate-400 font-medium">
-                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_print')}</li>
-                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_b2b')}</li>
-                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_gift')}</li>
+                  <li className="hover:text-white cursor-pointer transition-colors" onClick={() => requireLogin(() => navigateTo('profile'))}>{t('f_track')}</li>
+                  <li className="hover:text-white cursor-pointer transition-colors" onClick={() => setShowTermsModal(true)}>{t('f_ret')}</li>
+                  <li className="hover:text-white cursor-pointer transition-colors" onClick={() => setShowTermsModal(true)}>{t('f_ship')}</li>
+                  <li className="hover:text-white cursor-pointer transition-colors" onClick={() => showToast('Tính năng Bảng Size đang được cập nhật!')}>{t('f_size')}</li>
                 </ul>
               </div>
               <div>
                 <h4 className="font-bold text-lg mb-6">{t('f_about')}</h4>
                 <ul className="space-y-4 text-sm text-slate-400 font-medium">
-                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_story')}</li>
-                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_career')}</li>
-                  <li className="hover:text-white cursor-pointer transition-colors">{t('f_contact')}</li>
+                  <li className="hover:text-white cursor-pointer transition-colors" onClick={() => showToast('Trimi - Ngôn ngữ không lời để thể hiện cá tính!')}>{t('f_story')}</li>
+                  <li className="hover:text-white cursor-pointer transition-colors" onClick={() => showToast('Hiện tại Trimi chưa mở đợt tuyển dụng nào.')}>{t('f_career')}</li>
+                  <li className="hover:text-white cursor-pointer transition-colors" onClick={() => setIsHelpOpen(true)}>{t('f_contact')}</li>
                 </ul>
               </div>
             </div>
             <div className="flex flex-col md:flex-row justify-between items-center border-t border-slate-800 pt-8 text-xs text-slate-500 font-medium">
               <p>© Copyright Trimi 2026. All rights reserved.</p>
               <div className="flex gap-4 mt-4 md:mt-0">
-                <span className="hover:text-white cursor-pointer transition-colors">{t('f_priv')}</span>
+                <span onClick={() => setShowPrivacyModal(true)} className="hover:text-white cursor-pointer transition-colors font-bold">{t('f_priv')}</span>
                 <span>·</span>
-                <span className="hover:text-white cursor-pointer transition-colors">{t('f_term')}</span>
+                <span onClick={() => setShowTermsModal(true)} className="hover:text-white cursor-pointer transition-colors font-bold">{t('f_term')}</span>
               </div>
             </div>
           </div>
         </footer>
 
-        {/* MODAL GIỎ HÀNG */}
+        {/* MODAL GIỎ HÀNG (GỌN NHẸ - KHÔNG CHẶN TƯƠNG TÁC NỀN) */}
         {isCartOpen && (
-          <div className="fixed inset-0 z-[99999] flex justify-end pointer-events-auto">
-            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setIsCartOpen(false)}></div>
-            <div className="relative w-full max-w-md bg-white h-full flex flex-col shadow-2xl animate-fade-in-right">
-              <div className="flex justify-between items-center p-6 md:p-8 border-b border-slate-100">
-                <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3"><FiShoppingCart className="text-sky-500"/> {t('cart')} ({cartItemCount})</h2>
-                <button onClick={() => setIsCartOpen(false)} className="text-slate-400 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 p-2.5 rounded-full transition-colors"><FiX className="text-xl"/></button>
+          <div className="fixed inset-0 z-[99999] flex justify-end pointer-events-none">
+            {/* Đã xóa lớp nền chặn chuột để user có thể bấm nút mua ở background */}
+            
+            {/* Khung giỏ hàng: Kích hoạt lại pointer-events-auto để bấm được vào giỏ hàng */}
+            <div className={`relative w-full max-w-[360px] h-full flex flex-col shadow-2xl animate-fade-in-right backdrop-blur-xl border-l pointer-events-auto ${isDarkMode ? 'bg-[#181512]/60 border-white/10 text-white' : 'bg-[#f7f3ed]/70 border-black/10 text-slate-900'}`}>
+              
+              <div className={`flex justify-between items-center p-4 md:p-5 border-b ${isDarkMode ? 'border-white/10' : 'border-black/5'}`}>
+                <h2 className="text-xl font-black flex items-center gap-2"><FiShoppingCart className="text-sky-500"/> Giỏ hàng ({cartItemCount})</h2>
+                <button onClick={() => setIsCartOpen(false)} className={`p-2 rounded-full transition-colors cursor-pointer ${isDarkMode ? 'bg-white/10 hover:bg-white/20 text-slate-300' : 'bg-black/5 hover:bg-black/10 text-slate-500'}`}><FiX className="text-xl"/></button>
               </div>
-              <div className="flex-grow overflow-y-auto p-6 flex flex-col gap-5 custom-scrollbar bg-slate-50">
+
+              <div className="flex-grow overflow-y-auto p-4 flex flex-col gap-3 custom-scrollbar">
                 {cart.length === 0 ? (
-                  <div className="text-center mt-32 flex flex-col items-center">
-                    <div className="w-32 h-32 bg-white shadow-sm rounded-full flex items-center justify-center mb-6"><FiShoppingCart className="text-6xl text-slate-200"/></div>
-                    <p className="text-slate-500 font-medium mb-8 text-base">{t('emptyCart')}</p>
-                    <button onClick={() => {setIsCartOpen(false); navigateTo('shop', 'all')}} className="px-10 py-4 bg-slate-900 text-white text-sm font-bold tracking-widest uppercase rounded-full shadow-lg shadow-slate-900/20 hover:bg-black transition-all">{t('startShop')}</button>
+                  <div className="text-center mt-20 flex flex-col items-center">
+                    <div className={`w-20 h-20 shadow-sm rounded-full flex items-center justify-center mb-4 ${isDarkMode ? 'bg-white/5' : 'bg-white/50'}`}><FiShoppingCart className={`text-4xl ${isDarkMode ? 'text-slate-500' : 'text-slate-300'}`}/></div>
+                    <p className={`font-medium mb-6 text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{t('emptyCart')}</p>
+                    <button onClick={() => {setIsCartOpen(false); navigateTo('shop', 'all')}} className="px-6 py-3 bg-sky-500 text-white text-xs font-bold tracking-widest uppercase rounded-full shadow-lg hover:bg-sky-600 transition-all cursor-pointer">{t('startShop')}</button>
                   </div>
                 ) : (
                   cart.map((item, index) => (
-                    <div key={`${item.id}-${index}`} className="flex gap-5 bg-white p-4 rounded-3xl border border-slate-100 shadow-sm relative pr-12 group hover:border-slate-300 transition-colors">
-                      <div className="w-24 h-24 bg-slate-50 rounded-2xl p-3 flex-shrink-0 border border-slate-100">
-                        <img src={item.imageUrl} className="w-full h-full object-cover rounded-xl" alt=""/>
+                    <div key={`${item.id}-${index}`} className={`flex gap-3 p-3 rounded-2xl border relative pr-10 group transition-colors ${isDarkMode ? 'bg-white/5 border-white/10 hover:border-white/20' : 'bg-white/40 border-black/5 hover:border-black/10 shadow-sm'}`}>
+                      <div className={`w-16 h-16 rounded-xl p-1 flex-shrink-0 border ${isDarkMode ? 'bg-black/20 border-white/5' : 'bg-white/50 border-black/5'}`}>
+                        <img src={item.imageUrl} className="w-full h-full object-cover rounded-lg" alt=""/>
                       </div>
-                      <div className="flex-1 flex flex-col justify-center py-1">
-                        <h4 className="text-sm font-bold text-slate-800 line-clamp-2 leading-snug pr-2">{t_prod(item.id, 'name', item.name)}</h4>
-                        <p className="text-slate-900 font-black text-lg mt-1">{(Number(item.price) || 0).toLocaleString('vi-VN')}đ</p>
-                        <p className="text-[10px] text-slate-400 mt-1">Thêm lúc: {item.addedAt ? new Date(item.addedAt).toLocaleTimeString('vi-VN') : 'Mới đây'}</p>
-                        <div className="flex items-center border border-slate-200 rounded-xl w-fit mt-3 overflow-hidden bg-slate-50">
-                          <button onClick={() => updateCartQuantity(item.id, -1)} className="px-3 py-1.5 text-slate-600 font-bold hover:bg-slate-200 transition-colors">-</button>
-                          <span className="px-4 text-xs font-black text-slate-900 bg-white py-1.5 border-x border-slate-200">{item.quantity}</span>
-                          <button onClick={() => updateCartQuantity(item.id, 1)} className="px-3 py-1.5 text-slate-600 font-bold hover:bg-slate-200 transition-colors">+</button>
+                      <div className="flex-1 flex flex-col justify-center">
+                        <h4 className="text-xs font-bold line-clamp-2 leading-snug">{t_prod(item.id, 'name', item.name)}</h4>
+                        <p className="font-black text-sm mt-0.5 text-sky-500">{(Number(item.price) || 0).toLocaleString('vi-VN')}đ</p>
+                        <div className={`flex items-center border rounded-lg w-fit mt-2 overflow-hidden ${isDarkMode ? 'border-white/20 bg-black/20' : 'border-black/10 bg-white/50'}`}>
+                          <button onClick={() => updateCartQuantity(item.id, -1)} className={`px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer ${isDarkMode ? 'hover:bg-white/10' : 'hover:bg-black/5'}`}>-</button>
+                          <span className={`px-3 text-xs font-black py-1 border-x ${isDarkMode ? 'border-white/20 bg-white/5' : 'border-black/10 bg-white'}`}>{item.quantity}</span>
+                          <button onClick={() => updateCartQuantity(item.id, 1)} className={`px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer ${isDarkMode ? 'hover:bg-white/10' : 'hover:bg-black/5'}`}>+</button>
                         </div>
                       </div>
-                      <button onClick={() => removeFromCart(item.id)} className="absolute top-1/2 -translate-y-1/2 right-4 text-slate-300 hover:text-red-500 p-2 hover:bg-red-50 rounded-full transition-colors" title={t('adminDel')}>
-                        <FiTrash2 className="text-xl"/>
+                      <button onClick={() => removeFromCart(item.id)} className={`absolute top-1/2 -translate-y-1/2 right-2 p-1.5 rounded-full transition-colors cursor-pointer ${isDarkMode ? 'text-slate-400 hover:text-red-400 hover:bg-red-500/20' : 'text-slate-400 hover:text-red-500 hover:bg-red-50'}`} title="Xóa">
+                        <FiTrash2 className="text-base"/>
                       </button>
                     </div>
                   ))
                 )}
               </div>
+              
               {cart.length > 0 && (
-                <div className="p-6 md:p-8 border-t border-slate-100 bg-white">
-                  <div className="flex gap-3 mb-6 bg-slate-50 p-2 rounded-2xl border border-slate-100">
-                    <button onClick={() => setPaymentMode('deposit')} className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${paymentMode === 'deposit' ? 'bg-white shadow-sm text-slate-900 border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>Cọc 30%</button>
-                    <button onClick={() => setPaymentMode('full')} className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all ${paymentMode === 'full' ? 'bg-white shadow-sm text-slate-900 border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>Thanh toán 100%</button>
+                <div className={`p-5 border-t ${isDarkMode ? 'border-white/10 bg-black/20' : 'border-black/10 bg-white/30'}`}>
+                  <div className={`flex gap-2 mb-4 p-1.5 rounded-xl border ${isDarkMode ? 'bg-black/40 border-white/10' : 'bg-white/50 border-black/5'}`}>
+                    <button onClick={() => setPaymentMode('deposit')} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${paymentMode === 'deposit' ? (isDarkMode ? 'bg-white/20 text-white shadow-sm' : 'bg-white shadow-sm text-slate-900') : (isDarkMode ? 'text-slate-400' : 'text-slate-500')}`}>Cọc 30%</button>
+                    <button onClick={() => setPaymentMode('full')} className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${paymentMode === 'full' ? (isDarkMode ? 'bg-white/20 text-white shadow-sm' : 'bg-white shadow-sm text-slate-900') : (isDarkMode ? 'text-slate-400' : 'text-slate-500')}`}>100%</button>
                   </div>
-                  <div className="flex justify-between items-end mb-6">
-                    <span className="text-slate-500 font-bold uppercase tracking-widest text-xs">{paymentMode === 'deposit' ? t('deposit') : t('total')}</span>
-                    <span className="text-4xl font-black text-slate-900">{paymentMode === 'deposit' ? depositAmount.toLocaleString('vi-VN') : cartFinalTotal.toLocaleString('vi-VN')}đ</span>
+                  <div className="flex justify-between items-end mb-4">
+                    <span className={`font-bold uppercase tracking-widest text-[10px] ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{paymentMode === 'deposit' ? t('deposit') : t('total')}</span>
+                    <span className="text-2xl font-black text-sky-500">{paymentMode === 'deposit' ? depositAmount.toLocaleString('vi-VN') : cartFinalTotal.toLocaleString('vi-VN')}đ</span>
                   </div>
-                  <button onClick={handleProceedCheckout} className="w-full bg-slate-900 hover:bg-black text-white py-5 rounded-full text-sm font-bold tracking-widest uppercase shadow-xl shadow-slate-900/20 transition-all flex justify-center items-center gap-2">
-                    <FiCheckCircle className="text-lg"/> {t('checkout')}
+                  <button onClick={handleProceedCheckout} className="w-full bg-sky-500 hover:bg-sky-600 text-white py-3.5 rounded-xl text-sm font-bold tracking-widest uppercase shadow-xl transition-all flex justify-center items-center gap-2 cursor-pointer">
+                    <FiCheckCircle className="text-base"/> {t('checkout')}
                   </button>
                 </div>
               )}
@@ -1399,9 +1521,14 @@ export default function App() {
                     <h3 className="text-2xl font-black mb-6">{t('order_summary')}</h3>
                     <div className="space-y-4 flex-grow overflow-y-auto custom-scrollbar pr-2 max-h-[150px] md:max-h-[300px]">
                         {cart.map((item, idx) => (
-                            <div key={idx} className="flex justify-between items-center text-sm font-medium">
-                                <span className="text-slate-600 line-clamp-1 pr-4">{t_prod(item.id, 'name', item.name)} <span className="text-sky-600 font-bold ml-1">x{item.quantity}</span></span>
-                                <span className="text-slate-900 font-bold whitespace-nowrap">{((Number(item.price) || 0) * (item.quantity || 1)).toLocaleString('vi-VN')}đ</span>
+                            <div key={idx} className="flex justify-between items-center text-sm font-medium group">
+                                <span className="text-slate-600 line-clamp-1 pr-2 flex-1">{t_prod(item.id, 'name', item.name)} <span className="text-sky-600 font-bold ml-1">x{item.quantity}</span></span>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-slate-900 font-bold whitespace-nowrap">{((Number(item.price) || 0) * (item.quantity || 1)).toLocaleString('vi-VN')}đ</span>
+                                  <button onClick={() => removeFromCart(item.id)} className="text-slate-300 hover:text-red-500 transition-colors p-1 cursor-pointer" title="Xóa khỏi đơn">
+                                      <FiTrash2 className="text-base" />
+                                  </button>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -1438,10 +1565,9 @@ export default function App() {
                         <img src="/qr.png" alt="QR Code" className="w-40 h-40 md:w-48 md:h-48 object-cover rounded-xl"/>
                     </div>
                     <div className="bg-amber-50 text-amber-700 px-4 py-2 rounded-lg text-xs font-bold mb-4 border border-amber-200">
-                      Nội dung CK: <span className="text-slate-900 font-black text-sm">{currentOrderId}</span>
+                      Nội dung CK: <span style={{ color: '#000' }} className="font-black text-sm">{currentOrderId}</span>
                     </div>
 
-                    {/* NÚT UPLOAD HÌNH ẢNH BILL - CHỐNG SPAM */}
                     <div className="w-full mb-4">
                        <label className={`w-full py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer border-2 border-dashed ${receiptImg ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-300 bg-slate-50 text-slate-500 hover:border-sky-500 hover:text-sky-600'}`}>
                          {receiptImg ? <><FiCheckCircle className="text-lg"/> Đã tải lên Bill</> : <><FiUpload className="text-lg"/> 1. Tải lên ảnh Bill chuyển khoản</>}
@@ -1530,20 +1656,18 @@ export default function App() {
                       <input type="number" value={newProd.price} onChange={(e) => setNewProd({...newProd, price: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 outline-none focus:border-sky-500 focus:bg-white transition-all text-sm font-medium"/>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                      <div>
                        <label className="block text-sm font-bold text-slate-700 mb-3">Danh mục</label>
                        <select value={newProd.category} onChange={(e) => setNewProd({...newProd, category: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 outline-none focus:border-sky-500 focus:bg-white transition-all text-sm font-medium">
-                          <option value="shirt_1">{t('shirt_1')}</option>
-                          <option value="shirt_2">{t('shirt_2')}</option>
-                          <option value="shirt_3">{t('shirt_3')}</option>
-                          <option value="pants_1">{t('pants_1')}</option>
-                          <option value="pants_2">{t('pants_2')}</option>
-                          <option value="pants_3">{t('pants_3')}</option>
-                          <option value="acc_1">{t('acc_1')}</option>
-                          <option value="acc_2">{t('acc_2')}</option>
-                          <option value="acc_3">{t('acc_3')}</option>
+                          <option value="shirt_1">{t('shirt_1')}</option> <option value="shirt_2">{t('shirt_2')}</option> <option value="shirt_3">{t('shirt_3')}</option>
+                          <option value="pants_1">{t('pants_1')}</option> <option value="pants_2">{t('pants_2')}</option> <option value="pants_3">{t('pants_3')}</option>
+                          <option value="acc_1">{t('acc_1')}</option> <option value="acc_2">{t('acc_2')}</option> <option value="acc_3">{t('acc_3')}</option>
                        </select>
+                     </div>
+                     <div>
+                       <label className="block text-sm font-bold text-slate-700 mb-3">Tags (Cách nhau dấu phẩy)</label>
+                       <input type="text" placeholder="nam, áo, streetwear" value={newProd.tags || ''} onChange={(e) => setNewProd({...newProd, tags: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 outline-none focus:border-sky-500 focus:bg-white transition-all text-sm font-medium"/>
                      </div>
                   </div>
                   <div>
@@ -1556,6 +1680,58 @@ export default function App() {
                  <button onClick={handleSubmitNewProduct} className="px-8 py-4 rounded-full font-bold text-white bg-sky-500 hover:bg-sky-600 transition-colors flex items-center gap-2 shadow-lg shadow-sky-500/30 cursor-pointer">
                    <FiCheckCircle className="text-lg"/> Đăng Lên Cửa Hàng
                  </button>
+               </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL SỬA SẢN PHẨM ADMIN TRỰC TIẾP */}
+        {showEditModal && isAdmin && editFormData && (
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" onClick={() => setShowEditModal(false)}></div>
+            <div className="bg-white rounded-[40px] p-8 md:p-10 w-full max-w-2xl relative z-10 shadow-2xl animate-fade-in-up flex flex-col max-h-[90vh]">
+               <div className="flex justify-between items-center mb-6 text-slate-900">
+                 <h3 className="text-2xl font-black flex items-center gap-3"><FiEdit3 className="text-sky-500"/> Sửa Sản Phẩm</h3>
+                 <button onClick={() => setShowEditModal(false)} className="text-slate-400 hover:text-slate-900 bg-slate-100 p-2.5 rounded-full cursor-pointer"><FiX className="text-xl"/></button>
+               </div>
+               <div className="flex-grow overflow-y-auto custom-scrollbar pr-2 space-y-5 text-slate-800">
+                  <div>
+                    <label className="block text-sm font-bold mb-2">Thư viện ảnh (Tối đa 10 ảnh)</label>
+                    <div className="flex flex-wrap gap-3 mb-3">
+                       {editFormData.images && editFormData.images.map((img, idx) => (
+                         <div key={idx} className="w-20 h-20 relative group rounded-xl overflow-hidden border border-slate-200">
+                           <img src={img} className="w-full h-full object-cover" />
+                           <button onClick={() => setEditFormData({...editFormData, images: editFormData.images.filter((_, i) => i !== idx)})} className="absolute inset-0 bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"><FiTrash2/></button>
+                         </div>
+                       ))}
+                       {(!editFormData.images || editFormData.images.length < 10) && (
+                         <label className="w-20 h-20 border-2 border-dashed border-slate-300 rounded-xl flex items-center justify-center text-slate-400 hover:text-sky-500 hover:border-sky-300 transition-colors cursor-pointer bg-slate-50">
+                           <FiPlus className="text-2xl"/>
+                           <input type="file" multiple accept="image/*" onChange={(e) => {
+                             const files = Array.from(e.target.files);
+                             if ((editFormData.images?.length || 0) + files.length > 10) return alert("Tối đa 10 ảnh!");
+                             files.forEach(file => compressImage(file, (base64) => setEditFormData(prev => ({...prev, images: [...(prev.images || []), base64]}))));
+                           }} className="hidden"/>
+                         </label>
+                       )}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <input type="text" value={editFormData.name} onChange={(e) => setEditFormData({...editFormData, name: e.target.value})} className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-sky-500" placeholder="Tên sản phẩm"/>
+                    <input type="number" value={editFormData.price} onChange={(e) => setEditFormData({...editFormData, price: e.target.value})} className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-sky-500" placeholder="Giá tiền"/>
+                  </div>
+                  <textarea value={editFormData.description} onChange={(e) => setEditFormData({...editFormData, description: e.target.value})} rows="4" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-sky-500 resize-none" placeholder="Mô tả sản phẩm"></textarea>
+               </div>
+               <div className="pt-6 border-t border-slate-100 mt-4 flex justify-end gap-3">
+                 <button onClick={() => setShowEditModal(false)} className="px-6 py-3 rounded-full font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 cursor-pointer">Hủy</button>
+                 <button onClick={async () => {
+                   const finalData = { ...editFormData, price: parseFloat(editFormData.price), imageUrl: editFormData.images?.[0] || editFormData.imageUrl };
+                   await setDoc(doc(db, 'products', editFormData.id), finalData, { merge: true });
+                   setLocalProducts(localProducts.map(p => p.id === editFormData.id ? finalData : p));
+                   setSelectedProduct(finalData);
+                   setShowEditModal(false);
+                   showToast('Cập nhật thành công!');
+                 }} className="px-8 py-3 rounded-full font-bold text-white bg-sky-500 hover:bg-sky-600 shadow-lg cursor-pointer">Lưu</button>
                </div>
             </div>
           </div>
@@ -1576,47 +1752,207 @@ export default function App() {
               <div className="w-full md:w-1/2 p-8 md:p-14 flex flex-col relative bg-white">
                 <button onClick={() => setShowLoginModal(false)} className="absolute top-6 right-6 p-2 rounded-full transition-colors"><FiX className="text-2xl"/></button>
                 <h3 className="text-3xl font-black text-slate-900 mb-8">{authMode === 'login' ? t('login') : 'Tạo tài khoản'}</h3>
+                
                 <div className="flex flex-col gap-4 mb-8">
-                  <button onClick={handleGoogleLogin} className="w-full bg-[#101828] text-white py-4 font-bold rounded-full flex items-center justify-center gap-3 cursor-pointer"><FcGoogle className="text-xl bg-white rounded-full p-0.5" /> Google</button>
-                  <button onClick={handleFacebookLogin} className="w-full border-2 py-4 font-bold rounded-full flex items-center justify-center gap-3 cursor-pointer"><FaFacebook className="text-xl text-[#1877F2]"/> Facebook</button>
+                  <button onClick={(e) => handleGoogleLogin(e)} type="button" className="w-full bg-[#101828] text-white py-4 font-bold rounded-full flex items-center justify-center gap-3 cursor-pointer hover:bg-black transition-colors"><FcGoogle className="text-xl bg-white rounded-full p-0.5" /> Google</button>
+                  <button onClick={(e) => handleFacebookLogin(e)} type="button" className="w-full border-2 py-4 font-bold rounded-full flex items-center justify-center gap-3 cursor-pointer hover:bg-slate-50 transition-colors"><FaFacebook className="text-xl text-[#1877F2]"/> Facebook</button>
                 </div>
-                <div className="flex items-center mb-6"><div className="flex-grow border-t"></div><span className="mx-4 text-slate-400 text-xs font-bold uppercase">Hoặc</span><div className="flex-grow border-t"></div></div>
+                <div className="flex items-center mb-6"><div className="flex-grow border-t border-slate-100"></div><span className="mx-4 text-slate-400 text-xs font-bold uppercase">Hoặc</span><div className="flex-grow border-t border-slate-100"></div></div>
                 <div className="flex flex-col gap-4 mb-6">
-                  <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="Email" className="bg-slate-50 rounded-2xl px-5 py-4 outline-none focus:ring-1" />
-                  <input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="Mật khẩu" className="bg-slate-50 rounded-2xl px-5 py-4 outline-none focus:ring-1" />
-                  <button onClick={handleEmailAuth} className="bg-sky-500 text-white py-4 font-black rounded-full uppercase shadow-lg cursor-pointer">{authMode === 'login' ? t('login') : 'Đăng Ký'}</button>
+                  <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="Email" className="bg-slate-50 text-slate-900 border border-slate-200 rounded-xl px-5 py-4 outline-none focus:border-sky-500" />
+                  <input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="Mật khẩu" className="bg-slate-50 text-slate-900 border border-slate-200 rounded-xl px-5 py-4 outline-none focus:border-sky-500" />
+                  <button onClick={(e) => handleEmailAuth(e)} type="button" className="bg-sky-500 text-white py-4 font-black rounded-full uppercase shadow-lg cursor-pointer hover:bg-sky-600 transition-colors">{authMode === 'login' ? t('login') : 'Đăng Ký'}</button>
                 </div>
+
                 <div className="text-center text-sm font-medium text-slate-600 mb-8">{authMode === 'login' ? <>Chưa có tài khoản? <button onClick={() => setAuthMode('register')} className="text-sky-600 font-bold underline">Tạo ngay</button></> : <>Đã có tài khoản? <button onClick={() => setAuthMode('login')} className="text-sky-600 font-bold underline">Đăng nhập</button></>}</div>
               </div>
             </div>
           </div>
         )}
 
-        {/* MODAL KHẢO SÁT */}
+        {/* ONBOARDING KHẢO SÁT (MULTI-STEP) */}
         {showSurveyModal && isAuthenticated && (
-          <div className="fixed inset-0 z-[7000] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"></div>
-            <div className="bg-white rounded-[40px] p-8 md:p-14 w-full max-w-3xl relative z-10 shadow-2xl animate-fade-in-up text-center">
-              <span className="text-6xl mb-6 block">👋</span>
-              <h3 className="text-3xl md:text-4xl font-black text-slate-900 mb-4">Bạn là ai?</h3>
-              <p className="text-slate-500 font-medium mb-10 text-lg">Giúp Trimi mang đến trải nghiệm cá nhân hóa tốt nhất cho bạn.</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {surveyRoles.map((role, idx) => (
-                  <button key={idx} onClick={async () => {
-                    setUserRole(role); setShowSurveyModal(false);
-                    if (user) { 
-                      localStorage.setItem(`trimi_role_${user.uid}`, role);
-                      try { await setDoc(doc(db, "users", user.uid), { email: user.email || '', role: role }, { merge: true }); } catch(e){} 
-                    }
-                    showToast('Cảm ơn bạn đã hoàn thành!');
-                  }} className="bg-white border-2 border-slate-100 text-slate-700 py-5 px-6 rounded-2xl font-bold text-base hover:border-sky-500 hover:text-sky-600 transition-all shadow-sm hover:shadow-md cursor-pointer">
-                    {role}
-                  </button>
-                ))}
+          <div className={`fixed inset-0 z-[99999] flex items-center justify-center p-4 transition-colors duration-500 ${isDarkMode ? 'bg-[#111111]' : 'bg-slate-50'} animate-fade-in`}>
+            <div className="w-full max-w-3xl relative z-10 flex flex-col text-left">
+              
+              {surveyStep < 5 && (
+                <div className={`w-64 h-1 rounded-full mx-auto mb-16 overflow-hidden ${isDarkMode ? 'bg-slate-800' : 'bg-slate-200'}`}>
+                  <div className="h-full bg-sky-500 transition-all duration-500" style={{ width: `${(surveyStep / 4) * 100}%` }}></div>
+                </div>
+              )}
+
+              {surveyStep === 1 && (
+                <div className="mx-auto w-full max-w-md animate-fade-in-up">
+                  <h2 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Chào mừng đến với Trimi!</h2>
+                  <p className={`mb-8 text-lg ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Hãy cá nhân hóa trải nghiệm của bạn</p>
+                  
+                  <p className={`text-sm mb-3 font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Tên của bạn là gì?</p>
+                  <input type="text" value={surveyData.name} onChange={e => setSurveyData({...surveyData, name: e.target.value})} className={`w-full border rounded-xl px-4 py-3 outline-none focus:border-sky-500 transition-colors mb-8 ${isDarkMode ? 'bg-transparent border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-sm'}`} />
+                  
+                  <p className={`text-sm mb-3 font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Chọn giao diện yêu thích</p>
+                  <div className="flex gap-3 mb-10">
+                    {['Dark', 'Light'].map(mode => (
+                      <button key={mode} onClick={() => { 
+                        setSurveyData({...surveyData, theme: mode});
+                        setIsDarkMode(mode === 'Dark'); // Đổi màu nền web ngay lập tức
+                      }} className={`flex-1 py-3 rounded-xl border flex items-center justify-center gap-2 cursor-pointer transition-all ${surveyData.theme === mode ? (isDarkMode ? 'bg-white text-black border-white font-bold shadow-lg' : 'bg-slate-900 text-white border-slate-900 font-bold shadow-lg') : (isDarkMode ? 'border-slate-700 text-slate-400 hover:border-sky-500 hover:text-sky-400' : 'border-slate-200 text-slate-500 hover:border-sky-500 hover:text-sky-600 hover:bg-sky-50')}`}>
+                        {mode === 'Dark' ? <FiMoon/> : <FiSun/>} {mode}
+                      </button>
+                    ))}
+                  </div>
+                  <button onClick={() => setSurveyStep(2)} className={`font-bold px-8 py-3 rounded-full transition-all cursor-pointer transform hover:scale-105 ${isDarkMode ? 'bg-sky-500 text-white hover:bg-sky-400 shadow-[0_0_20px_rgba(14,165,233,0.4)]' : 'bg-sky-500 text-white hover:bg-sky-600 shadow-lg'}`}>Tiếp tục</button>
+                </div>
+              )}
+
+              {surveyStep === 2 && (
+                <div className="mx-auto w-full text-center animate-fade-in-up">
+                  <h2 className={`text-3xl font-bold mb-8 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Bạn biết đến chúng tôi qua đâu?</h2>
+                  <div className="flex flex-wrap justify-center gap-3 max-w-xl mx-auto mb-16">
+                    {['Facebook', 'Instagram', 'TikTok', 'Google', 'Bạn bè giới thiệu', 'YouTube', 'Khác'].map(src => (
+                      <button key={src} onClick={() => { setSurveyData({...surveyData, source: src}); setSurveyStep(3); }} className={`px-6 py-3 rounded-full border transition-all cursor-pointer flex items-center gap-2 transform hover:-translate-y-1 hover:shadow-lg ${isDarkMode ? 'border-slate-700 text-slate-300 hover:border-sky-500 hover:bg-sky-500/10 hover:text-sky-400' : 'border-slate-200 text-slate-600 hover:border-sky-500 hover:bg-sky-50 hover:text-sky-600 font-medium'}`}>
+                        {src}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex justify-between w-full max-w-xl mx-auto px-4">
+                    <button onClick={() => setSurveyStep(1)} className={`cursor-pointer font-bold transition-colors ${isDarkMode ? 'text-slate-500 hover:text-white' : 'text-slate-400 hover:text-slate-900'}`}>Quay lại</button>
+                    <button onClick={() => setSurveyStep(3)} className={`cursor-pointer font-bold transition-colors ${isDarkMode ? 'text-slate-500 hover:text-white' : 'text-slate-400 hover:text-slate-900'}`}>Bỏ qua</button>
+                  </div>
+                </div>
+              )}
+
+              {surveyStep === 3 && (
+                <div className="mx-auto w-full text-center animate-fade-in-up">
+                  <h2 className={`text-3xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Nghề nghiệp của bạn là gì?</h2>
+                  <p className={`mb-8 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Chọn công việc mô tả đúng nhất về bạn.</p>
+                  <div className="flex flex-wrap justify-center gap-3 max-w-2xl mx-auto mb-16">
+                    {['Sinh viên', 'Nhân viên văn phòng', 'Designer', 'Lập trình viên / IT', 'Kinh doanh tự do', 'Khác'].map(occ => (
+                      <button key={occ} onClick={() => { setSurveyData({...surveyData, occupation: occ}); setSurveyStep(4); }} className={`px-6 py-3 rounded-full border transition-all cursor-pointer flex items-center gap-2 transform hover:-translate-y-1 hover:shadow-lg ${isDarkMode ? 'border-slate-700 text-slate-300 hover:border-sky-500 hover:bg-sky-500/10 hover:text-sky-400' : 'border-slate-200 text-slate-600 hover:border-sky-500 hover:bg-sky-50 hover:text-sky-600 font-medium'}`}>
+                        {occ}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex justify-between w-full max-w-2xl mx-auto px-4">
+                    <button onClick={() => setSurveyStep(2)} className={`cursor-pointer font-bold transition-colors ${isDarkMode ? 'text-slate-500 hover:text-white' : 'text-slate-400 hover:text-slate-900'}`}>Quay lại</button>
+                    <button onClick={() => setSurveyStep(4)} className={`cursor-pointer font-bold transition-colors ${isDarkMode ? 'text-slate-500 hover:text-white' : 'text-slate-400 hover:text-slate-900'}`}>Bỏ qua</button>
+                  </div>
+                </div>
+              )}
+
+              {surveyStep === 4 && (
+                <div className="mx-auto w-full text-center animate-fade-in-up">
+                  <h2 className={`text-3xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Sở thích mua sắm của bạn?</h2>
+                  <p className={`mb-8 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Chọn phong cách bạn thường hay mua nhất.</p>
+                  <div className="flex flex-wrap justify-center gap-3 max-w-2xl mx-auto mb-16">
+                    {['Áo thun Basic', 'Streetwear', 'Sơ mi công sở', 'Quần Jeans / Kaki', 'Phụ kiện (Nón, Balo)', 'Tất cả'].map(int => (
+                      <button key={int} onClick={() => { 
+                        setSurveyData({...surveyData, interests: int}); 
+                        setSurveyStep(5); // Chuyển sang bước Loading
+                        setTimeout(async () => {
+                          setUserRole(surveyData.occupation || 'Khách hàng');
+                          setNickname(surveyData.name); 
+                          localStorage.setItem(`trimi_name_${user?.uid}`, surveyData.name);
+                          localStorage.setItem(`trimi_survey_done_${user?.uid}`, 'true'); // Khóa vĩnh viễn trên máy này
+                          setShowSurveyModal(false);
+                          if (user) {
+                            try {
+                              await setDoc(doc(db, "users", user.uid), { 
+                                nickname: surveyData.name, role: surveyData.occupation || 'Khách hàng',
+                                discoverySource: surveyData.source, interests: int, isSurveyCompleted: true 
+                              }, { merge: true });
+                            } catch(e) {}
+                          }
+                          showToast('Hoàn tất thiết lập!');
+                        }, 2500); 
+                      }} className={`px-6 py-3 rounded-full border transition-all cursor-pointer flex items-center gap-2 transform hover:-translate-y-1 hover:shadow-lg ${isDarkMode ? 'border-slate-700 text-slate-300 hover:border-sky-500 hover:bg-sky-500/10 hover:text-sky-400' : 'border-slate-200 text-slate-600 hover:border-sky-500 hover:bg-sky-50 hover:text-sky-600 font-medium'}`}>
+                        {int}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex justify-between w-full max-w-2xl mx-auto px-4">
+                    <button onClick={() => setSurveyStep(3)} className={`cursor-pointer font-bold transition-colors ${isDarkMode ? 'text-slate-500 hover:text-white' : 'text-slate-400 hover:text-slate-900'}`}>Quay lại</button>
+                  </div>
+                </div>
+              )}
+
+              {/* LOADING SCREEN MỚI: SANG TRỌNG VÀ ĐƠN GIẢN */}
+              {surveyStep === 5 && (
+                <div className="mx-auto w-full text-center flex flex-col items-center justify-center animate-fade-in py-10">
+                  <div className="relative w-24 h-24 mb-8">
+                     <div className={`absolute inset-0 border-4 rounded-full ${isDarkMode ? 'border-slate-800' : 'border-slate-200'}`}></div>
+                     <div className="absolute inset-0 border-4 border-sky-500 rounded-full border-t-transparent animate-spin"></div>
+                     <div className="absolute inset-0 flex items-center justify-center">
+                        <FiCheckCircle className="text-sky-500 text-3xl animate-pulse"/>
+                     </div>
+                  </div>
+                  <h2 className={`text-2xl font-black mb-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Đang cá nhân hóa...</h2>
+                  <p className={isDarkMode ? 'text-slate-400' : 'text-slate-500'}>Phân tích sở thích và chuẩn bị không gian của bạn</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* MODAL CHÍNH SÁCH BẢO MẬT */}
+        {showPrivacyModal && (
+          <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-md" onClick={() => setShowPrivacyModal(false)}></div>
+            <div className="bg-white rounded-[32px] p-8 md:p-12 w-full max-w-3xl relative z-10 shadow-2xl overflow-y-auto max-h-[85vh] custom-scrollbar">
+              <button onClick={() => setShowPrivacyModal(false)} className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 bg-slate-100 p-2 rounded-full transition-colors"><FiX className="text-xl"/></button>
+              <h2 className="text-3xl font-black text-slate-900 mb-6 uppercase">Chính sách bảo mật</h2>
+              <div className="space-y-4 text-slate-600 leading-relaxed text-sm">
+                <p><b>1. Thu thập thông tin:</b> Trimi thu thập thông tin cá nhân (Tên, SĐT, Địa chỉ) chỉ nhằm mục đích xử lý đơn hàng và giao nhận tại Đà Nẵng.</p>
+                <p><b>2. Sử dụng Cookie:</b> Chúng tôi sử dụng Cookie và lịch sử xem hàng để AI gợi ý sản phẩm phù hợp với phong cách của bạn.</p>
+                <p><b>3. Bảo mật thanh toán:</b> Hình ảnh biên lai chuyển khoản được lưu trữ an toàn để đối soát và sẽ không chia sẻ cho bên thứ ba.</p>
+                <p><b>4. Quyền của người dùng:</b> Bạn có quyền yêu cầu xóa lịch sử mua hàng hoặc tài khoản bất cứ lúc nào thông qua trạm hỗ trợ.</p>
               </div>
             </div>
           </div>
         )}
+
+        {/* MODAL ĐIỀU KHOẢN DỊCH VỤ */}
+        {showTermsModal && (
+          <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-md" onClick={() => setShowTermsModal(false)}></div>
+            <div className="bg-white rounded-[32px] p-8 md:p-12 w-full max-w-3xl relative z-10 shadow-2xl overflow-y-auto max-h-[85vh] custom-scrollbar">
+              <button onClick={() => setShowTermsModal(false)} className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 bg-slate-100 p-2 rounded-full transition-colors"><FiX className="text-xl"/></button>
+              <h2 className="text-3xl font-black text-slate-900 mb-6 uppercase">Điều khoản dịch vụ</h2>
+              <div className="space-y-4 text-slate-600 leading-relaxed text-sm">
+                <p><b>1. Phạm vi giao hàng:</b> Hiện tại Trimi chỉ hỗ trợ giao hàng trong địa phận Đà Nẵng. Các đơn hàng ngoại tỉnh vui lòng liên hệ Admin.</p>
+                <p><b>2. Quy định thanh toán:</b> Quý khách cần thanh toán cọc 30% hoặc 100% giá trị đơn hàng thông qua mã QR và tải ảnh bill để xác nhận đơn.</p>
+                <p><b>3. Chính sách đổi trả:</b> Hỗ trợ đổi trả miễn phí trong vòng 5 ngày nếu sản phẩm có lỗi từ nhà sản xuất hoặc không đúng size.</p>
+                <p><b>4. Trách nhiệm:</b> Người dùng cam kết cung cấp đúng thông tin liên lạc. Mọi hành vi spam bill giả sẽ bị khóa tài khoản vĩnh viễn.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL PHÓNG TO ẢNH BILL CỦA ADMIN */}
+        {previewImg && (
+          <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-fade-in" onClick={() => setPreviewImg(null)}>
+            <button className="absolute top-6 right-6 text-white/50 hover:text-white bg-white/10 hover:bg-white/20 p-3 rounded-full transition-colors cursor-pointer"><FiX className="text-2xl"/></button>
+            <img src={previewImg} className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl" onClick={(e) => e.stopPropagation()} alt="Bill Preview" />
+          </div>
+        )}
+        
+        {/* BẢNG THÔNG BÁO COOKIE & CHÍNH SÁCH BẢO MẬT (CHỈ HIỆN LẦN ĐẦU) */}
+        {showCookieConsent && (
+          <div className="fixed bottom-0 left-0 w-full bg-slate-900 text-white p-4 md:px-8 z-[99999] flex flex-col md:flex-row justify-between items-center text-sm shadow-[0_-10px_40px_rgba(0,0,0,0.2)] animate-fade-in-up">
+            <p className="mb-4 md:mb-0 font-medium text-slate-300 text-center md:text-left">
+              Trimi sử dụng cookie để theo dõi trải nghiệm nhằm cung cấp các đề xuất AI chính xác nhất. Khi tiếp tục, bạn đồng ý với <span onClick={() => setShowPrivacyModal(true)} className="text-sky-400 cursor-pointer font-bold hover:underline">Chính sách bảo mật</span> của chúng tôi.
+            </p>
+            <button 
+              onClick={() => {
+                localStorage.setItem('trimi_cookies', 'true');
+                setShowCookieConsent(false);
+              }} 
+              className="bg-sky-500 hover:bg-sky-600 px-8 py-2.5 rounded-full font-bold text-white shadow-lg transition-colors whitespace-nowrap cursor-pointer"
+            >
+              Tôi đồng ý
+            </button>
+          </div>
+        )}
+
       </div>
     </>
   );
