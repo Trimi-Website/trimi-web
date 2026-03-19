@@ -234,31 +234,46 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    }
+    
     if (isDarkMode) {
       document.body.classList.add('dark-mode');
       localStorage.setItem('trimi_theme', 'dark');
+      link.href = '/favicon1.ico'; // Favicon 1 cho Dark
     } else {
       document.body.classList.remove('dark-mode');
       localStorage.setItem('trimi_theme', 'light');
+      link.href = '/favicon2.ico'; // Favicon 2 cho Light
     }
   }, [isDarkMode]);
 
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
-  const lastScrollY = useRef(0);
-
-  useEffect(() => {
+  const lastScrollY = useRef(0); // Bắt buộc phải có dòng này để code cuộn hoạt động
+    useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
+      // Bật tắt nút mũi tên cuộn lên đầu trang
       if (currentScrollY > 400) setShowScrollTop(true); 
       else setShowScrollTop(false);
 
-      if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
-        setIsHeaderVisible(false);
-      } else {
-        setIsHeaderVisible(true);
+      // Logic Header mượt mà: Thêm độ trễ (15px) để không bị "quá nhạy"
+      if (currentScrollY < 80) {
+        setIsHeaderVisible(true); // Khi ở sát đầu trang thì luôn hiện
+      } else if (Math.abs(currentScrollY - lastScrollY.current) > 15) {
+        // Chỉ xử lý ẩn/hiện nếu người dùng cuộn một khoảng > 15px
+        if (currentScrollY > lastScrollY.current) {
+          setIsHeaderVisible(false); // Cuộn xuống -> Ẩn đi
+        } else {
+          setIsHeaderVisible(true);  // Cuộn lên -> Hiện ra
+        }
+        lastScrollY.current = currentScrollY; // Cập nhật lại vị trí cuộn
       }
-      lastScrollY.current = currentScrollY;
     };
     
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -878,6 +893,8 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
           {(!isChatBoxOpen && (!isAdmin || (!isHelpOpen && !adminChatUser))) && (
             <button onClick={() => setIsHelpOpen(!isHelpOpen)} className="relative w-14 h-14 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-2xl hover:bg-black hover:scale-105 transition-all">
                {isHelpOpen ? <FiX className="text-2xl" /> : <FiMessageCircle className="text-2xl" />}
+               {/* CHẤM XANH BÁO ONLINE CHO KHÁCH HÀNG */}
+               {!isAdmin && <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full shadow-sm"></span>}
                {(!isAdmin && hasUnreadUser) && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white animate-bounce">1</span>}
                {(isAdmin && totalAdminUnread > 0) && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white animate-bounce">{totalAdminUnread}</span>}
             </button>
@@ -885,7 +902,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
         </div>
 
         {/* HEADER CHÍNH */}
-        <header className={`fixed top-0 left-0 w-full z-[100] border-b flex-shrink-0 transition-all duration-500 backdrop-blur-md ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'} ${isDarkMode ? 'bg-[#111111]/50 border-slate-800' : 'bg-white/50 border-slate-200 shadow-sm'}`}>
+        <header className={`fixed top-0 left-0 w-full z-[100] border-b flex-shrink-0 transition-transform duration-300 ease-in-out backdrop-blur-md ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'} ${isDarkMode ? 'bg-[#111111]/50 border-slate-800' : 'bg-white/50 border-slate-200 shadow-sm'}`}>
            <div className="max-w-[1400px] mx-auto px-4 md:px-8 pt-3 pb-0">
               <div className="flex items-center justify-between gap-4 pb-2 md:pb-3">
                  <div className="flex items-center">
@@ -1041,14 +1058,14 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
           {currentView === 'shop' && (
             <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 py-8 md:py-10 animate-fade-in">
               {currentCategory === 'all' && (
-                <div className={`rounded-[32px] p-6 md:p-12 mb-6 md:mb-10 border flex flex-col md:flex-row items-center justify-between shadow-2xl overflow-hidden relative min-h-[320px] cursor-pointer group transition-colors duration-500 ${!isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200'}`} onClick={() => navigateTo('shop', 'all')}>
+                <div className={`rounded-[32px] p-6 md:p-12 mb-6 md:mb-10 border flex flex-col md:flex-row items-center justify-between shadow-2xl overflow-hidden relative min-h-[320px] cursor-pointer group transition-colors duration-500 ${!isDarkMode ? 'bg-slate-200' : 'bg-white'} border-slate-200`} onClick={() => navigateTo('shop', 'all')}>
                   <div className="max-w-[60%] md:max-w-xl relative z-10 pointer-events-none whitespace-pre-line group-hover:-translate-y-1 transition-transform">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 inline-block shadow-lg ${!isDarkMode ? 'bg-sky-500 text-white' : 'bg-sky-100 text-sky-600'}`}>{t('newCol')}</span>
-                    <h2 className={`text-3xl md:text-5xl font-black mb-4 leading-tight drop-shadow-md ${!isDarkMode ? 'text-white' : 'text-slate-900'}`}>{t('heroTitle')}</h2>
-                    <p className={`mb-6 font-medium ${!isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>{t('heroDesc')}</p>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 inline-block shadow-lg bg-sky-100 text-sky-600`}>{t('newCol')}</span>
+                    <h2 className={`text-3xl md:text-5xl font-black mb-4 leading-tight drop-shadow-md text-slate-900`}>{t('heroTitle')}</h2>
+                    <p className={`mb-6 font-medium text-slate-600`}>{t('heroDesc')}</p>
                   </div>
                   <div className="absolute inset-y-0 right-0 w-full md:w-1/2 flex items-end justify-end md:pr-16 pointer-events-none overflow-hidden z-0">
-                    <img src="/banner.png" alt="Banner" draggable={false} className="h-[95%] md:h-[100%] max-h-[280px] md:max-h-full w-auto object-contain object-bottom drop-shadow-[0_20px_30px_rgba(0,0,0,0.3)] opacity-90 md:opacity-100 group-hover:scale-105 transition-transform duration-700 ease-out origin-bottom" />
+                    <img src={isDarkMode ? "/banner1.png" : "/banner2.png"} alt="Banner" draggable={false} className="h-[95%] md:h-[100%] max-h-[280px] md:max-h-full w-auto object-contain object-bottom drop-shadow-[0_20px_30px_rgba(0,0,0,0.3)] opacity-90 md:opacity-100 group-hover:scale-105 transition-transform duration-700 ease-out origin-bottom" />
                   </div>
                 </div>
               )}
@@ -1077,7 +1094,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-5 px-1 md:px-0">
                   {displayedProducts.map((item) => (
                     <div key={item.id} className="flex flex-col gap-3 group">
-                      <div className="bg-slate-100 rounded-[32px] border border-slate-200 relative aspect-[4/5] flex items-center justify-center cursor-pointer hover:shadow-2xl hover:border-slate-300 hover:-translate-y-1 transition-all duration-500 overflow-hidden" onClick={() => navigateTo('productDetail', currentCategory, item)}>
+                      <div className="bg-slate-100 rounded-[32px] border border-slate-200 relative aspect-[4/5] flex items-center justify-center cursor-pointer transition-all duration-300 hover:shadow-2xl hover:border-sky-400 hover:-translate-y-2 hover:scale-[1.02] hover:rotate-1 overflow-hidden" onClick={() => navigateTo('productDetail', currentCategory, item)}>
                          <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
                          <button onClick={(e) => handleAddToCart(item, e)} className="absolute bottom-3 right-3 md:bottom-5 md:right-5 w-9 h-9 md:w-12 md:h-12 bg-slate-900 text-white rounded-full flex items-center justify-center hover:scale-110 hover:bg-sky-500 transition-all shadow-lg shadow-slate-900/30">
                            <FiPlus className="text-lg md:text-2xl"/>
@@ -1256,8 +1273,18 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                         <span className="text-xl font-black text-sky-500">{order.paidAmount.toLocaleString('vi-VN')}đ <span className="text-xs text-slate-500 font-medium">({order.paymentMode === 'full' ? '100%' : 'Cọc 30%'})</span></span>
                         <span className={`px-5 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest shadow-sm ${
                           order.status.includes('Hoàn thành') ? 'bg-emerald-500 text-white' : 
-                          order.status.includes('hủy') ? 'bg-red-500 text-white' : 'bg-amber-400 text-amber-950'
+                          order.status.includes('hủy') || order.status.includes('từ chối') ? 'bg-red-500 text-white' : 'bg-amber-400 text-amber-950'
                         }`}>{order.status}</span>
+                        {/* NÚT HỦY ĐƠN */}
+                        {order.status === 'Chờ xác nhận thanh toán' && (
+                          <button onClick={async () => {
+                            if(window.confirm('Bạn chắc chắn muốn hủy đơn hàng này?')) {
+                              await setDoc(doc(db, 'orders', order.id), { status: 'Khách hàng tự hủy đơn' }, { merge: true });
+                              showToast('Đã hủy đơn thành công! Đơn sẽ bị xóa sau 5 giây.');
+                              setTimeout(() => { deleteDoc(doc(db, 'orders', order.id)); }, 5000);
+                            }
+                          }} className="text-xs font-bold text-red-500 hover:underline cursor-pointer mt-1">Hủy đơn hàng</button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -1303,18 +1330,66 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                         </tr>
                       </thead>
                       <tbody>
-                        {localProducts.map((item) => (
-                          <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                            <td className="p-5 pl-8">
-                              <div className="w-16 h-16 bg-white border border-slate-200 rounded-2xl p-1 shadow-sm"><img src={item.imageUrl} className="w-full h-full object-cover rounded-xl" alt=""/></div>
-                            </td>
-                            <td className="p-5 font-bold text-base text-slate-800 max-w-[250px] truncate">{item.name}</td>
-                            <td className="p-5 font-black text-slate-900 text-lg">{(Number(item.price) || 0).toLocaleString('vi-VN')}đ</td>
-                            <td className="p-5 text-right pr-8">
-                              <button onClick={() => handleDeleteProduct(item.id)} className="text-red-500 bg-red-50 hover:bg-red-500 hover:text-white px-5 py-2.5 rounded-full transition-colors font-bold text-xs flex items-center justify-center gap-2 ml-auto cursor-pointer"><FiTrash2 className="text-sm"/> {t('adminDel')}</button>
-                            </td>
-                          </tr>
-                        ))}
+                        {adminOrders.length === 0 ? (
+                           <tr><td colSpan="6" className="p-10 text-center text-slate-400 font-medium">Chưa có đơn hàng nào.</td></tr>
+                        ) : (
+                          adminOrders.map((order) => {
+                            const customerUser = usersList.find(u => u.uid === order.uid);
+                            return (
+                            <tr key={order.id} className={`border-b transition-colors ${isDarkMode ? 'border-slate-700/50 hover:bg-white/5' : 'border-slate-100 hover:bg-slate-50'}`}>
+                              <td className="p-5 pl-8">
+                                <span className={`font-black block ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{order.orderId}</span>
+                                <span className={`text-xs font-medium mt-1 block ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{new Date(order.createdAt).toLocaleString('vi-VN')}</span>
+                              </td>
+                              <td className="p-5 text-sm">
+                                <span className={`font-bold block ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{order.customerName}</span>
+                                <span className={`block ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{order.customerPhone}</span>
+                                <span className={`text-xs mt-1 block max-w-[200px] line-clamp-2 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{order.customerAddress}</span>
+                                {customerUser && (
+                                  <button onClick={() => openAdminChatWithUser(customerUser)} className="mt-3 text-xs font-bold bg-sky-500/10 text-sky-500 hover:bg-sky-500 hover:text-white px-3 py-1.5 rounded-full transition-colors flex items-center gap-1.5 w-fit cursor-pointer border border-sky-500/20">
+                                    <FiMessageCircle/> Nhắn tin
+                                  </button>
+                                )}
+                              </td>
+                              <td className="p-5 text-sm">
+                                <div className="space-y-1 max-w-[250px]">
+                                  {order.items.map((it, idx) => (
+                                    <div key={idx} className={`font-medium truncate ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>- {it.name} <b className="text-sky-500">x{it.quantity}</b></div>
+                                  ))}
+                                </div>
+                              </td>
+                              <td className="p-5">
+                                <span className="font-black text-sky-500 block text-base">{order.paidAmount.toLocaleString('vi-VN')}đ</span>
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded inline-block mt-1 ${isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-600'}`}>{order.paymentMode === 'full' ? 'Đã CK 100%' : 'Đã Cọc 30%'}</span>
+                              </td>
+                              <td className="p-5 text-center">
+                                {order.receiptImage ? (
+                                  <div onClick={() => setPreviewImg(order.receiptImage)} className="inline-block relative group">
+                                    <img src={order.receiptImage} className={`w-16 h-16 object-cover rounded-xl border shadow-sm transition-transform cursor-pointer group-hover:scale-105 ${isDarkMode ? 'border-slate-600' : 'border-slate-200'}`} alt="Bill"/>
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"><FiSearch className="text-white text-xl"/></div>
+                                  </div>
+                                ) : <span className={`text-xs ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Không có</span>}
+                              </td>
+                              <td className="p-5 text-right pr-8">
+                                 <select 
+                                    value={order.status}
+                                    onChange={async (e) => {
+                                      await setDoc(doc(db, 'orders', order.id), { status: e.target.value }, { merge: true });
+                                      showToast('Đã cập nhật trạng thái đơn!');
+                                    }}
+                                    className={`border text-sm font-bold rounded-xl px-4 py-2 outline-none cursor-pointer transition-colors focus:border-sky-500 ${isDarkMode ? 'bg-[#111111] border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
+                                 >
+                                    <option value="Chờ xác nhận thanh toán">Chờ duyệt Bill</option>
+                                    <option value="Đang chuẩn bị hàng">Đang chuẩn bị hàng</option>
+                                    <option value="Đang giao hàng">Đang giao hàng</option>
+                                    <option value="Hoàn thành">Hoàn thành</option>
+                                    <option value="Đã hủy">Đã hủy</option>
+                                 </select>
+                              </td>
+                            </tr>
+                            );
+                          })
+                        )}
                       </tbody>
                     </table>
                   )}
@@ -1378,14 +1453,19 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                                       await setDoc(doc(db, 'orders', order.id), { status: e.target.value }, { merge: true });
                                       showToast('Đã cập nhật trạng thái đơn!');
                                     }}
-                                    className={`border text-sm font-bold rounded-xl px-4 py-2 outline-none cursor-pointer transition-colors focus:border-sky-500 ${isDarkMode ? 'bg-[#111111] border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
+                                    className={`border text-sm font-bold rounded-xl px-4 py-2 outline-none cursor-pointer transition-colors focus:border-sky-500 mb-2 w-full ${isDarkMode ? 'bg-[#111111] border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
                                  >
                                     <option value="Chờ xác nhận thanh toán">Chờ duyệt Bill</option>
                                     <option value="Đang chuẩn bị hàng">Đang chuẩn bị hàng</option>
                                     <option value="Đang giao hàng">Đang giao hàng</option>
                                     <option value="Hoàn thành">Hoàn thành</option>
-                                    <option value="Đã hủy">Đã hủy</option>
+                                    <option value="Khách hàng tự hủy đơn">Khách tự hủy</option>
+                                    <option value="Đơn không đạt yêu cầu">Không đạt (Bill lỗi)</option>
                                  </select>
+                                 <div className="flex flex-wrap justify-end gap-1.5 mt-2">
+                                   <button onClick={async () => { await setDoc(doc(db, 'orders', order.id), { status: 'Hoàn thành' }, { merge: true }); showToast('Đã đánh dấu Hoàn Thành'); }} className="bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-500 hover:text-white px-2 py-1 rounded-md text-[10px] font-bold transition-colors cursor-pointer">Thành công</button>
+                                   <button onClick={async () => { await setDoc(doc(db, 'orders', order.id), { status: 'Đơn không đạt yêu cầu' }, { merge: true }); showToast('Đã Từ chối'); }} className="bg-red-50 text-red-600 border border-red-200 hover:bg-red-500 hover:text-white px-2 py-1 rounded-md text-[10px] font-bold transition-colors cursor-pointer">Hủy/Lỗi</button>
+                                 </div>
                               </td>
                             </tr>
                             );
@@ -1485,7 +1565,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                           <button onClick={() => updateCartQuantity(item.id, 1)} className={`px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer ${isDarkMode ? 'hover:bg-white/10' : 'hover:bg-black/5'}`}>+</button>
                         </div>
                       </div>
-                      <button onClick={() => removeFromCart(item.id)} className={`absolute top-1/2 -translate-y-1/2 right-2 p-1.5 rounded-full transition-colors cursor-pointer ${isDarkMode ? 'text-slate-400 hover:text-red-400 hover:bg-red-500/20' : 'text-slate-400 hover:text-red-500 hover:bg-red-50'}`} title="Xóa">
+                      <button onClick={() => removeFromCart(item.id)} className={`absolute top-1/2 -translate-y-1/2 right-2 w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full transition-colors cursor-pointer ${isDarkMode ? 'text-slate-400 hover:text-red-400 hover:bg-red-500/20' : 'text-slate-400 hover:text-red-500 hover:bg-red-50'}`} title="Xóa">
                         <FiTrash2 className="text-base"/>
                       </button>
                     </div>
