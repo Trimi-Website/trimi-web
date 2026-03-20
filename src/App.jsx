@@ -127,10 +127,51 @@ export default function App() {
 
   const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('trimi_theme') === 'dark');
   const [isMobile, setIsMobile] = useState(false);
+  // HIỆU ỨNG TỎA VÒNG TRÒN "CỰC CHÁY" KHI ĐỔI THEME
+  const handleThemeToggle = (e, forceMode = null) => {
+    const nextMode = forceMode !== null ? forceMode : !isDarkMode;
+    if (nextMode === isDarkMode) return; // Bỏ qua nếu giống mode cũ
+
+    // Fallback nếu trình duyệt cũ không hỗ trợ
+    if (!document.startViewTransition) {
+      setIsDarkMode(nextMode);
+      return;
+    }
+
+    // Lấy tọa độ chuột để làm tâm vòng tròn
+    const x = e?.clientX || window.innerWidth / 2;
+    const y = e?.clientY || window.innerHeight / 2;
+    
+    // FIX LỖI GÓC TAM GIÁC: Cộng thêm 150px vào bán kính để đảm bảo quét sạch 100% 4 góc màn hình
+    const endRadius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y)) + 150;
+
+    const transition = document.startViewTransition(() => {
+      setIsDarkMode(nextMode);
+    });
+
+    transition.ready.then(() => {
+      const clipPath = [
+        `circle(0px at ${x}px ${y}px)`,
+        `circle(${endRadius}px at ${x}px ${y}px)`
+      ];
+      
+      document.documentElement.animate(
+        { clipPath: clipPath },
+        {
+          duration: 700, // Tốc độ vệt sáng (0.7 giây)
+          easing: 'cubic-bezier(0.87, 0, 0.13, 1)',
+          pseudoElement: '::view-transition-new(root)'
+        }
+      );
+    });
+  };
   
   const [showCookieConsent, setShowCookieConsent] = useState(() => !localStorage.getItem('trimi_cookies'));
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showStoryModal, setShowStoryModal] = useState(false);
+  const [showCareerModal, setShowCareerModal] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [authMode, setAuthMode] = useState('login'); 
@@ -300,20 +341,36 @@ export default function App() {
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
+  // STATE CHO HIỆU ỨNG 5 LÁT CẮT
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isTransitionOut, setIsTransitionOut] = useState(false);
+
   const navigateTo = async (view, category = 'all', product = null) => {
-    setCurrentView(view); setCurrentCategory(category);
-    if(view === 'productDetail') {
+    // 1. Kéo 5 tấm rèm xuống
+    setIsTransitioning(true);
+    setIsTransitionOut(false);
+    
+    // Chờ 0.8 giây cho rèm kéo kín màn hình
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    // 2. Đổi dữ liệu trang lúc rèm đang che kín
+    setCurrentView(view); 
+    setCurrentCategory(category);
+    if (view === 'productDetail') {
       setSelectedProduct(product);
       if (user && product) {
-        try {
-          await setDoc(doc(db, 'users', user.uid), {
-            viewHistory: arrayUnion(product.category)
-          }, { merge: true });
-        } catch (e) {}
+        try { await setDoc(doc(db, 'users', user.uid), { viewHistory: arrayUnion(product.category) }, { merge: true }); } catch (e) {}
       }
     }
     window.history.pushState({ view, category, product }, '', `?view=${view}`);
-    window.scrollTo({ top: 0, behavior: 'smooth' }); 
+    window.scrollTo({ top: 0, behavior: 'instant' }); 
+
+    // 3. Kéo rèm tuột xuống dưới để lộ trang mới
+    setIsTransitioning(false);
+    setIsTransitionOut(true);
+    
+    // Reset lại rèm về vị trí ban đầu
+    setTimeout(() => { setIsTransitionOut(false); }, 800);
   };
 
   useEffect(() => {
@@ -809,12 +866,11 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Water+Brush&display=swap');
-        .font-brush { font-family: 'Water Brush', cursive; }
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+        .font-brush { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 800; }
         html, body, #root { overflow: visible !important; overflow-y: auto !important; height: auto !important; min-height: 100vh !important; }
         
         .grecaptcha-badge { visibility: hidden !important; }
-
         a, button, label, .cursor-pointer, [role="button"] { cursor: pointer !important; }
 
         body.dark-mode { background-color: #111111 !important; color: #f8fafc !important; }
@@ -825,10 +881,27 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
         .dark-mode .text-slate-700, .dark-mode .text-slate-600, .dark-mode .text-slate-500 { color: #cbd5e1 !important; }
         .dark-mode input, .dark-mode select, .dark-mode textarea { background-color: #0f172a !important; color: #ffffff !important; border-color: #334155 !important; }
         .dark-mode button.bg-slate-900 { background-color: #38bdf8 !important; color: #0f172a !important; }
-        .dark-mode .banner-protected { background-color: #eef5fc !important; border-color: #dbeafe !important;}
-        .dark-mode .banner-protected h2 { color: #0f172a !important; }
-        .dark-mode .banner-protected p { color: #334155 !important; }
-        .dark-mode .banner-protected span { background-color: #dbeafe !important; color: #1d4ed8 !important; }
+
+        /* 1. CSS CHO HIỆU ỨNG VÒNG TRÒN DARK/LIGHT MODE */
+        ::view-transition-old(root),
+        ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+        ::view-transition-old(root) { z-index: 1; }
+        ::view-transition-new(root) { z-index: 999999; }
+
+        /* 2. CSS CHO HIỆU ỨNG CHUYỂN TRANG 5 LÁT CẮT DỌC */
+        .page-transition-overlay { position: fixed; inset: 0; z-index: 100001; pointer-events: none; display: flex; }
+        .page-transition-overlay .slice { flex: 1; height: 100vh; background-color: #0f172a; transform: translateY(-100%); transition: transform 0.5s cubic-bezier(0.7, 0, 0.3, 1); }
+        .dark-mode .page-transition-overlay .slice { background-color: #000000; }
+        
+        .page-transition-overlay.active .slice { transform: translateY(0); }
+        .page-transition-overlay.active-out .slice { transform: translateY(100%); } /* Trượt tuột xuống dưới khi mở ra */
+
+        /* Độ trễ cho từng thanh dọc để tạo hiệu ứng lượn sóng */
+        .slice-1 { transition-delay: 0s; }
+        .slice-2 { transition-delay: 0.1s; }
+        .slice-3 { transition-delay: 0.2s; }
+        .slice-4 { transition-delay: 0.3s; }
+        .slice-5 { transition-delay: 0.4s; }  
       `}</style>
 
       <div className={`min-h-screen w-full font-sans flex flex-col relative transition-colors duration-300 ${isDarkMode ? 'dark-mode text-white bg-[#111111]' : 'text-slate-900 bg-[#f8fafc]'}`}>
@@ -927,7 +1000,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
           {isChatBoxOpen && activeChatTarget && (
             <div className="bg-white w-[340px] h-[480px] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] mb-4 overflow-hidden border border-slate-200 animate-fade-in-up origin-bottom-right flex flex-col">
               <div className="bg-slate-900 text-white p-4 flex justify-between items-center rounded-t-2xl shadow-md z-10">
-                <button onClick={() => { setIsChatBoxOpen(false); setIsHelpOpen(true); setActiveChatTarget(null); }} className="text-slate-300 hover:text-white flex items-center gap-2 font-bold text-sm">
+                <button onClick={() => { setIsChatBoxOpen(false); setIsHelpOpen(true); setActiveChatTarget(null); setAdminChatUser(null); }} className="text-slate-300 hover:text-white flex items-center gap-2 font-bold text-sm">
                   <FiCornerUpLeft/> Quay lại
                 </button>
                 <div className="flex items-center gap-2">
@@ -961,9 +1034,10 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
             </div>
           )}
 
-          {(!isChatBoxOpen && (!isAdmin || (!isHelpOpen && !adminChatUser))) && (
-            <button onClick={() => setIsHelpOpen(!isHelpOpen)} className="relative w-14 h-14 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-2xl hover:bg-black hover:scale-105 transition-all">
-               {isHelpOpen ? <FiX className="text-2xl" /> : <FiMessageCircle className="text-2xl" />}
+          {/* NÚT BONG BÓNG CHAT (HIỆN LÊN KHI MỌI KHUNG CHAT ĐÃ ĐÓNG) */}
+          {(!isChatBoxOpen && !isHelpOpen) && (
+            <button onClick={() => setIsHelpOpen(true)} className="relative w-14 h-14 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-2xl hover:bg-black hover:scale-105 transition-all">
+               <FiMessageCircle className="text-2xl" />
                {/* CHẤM XANH BÁO ONLINE CHO KHÁCH HÀNG */}
                {!isAdmin && <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full shadow-sm"></span>}
                {(!isAdmin && hasUnreadUser) && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white animate-bounce">1</span>}
@@ -973,7 +1047,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
         </div>
 
         {/* HEADER CHÍNH (ĐÃ DỌN SẠCH CHỈ CÒN 1 Ô TÌM KIẾM Ở SHOP) */}
-        <header className={`fixed top-0 left-0 w-full z-[100] border-b flex-shrink-0 transition-all duration-500 ease-in-out backdrop-blur-md ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'} ${isDarkMode ? 'bg-[#111111]/80 border-slate-800' : 'bg-white/80 border-slate-200 shadow-sm'}`}>
+        <header className={`fixed top-0 left-0 w-full z-[100] border-b flex-shrink-0 transition-all duration-500 ease-in-out ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'} ${currentView === 'home' ? (isDarkMode ? 'bg-[#111111]/30 border-slate-800' : 'bg-white/30 border-slate-200') : (isDarkMode ? 'bg-[#111111] border-slate-800' : 'bg-white border-slate-200 shadow-sm')}`}>
            <div className={`max-w-[1400px] mx-auto px-4 md:px-8 transition-all duration-500 ${currentView === 'home' ? 'py-2' : 'pt-3 pb-0'}`}>
               <div className={`flex items-center justify-between gap-3 md:gap-4 transition-all duration-500 ${currentView === 'home' ? 'pb-0' : 'pb-2 md:pb-3'}`}>
                  
@@ -1052,7 +1126,8 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
             <div className="w-full animate-fade-in relative">
                 
                 {/* --- KHU VỰC 1: BANNER ĐƯỢC ĐÓNG ĐINH (FIXED) VÀO MÀN HÌNH --- */}
-                <div className="fixed top-[50px] md:top-[60px] left-0 right-0 h-[calc(100vh-50px)] md:h-[calc(100vh-60px)] flex flex-col justify-center px-6 md:px-16 lg:px-24 overflow-hidden z-0">
+                {/* ĐÃ FIX CHUẨN: Kéo top-0 và h-screen để ảnh phủ kín nóc màn hình */}
+                <div className="fixed top-0 left-0 right-0 h-screen flex flex-col justify-center px-6 md:px-16 lg:px-24 overflow-hidden z-0 pt-[50px] md:pt-[60px]">
                     
                     {/* ẢNH NỀN FULL */}
                     <div className="absolute inset-0 w-full h-full bg-[#0f172a]">
@@ -1068,7 +1143,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-brush mb-6 leading-[0.9] text-white drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)]">Dám Khác Biệt.<br/>Dám Là Trimi.</h1>
                        <p className="mb-10 font-medium text-sm md:text-base leading-relaxed text-slate-200 drop-shadow-md max-w-lg">Chúng tôi tin rằng thời trang là ngôn ngữ không lời để thể hiện cá tính thực sự của bạn. Trải nghiệm sự khác biệt ngay hôm nay.</p>
                        <button onClick={() => navigateTo('shop', 'all')} className="bg-white text-slate-900 px-10 py-4 rounded-full font-black uppercase tracking-widest hover:bg-sky-500 hover:text-white transition-all hover:scale-105 shadow-xl flex items-center justify-center gap-3 w-fit text-sm cursor-pointer shadow-sky-500/20">
-                          Khám phá ngay <FiArrowUp className="rotate-45 text-lg"/>
+                          Mua ngay <FiShoppingCart className="text-xl"/>
                        </button>
                     </div>
                 </div>
@@ -1095,9 +1170,9 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                       ))}
                     </div>
 
-                    {/* SLOGAN */}
+                    {/* SLOGAN (ĐÃ ĐỔI FONT VIẾT TAY TRÊN NỀN SKY-500 NHƯ ÁO) */}
                     <div className={`w-full py-16 md:py-24 px-6 text-center border-b ${isDarkMode ? 'border-slate-800' : 'border-slate-200'} transition-colors duration-300`}>
-                      <h2 className={`text-4xl md:text-6xl font-black mb-6 uppercase tracking-tighter drop-shadow-sm ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{t('sloganTitle')}</h2>
+                      <h2 className="text-6xl md:text-8xl font-brush mb-6 text-sky-500 normal-case tracking-normal drop-shadow-sm">{t('sloganTitle')}</h2>
                       <p className={`max-w-xl mx-auto mb-10 font-medium text-sm md:text-base leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{t('sloganDesc')}</p>
                     </div>
 
@@ -1108,16 +1183,10 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
           {currentView === 'shop' && (
             <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 py-8 md:py-10 animate-fade-in">
               {currentCategory === 'all' && (
-                <div className={`rounded-[24px] md:rounded-[32px] px-6 pt-6 pb-0 md:px-10 md:pt-8 md:pb-0 mb-6 md:mb-10 border flex flex-col md:flex-row items-center justify-between shadow-lg overflow-hidden relative min-h-[160px] md:min-h-[240px] cursor-pointer group transition-colors duration-500 ${!isDarkMode ? 'bg-slate-100' : 'bg-slate-800'} border-slate-200`} onClick={() => navigateTo('shop', 'all')}>
-                  <div className="w-full md:w-1/2 relative z-10 pointer-events-none whitespace-pre-line group-hover:-translate-y-1 transition-transform text-center md:text-left pb-6 md:pb-8">
-                    <span className={`px-3 py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider mb-3 inline-block shadow-sm bg-sky-100 text-sky-600`}>{t('newCol')}</span>
-                    <h2 className={`text-2xl md:text-4xl font-black mb-2 md:mb-4 leading-tight drop-shadow-sm ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{t('heroTitle')}</h2>
-                    <p className={`hidden md:block mb-0 font-medium text-sm ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>{t('heroDesc')}</p>
-                  </div>
-                  {/* CĂN ẢNH CHẠM ĐÁY */}
-                  <div className="relative md:absolute md:inset-y-0 md:right-0 w-full md:w-1/2 h-32 md:h-full flex items-end justify-end pointer-events-none overflow-hidden z-0">
-                    <img src={isDarkMode ? "/banner1.png" : "/banner2.png"} alt="Banner" draggable={false} className="h-full w-auto object-contain object-bottom md:object-right-bottom drop-shadow-md opacity-95 group-hover:scale-105 transition-transform duration-700 ease-out origin-bottom" />
-                  </div>
+                <div className="w-full h-[180px] md:h-[250px] rounded-[32px] overflow-hidden mb-8 shadow-sm border border-slate-100 relative group cursor-pointer" onClick={() => navigateTo('shop', 'all')}>
+                   {/* LƯU Ý: TẠO 1 TẤM ẢNH TÊN LÀ shop_banner.jpg BỎ VÀO THƯ MỤC public CỦA BẠN NHÉ */}
+                   <img src="/shop_banner.jpg" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Shop Banner" />
+                   <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors"></div>
                 </div>
               )}
 
@@ -1140,7 +1209,8 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                     <select 
                        value={sortOrder} 
                        onChange={(e) => setSortOrder(e.target.value)} 
-                       className={`border rounded-xl px-4 py-2 outline-none focus:border-sky-500 text-sm font-bold cursor-pointer transition-colors ${isDarkMode ? 'bg-[#111111] border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
+                       className={`border rounded-full px-5 py-2.5 outline-none focus:border-sky-500 text-sm font-bold cursor-pointer transition-colors appearance-none pr-10 relative ${isDarkMode ? 'bg-[#111111] border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
+                       style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundPosition: 'right 12px center', backgroundRepeat: 'no-repeat', backgroundSize: '16px' }}
                     >
                        <option value="default">{t('sort_default')}</option>
                        <option value="asc">{t('sort_low_high')}</option>
@@ -1615,9 +1685,9 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
               <div>
                 <h4 className="font-bold text-lg mb-6">{t('f_about')}</h4>
                 <ul className="space-y-4 text-sm text-slate-400 font-medium">
-                  <li className="hover:text-white cursor-pointer transition-colors" onClick={() => showToast('Trimi - Ngôn ngữ không lời để thể hiện cá tính!')}>{t('f_story')}</li>
-                  <li className="hover:text-white cursor-pointer transition-colors" onClick={() => showToast('Hiện tại Trimi chưa mở đợt tuyển dụng nào.')}>{t('f_career')}</li>
-                  <li className="hover:text-white cursor-pointer transition-colors" onClick={() => setIsHelpOpen(true)}>{t('f_contact')}</li>
+                  <li className="hover:text-white cursor-pointer transition-colors" onClick={() => setShowStoryModal(true)}>{t('f_story')}</li>
+                  <li className="hover:text-white cursor-pointer transition-colors" onClick={() => setShowCareerModal(true)}>{t('f_career')}</li>
+                  <li className="hover:text-white cursor-pointer transition-colors" onClick={() => setShowContactModal(true)}>{t('f_contact')}</li>
                 </ul>
               </div>
             </div>
@@ -1784,7 +1854,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                     <button onClick={() => setIsSettingsDrawerOpen(false)} className={`p-2 rounded-full transition-colors cursor-pointer ${isDarkMode ? 'bg-white/10 hover:bg-white/20 text-slate-300' : 'bg-black/5 hover:bg-black/10 text-slate-500'}`}><FiX className="text-xl"/></button>
                  </div>
 
-                 {/* NỘI DUNG CÀI ĐẶT */}
+                 {/* NỘI DUNG CÀI ĐẶT (ĐÃ XÓA GIAO DIỆN & NGÔN NGỮ) */}
                  <div className="flex-grow p-6 flex flex-col gap-8">
                     
                     {/* KHỐI 1: THÔNG TIN CÁ NHÂN */}
@@ -1806,42 +1876,13 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                               </div>
                               <div>
                                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Khu vực (Đà Nẵng)</label>
-                                 <select value={tempSettings.district || 'Hải Châu'} onChange={e => setTempSettings({...tempSettings, district: e.target.value})} className={`w-full border rounded-xl px-3 py-2.5 outline-none focus:border-sky-500 text-xs font-medium cursor-pointer ${isDarkMode ? 'bg-black/30 border-white/10' : 'bg-white border-black/10 shadow-inner'}`}>
-                                    {daNangDistricts.map(d => <option key={d.name} value={d.name}>{d.name} ({d.fee === 0 ? 'Freeship' : 'Ship 20k'})</option>)}
+                                 <select value={tempSettings.district || 'Hải Châu'} onChange={e => setTempSettings({...tempSettings, district: e.target.value})} className={`w-full border rounded-full px-4 py-3 outline-none focus:border-sky-500 text-sm font-medium cursor-pointer ${isDarkMode ? 'bg-black/30 border-white/10' : 'bg-white border-black/10 shadow-inner'}`}>
+                                    {daNangDistricts.map(d => <option key={d.name} value={d.name}>{d.name}</option>)}
                                  </select>
                               </div>
                           </div>
                        </div>
                     </div>
-
-                    <hr className={isDarkMode ? 'border-white/10' : 'border-black/5'}/>
-
-                    {/* KHỐI 2: GIAO DIỆN (THEME) */}
-                    <div>
-                        <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2"><FiImage/> Giao diện</p>
-                        <div className={`flex gap-2 p-1.5 rounded-2xl border ${isDarkMode ? 'bg-black/40 border-white/10' : 'bg-white/50 border-black/5 shadow-inner'}`}>
-                           {['dark', 'light'].map(mode => (
-                              <button key={mode} onClick={() => setTempSettings({...tempSettings, theme: mode})} className={`flex-1 py-3 rounded-xl border flex items-center justify-center gap-2 transition-all cursor-pointer ${tempSettings.theme === mode ? (isDarkMode ? 'bg-white text-black border-white font-bold shadow-lg' : 'bg-slate-900 text-white border-slate-900 font-bold shadow-lg') : (isDarkMode ? 'border-transparent text-slate-400 hover:border-sky-500 hover:text-sky-400' : 'border-transparent text-slate-500 hover:border-sky-500 hover:text-sky-600 hover:bg-sky-50')}`}>
-                                 {mode === 'dark' ? <FiMoon/> : <FiSun/>} {mode === 'dark' ? 'Dark Mode' : 'Light Mode'}
-                              </button>
-                           ))}
-                        </div>
-                    </div>
-
-                    <hr className={isDarkMode ? 'border-white/10' : 'border-black/5'}/>
-
-                    {/* KHỐI 3: NGÔN NGỮ (LANGUAGE) */}
-                    <div>
-                        <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2"><FiGlobe/> Ngôn ngữ</p>
-                        <div className={`flex gap-2 p-1.5 rounded-2xl border ${isDarkMode ? 'bg-black/40 border-white/10' : 'bg-white/50 border-black/5 shadow-inner'}`}>
-                           {languages.map(l => (
-                              <button key={l.code} onClick={() => setTempSettings({...tempSettings, lang: l.code})} className={`flex-1 py-3 rounded-xl border flex items-center justify-center gap-2 transition-all cursor-pointer ${tempSettings.lang === l.code ? (isDarkMode ? 'bg-white text-black border-white font-bold shadow-lg' : 'bg-slate-900 text-white border-slate-900 font-bold shadow-lg') : (isDarkMode ? 'border-transparent text-slate-400 hover:border-sky-500 hover:text-sky-400' : 'border-transparent text-slate-500 hover:border-sky-500 hover:text-sky-600 hover:bg-sky-50')}`}>
-                                 {l.label}
-                              </button>
-                           ))}
-                        </div>
-                    </div>
-
                  </div>
 
                  {/* FOOTER DRAWER: NÚT LƯU */}
@@ -1854,7 +1895,8 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
 
                         // 1. Cập nhật state UI
                         setNickname(tempSettings.nickname); setPhone(tempSettings.phone); setAddress(tempSettings.address); setDistrict(tempSettings.district);
-                        setIsDarkMode(tempSettings.theme === 'dark'); setLang(tempSettings.lang);
+                        handleThemeToggle(null, tempSettings.theme === 'dark'); 
+                        setLang(tempSettings.lang);
 
                         // 2. Lưu lên Firestore
                         try { await setDoc(doc(db, "users", user.uid), tempSettings, { merge: true }); } catch(e) {}
@@ -2029,15 +2071,13 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                   <h2 className={`text-3xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Chào mừng đến với Trimi!</h2>
                   <p className={`mb-8 text-lg ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Hãy cá nhân hóa trải nghiệm của bạn</p>
                   
-                  <p className={`text-sm mb-3 font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Tên của bạn là gì?</p>
-                  <input type="text" value={surveyData.name} onChange={e => setSurveyData({...surveyData, name: e.target.value})} className={`w-full border rounded-xl px-4 py-3 outline-none focus:border-sky-500 transition-colors mb-8 ${isDarkMode ? 'bg-transparent border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-sm'}`} />
-                  <input type="text" value={surveyData.name} onChange={e => setSurveyData({...surveyData, name: e.target.value})} onKeyDown={(e) => e.key === 'Enter' && surveyData.name.trim() && setSurveyStep(2)} placeholder="Nhập tên và nhấn Enter..." className={`w-full border rounded-xl px-4 py-3 outline-none focus:border-sky-500 transition-colors mb-8 ${isDarkMode ? 'bg-transparent border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-sm'}`} />
+                  <input type="text" value={surveyData.name} onChange={e => setSurveyData({...surveyData, name: e.target.value})} onKeyDown={(e) => { if(e.key === 'Enter' && surveyData.name.trim()) setSurveyStep(2); }} placeholder="Nhập tên và nhấn Enter..." className={`w-full border rounded-full px-5 py-3.5 outline-none focus:border-sky-500 transition-colors mb-8 ${isDarkMode ? 'bg-transparent border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-sm'}`} />
                   <p className={`text-sm mb-3 font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>Chọn giao diện yêu thích</p>
                   <div className="flex gap-3 mb-10">
                     {['Dark', 'Light'].map(mode => (
-                      <button key={mode} onClick={() => { 
+                      <button key={mode} onClick={(e) => { 
                         setSurveyData({...surveyData, theme: mode});
-                        setIsDarkMode(mode === 'Dark'); // Đổi màu nền web ngay lập tức
+                        handleThemeToggle(e, mode === 'Dark'); 
                       }} className={`flex-1 py-3 rounded-xl border flex items-center justify-center gap-2 cursor-pointer transition-all ${surveyData.theme === mode ? (isDarkMode ? 'bg-white text-black border-white font-bold shadow-lg' : 'bg-slate-900 text-white border-slate-900 font-bold shadow-lg') : (isDarkMode ? 'border-slate-700 text-slate-400 hover:border-sky-500 hover:text-sky-400' : 'border-slate-200 text-slate-500 hover:border-sky-500 hover:text-sky-600 hover:bg-sky-50')}`}>
                         {mode === 'Dark' ? <FiMoon/> : <FiSun/>} {mode}
                       </button>
@@ -2135,7 +2175,90 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
             </div>
           </div>
         )}
+        {/* MODAL CÂU CHUYỆN THƯƠNG HIỆU */}
+        {showStoryModal && (
+          <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-md" onClick={() => setShowStoryModal(false)}></div>
+            <div className="bg-white rounded-[32px] p-8 md:p-12 w-full max-w-2xl relative z-10 shadow-2xl overflow-y-auto max-h-[85vh] custom-scrollbar animate-fade-in-up">
+              <button onClick={() => setShowStoryModal(false)} className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 bg-slate-100 p-2 rounded-full transition-colors"><FiX className="text-xl"/></button>
+              <h2 className="text-4xl font-brush text-slate-900 mb-6">Trimi Studio</h2>
+              <h3 className="text-xl font-black text-slate-900 mb-6 uppercase tracking-wider">Dám Khác Biệt. Dám Là Trimi.</h3>
+              <div className="space-y-4 text-slate-600 leading-relaxed text-sm font-medium">
+                <p>Được thành lập vào năm 2026 tại thành phố Đà Nẵng năng động, <b>Trimi</b> ra đời từ niềm đam mê thời trang streetwear mãnh liệt.</p>
+                <p>Chúng tôi không chỉ bán quần áo. Chúng tôi tin rằng thời trang là ngôn ngữ không lời mạnh mẽ nhất để thể hiện cá tính thực sự, cái tôi độc bản của mỗi người.</p>
+                <p>Từng đường kim, mũi chỉ, từng bản in trên các bộ sưu tập của Trimi đều mang theo thông điệp: <i>"Hãy tự tin mặc những gì bạn yêu thích, đừng để ai định nghĩa phong cách của bạn."</i></p>
+                <p className="pt-4 text-sky-600 font-bold italic">Hãy đồng hành cùng Trimi trên hành trình định hình phong cách cá nhân nhé!</p>
+              </div>
+            </div>
+          </div>
+        )}
 
+        {/* MODAL TUYỂN DỤNG */}
+        {showCareerModal && (
+          <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-md" onClick={() => setShowCareerModal(false)}></div>
+            <div className="bg-white rounded-[32px] p-8 md:p-12 w-full max-w-2xl relative z-10 shadow-2xl overflow-y-auto max-h-[85vh] custom-scrollbar animate-fade-in-up">
+              <button onClick={() => setShowCareerModal(false)} className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 bg-slate-100 p-2 rounded-full transition-colors"><FiX className="text-xl"/></button>
+              <h2 className="text-3xl font-black text-slate-900 mb-2 uppercase">Cơ Hội Nghề Nghiệp</h2>
+              <p className="text-slate-500 mb-8 text-sm">Gia nhập đội ngũ năng động tại Trimi Studio Đà Nẵng.</p>
+              
+              <div className="space-y-4">
+                 <div className="border border-slate-200 p-5 rounded-2xl bg-slate-50 hover:border-sky-500 transition-colors">
+                    <div className="flex justify-between items-center mb-2">
+                       <h4 className="font-bold text-slate-900">1. Nhân viên Sáng tạo Nội dung (Content Creator)</h4>
+                       <span className="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-xs font-bold">Đang mở</span>
+                    </div>
+                    <p className="text-xs text-slate-600 line-clamp-2">Yêu cầu: Có gu thẩm mỹ tốt, biết quay dựng video TikTok/Reels cơ bản. Yêu thích thời trang Streetwear.</p>
+                 </div>
+
+                 <div className="border border-slate-200 p-5 rounded-2xl bg-slate-50 hover:border-sky-500 transition-colors">
+                    <div className="flex justify-between items-center mb-2">
+                       <h4 className="font-bold text-slate-900">2. Chuyên viên Tư vấn Khách hàng</h4>
+                       <span className="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-xs font-bold">Đang mở</span>
+                    </div>
+                    <p className="text-xs text-slate-600 line-clamp-2">Yêu cầu: Giao tiếp tốt, kiên nhẫn, có kinh nghiệm trực page và chốt đơn là một lợi thế.</p>
+                 </div>
+              </div>
+              
+              <div className="mt-8 pt-6 border-t border-slate-100 text-center">
+                 <p className="text-sm text-slate-600 font-medium mb-3">Gửi CV và Portfolio (nếu có) của bạn về Email:</p>
+                 <a href="mailto:phanbasongtoan112@gmail.com" className="text-lg font-black text-sky-500 hover:underline">phanbasongtoan112@gmail.com</a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL LIÊN HỆ CHÚNG TÔI */}
+        {showContactModal && (
+          <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-md" onClick={() => setShowContactModal(false)}></div>
+            <div className="bg-white rounded-[32px] p-8 md:p-12 w-full max-w-md relative z-10 shadow-2xl animate-fade-in-up text-center">
+              <button onClick={() => setShowContactModal(false)} className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 bg-slate-100 p-2 rounded-full transition-colors"><FiX className="text-xl"/></button>
+              
+              <div className="w-20 h-20 bg-sky-100 text-sky-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                 <FiMail className="text-4xl"/>
+              </div>
+              
+              <h2 className="text-3xl font-black text-slate-900 mb-6 uppercase">Liên Hệ Trimi</h2>
+              
+              <div className="space-y-4 text-slate-600 font-medium text-sm mb-8 text-left bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                <p className="flex items-center gap-3"><FiTruck className="text-sky-500 text-lg"/> Đà Nẵng, Việt Nam</p>
+                <p className="flex items-center gap-3"><FiMail className="text-sky-500 text-lg"/> phanbasongtoan112@gmail.com</p>
+                <p className="flex items-center gap-3"><FaFacebook className="text-sky-500 text-lg"/> fb.com/trimi.studio</p>
+              </div>
+
+              <button 
+                onClick={() => {
+                   setShowContactModal(false);
+                   setIsHelpOpen(true);
+                }} 
+                className="w-full bg-slate-900 text-white font-bold py-4 rounded-full hover:bg-sky-500 transition-colors shadow-lg flex justify-center items-center gap-2"
+              >
+                <FiMessageCircle className="text-lg"/> Chat Trực Tiếp Với Admin
+              </button>
+            </div>
+          </div>
+        )}
         {/* MODAL CHÍNH SÁCH BẢO MẬT */}
         {showPrivacyModal && (
           <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4">
@@ -2225,8 +2348,8 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                     <FiUser />
                  </button>
 
-                 {/* 2. Icon Đổi Nền (Sáng/Tối) */}
-                 <button onClick={() => {setIsDarkMode(!isDarkMode); setIsUnifiedMenuOpen(false);}} className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl transition-all ${isDarkMode ? 'text-sky-400 hover:bg-slate-800' : 'text-sky-500 hover:bg-slate-100'}`} title="Đổi giao diện">
+                 {/* 2. Icon Đổi Nền (Sáng/Tối) - ĐÃ GẮN HIỆU ỨNG */}
+                 <button onClick={(e) => {handleThemeToggle(e); setIsUnifiedMenuOpen(false);}} className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl transition-all ${isDarkMode ? 'text-sky-400 hover:bg-slate-800' : 'text-sky-500 hover:bg-slate-100'}`} title="Đổi giao diện">
                     {isDarkMode ? <FiSun /> : <FiMoon />}
                  </button>
 
@@ -2239,6 +2362,15 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
            </>
         )}
 
+      </div>
+      
+      {/* LỚP PHỦ CHUYỂN CẢNH 5 LÁT CẮT (VUỐT NGẦU) */}
+      <div className={`page-transition-overlay ${isTransitioning ? 'active' : ''} ${isTransitionOut ? 'active-out' : ''}`}>
+        <div className="slice slice-1"></div>
+        <div className="slice slice-2"></div>
+        <div className="slice slice-3"></div>
+        <div className="slice slice-4"></div>
+        <div className="slice slice-5"></div>
       </div>
     </>
   );
