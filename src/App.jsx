@@ -121,7 +121,8 @@ export default function App() {
   const [selectedProduct, setSelectedProduct] = useState(null); 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState(null);
-  const [isUnifiedMenuOpen, setIsUnifiedMenuOpen] = useState(false); 
+  const [isUnifiedMenuOpen, setIsUnifiedMenuOpen] = useState(false);
+  
 
   const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('trimi_theme') === 'dark');
   const [isMobile, setIsMobile] = useState(false);
@@ -1043,43 +1044,58 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
 
         <main className={`flex-grow flex flex-col transition-all duration-500 ${currentView === 'home' ? 'pt-[50px] md:pt-[60px]' : 'pt-[110px] md:pt-[130px]'}`}>
           {currentView === 'home' && (
-            <div className="w-full flex flex-col animate-fade-in">
+            <div className="w-full animate-fade-in relative">
                 
-                {/* 1. HOME HERO SECTION (ẢNH NỀN FULL - CHỈNH LẠI GRADIENT TỐI ĐỂ TƯƠNG THÍCH) */}
-                  <div className="w-full min-h-[calc(100vh-50px)] md:minh-h-screen relative flex flex-col justify-center px-6 md:px-16 lg:px-24 overflow-hidden group border-b border-slate-200/10">
-                      
-                      {/* Ảnh nền Full-width - SỬ DỤNG BANNER MODEL 1 CHO LIGHT, BANNER MODEL 2 CHO DARK */}
-                      <img id="detail-main-image" src={isDarkMode ? '/banner_model_dark.jpg' : '/banner_model_light.jpg'} className="absolute inset-0 w-full h-full object-cover object-right-top md:object-right transition-transform duration-[2s] group-hover:scale-105 z-0" alt="Trimi Hero" />
-                      
-                      {/* LỚP PHỦ GRADIENT TỐI ĐỂ TƯƠNG THÍCH TRONG CẢ 2 CHẾ ĐỘ - Giảm độ chói */}
-                      <div className="absolute inset-0 z-0 bg-black/50 md:bg-gradient-to-r md:from-black/90 md:to-transparent"></div>
-
-                      {/* NỘI DUNG CHỮ (Luôn sử dụng chữ sáng màu để nổi bật trên nền tối) */}
-                      <div className="relative z-10 w-full max-w-2xl animate-fade-in-up mt-10 md:mt-0">
-                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-brush mb-6 leading-[0.9] text-white drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)]">Dám Khác Biệt.<br/>Dám Là Trimi.</h1>
-                        
-                        <p className="mb-10 font-medium text-sm md:text-base leading-relaxed text-slate-200 drop-shadow-md max-w-lg">Chúng tôi tin rằng thời trang là ngôn ngữ không lời để thể hiện cá tính thực sự của bạn. Trải nghiệm sự khác biệt ngay hôm nay.</p>
-                        
-                        {/* NÚT BẤM (Luôn sử dụng nút sáng màu) */}
-                        <button onClick={() => navigateTo('shop', 'all')} className="bg-white text-slate-900 px-10 py-4 rounded-full font-black uppercase tracking-widest hover:bg-sky-500 hover:text-white transition-all hover:scale-105 shadow-xl flex items-center justify-center gap-3 w-fit text-sm cursor-pointer shadow-xl shadow-sky-500/20">
-                            Khám phá ngay <FiArrowUp className="rotate-45 text-lg"/>
-                        </button>
-                      </div>
-                  </div>
-
-                {/* 2. LOOKBOOK GRID (5 MỤC - LƯỚT XUỐNG MỚI THẤY) */}
-                <div className="w-full h-auto md:h-[70vh] grid grid-cols-2 md:grid-cols-5 relative transition-all duration-300">
-                  {lookbook.map((block) => (
-                    <div key={block.id} className="w-full h-[30vh] md:h-full relative group cursor-pointer overflow-hidden" onClick={() => navigateTo('shop', block.targetCategory || 'all')}>
-                      <img src={block.img} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[1.5s] ease-out" alt={block.title} />
-                      <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-colors duration-500"></div>
-                      <div className="absolute inset-0 flex items-center justify-center md:items-end md:justify-start md:bottom-10 md:left-6 lg:left-8 z-10 pointer-events-none p-4">
-                        <h3 className="text-white text-center md:text-left text-base md:text-xl lg:text-2xl font-black uppercase tracking-widest transform md:translate-y-6 opacity-100 md:opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 drop-shadow-md">
-                          {block.title.split(' ').map((word, i) => <span key={i} className="block">{word}</span>)}
-                        </h3>
-                      </div>
+                {/* --- KHU VỰC 1: BANNER ĐƯỢC ĐÓNG ĐINH (FIXED) VÀO MÀN HÌNH --- */}
+                <div className="fixed top-[50px] md:top-[60px] left-0 right-0 h-[calc(100vh-50px)] md:h-[calc(100vh-60px)] flex flex-col justify-center px-6 md:px-16 lg:px-24 overflow-hidden z-0">
+                    
+                    {/* ẢNH NỀN FULL */}
+                    <div className="absolute inset-0 w-full h-full bg-[#0f172a]">
+                        <img src="/banner_model_light.jpg" className={`absolute inset-0 w-full h-full object-cover object-right-top md:object-right transition-opacity duration-1000 ease-in-out ${isDarkMode ? 'opacity-0' : 'opacity-100'}`} alt="Trimi Light" />
+                        <img src="/banner_model_dark.jpg" className={`absolute inset-0 w-full h-full object-cover object-right-top md:object-right transition-opacity duration-1000 ease-in-out ${isDarkMode ? 'opacity-100' : 'opacity-0'}`} alt="Trimi Dark" />
                     </div>
-                  ))}
+                    
+                    {/* LỚP PHỦ GRADIENT TỐI */}
+                    <div className="absolute inset-0 bg-black/50 md:bg-gradient-to-r md:from-black/90 md:to-transparent"></div>
+
+                    {/* NỘI DUNG CHỮ */}
+                    <div className="relative z-10 w-full max-w-2xl mt-10 md:mt-0">
+                       <h1 className="text-5xl md:text-7xl lg:text-8xl font-brush mb-6 leading-[0.9] text-white drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)]">Dám Khác Biệt.<br/>Dám Là Trimi.</h1>
+                       <p className="mb-10 font-medium text-sm md:text-base leading-relaxed text-slate-200 drop-shadow-md max-w-lg">Chúng tôi tin rằng thời trang là ngôn ngữ không lời để thể hiện cá tính thực sự của bạn. Trải nghiệm sự khác biệt ngay hôm nay.</p>
+                       <button onClick={() => navigateTo('shop', 'all')} className="bg-white text-slate-900 px-10 py-4 rounded-full font-black uppercase tracking-widest hover:bg-sky-500 hover:text-white transition-all hover:scale-105 shadow-xl flex items-center justify-center gap-3 w-fit text-sm cursor-pointer shadow-sky-500/20">
+                          Khám phá ngay <FiArrowUp className="rotate-45 text-lg"/>
+                       </button>
+                    </div>
+                </div>
+
+                {/* --- KHU VỰC 2: KHOẢNG TRỐNG TÀNG HÌNH ĐỂ TẠO THANH CUỘN --- */}
+                {/* Đoạn này tạo ra 1 khoảng trống bằng đúng chiều cao màn hình để đẩy phần nội dung xuống dưới */}
+                <div className="w-full h-[calc(100vh-50px)] md:h-[calc(100vh-60px)] bg-transparent pointer-events-none relative z-0"></div>
+
+                {/* --- KHU VỰC 3: PHẦN NỘI DUNG TRƯỢT ĐÈ LÊN TRÊN (CÓ ĐỔ BÓNG ĐEN PHÍA TRÊN) --- */}
+                <div className={`relative z-10 w-full flex flex-col shadow-[0_-20px_50px_rgba(0,0,0,0.8)] ${isDarkMode ? 'bg-[#111111]' : 'bg-[#f8fafc]'}`}>
+                    
+                    {/* LOOKBOOK GRID (5 MỤC) */}
+                    <div className="w-full h-auto md:h-[70vh] grid grid-cols-2 md:grid-cols-5 relative transition-all duration-300 bg-black">
+                      {lookbook.map((block) => (
+                        <div key={block.id} className="w-full h-[30vh] md:h-full relative group cursor-pointer overflow-hidden border-r border-b border-white/10" onClick={() => navigateTo('shop', block.targetCategory || 'all')}>
+                          <img src={block.img} className="w-full h-full object-cover transition-transform duration-[1.5s] ease-out opacity-80 group-hover:opacity-100 group-hover:scale-110" alt={block.title} />
+                          <div className="absolute inset-0 bg-black/40 group-hover:bg-black/10 transition-colors duration-500"></div>
+                          <div className="absolute inset-0 flex items-center justify-center md:items-end md:justify-start md:bottom-10 md:left-6 lg:left-8 z-10 pointer-events-none p-4">
+                            <h3 className="text-white text-center md:text-left text-base md:text-xl lg:text-2xl font-black uppercase tracking-widest transform md:translate-y-6 opacity-100 md:opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 drop-shadow-md">
+                              {block.title.split(' ').map((word, i) => <span key={i} className="block">{word}</span>)}
+                            </h3>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* SLOGAN */}
+                    <div className={`w-full py-16 md:py-24 px-6 text-center border-b ${isDarkMode ? 'border-slate-800' : 'border-slate-200'} transition-colors duration-300`}>
+                      <h2 className={`text-4xl md:text-6xl font-black mb-6 uppercase tracking-tighter drop-shadow-sm ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{t('sloganTitle')}</h2>
+                      <p className={`max-w-xl mx-auto mb-10 font-medium text-sm md:text-base leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{t('sloganDesc')}</p>
+                    </div>
+
                 </div>
             </div>
           )}
@@ -1161,11 +1177,29 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
               
               <div className="bg-white rounded-3xl md:rounded-[40px] border border-slate-100 p-4 md:p-6 lg:p-8 flex flex-col md:flex-row gap-6 lg:gap-10 shadow-sm w-full">
                 
-                {/* ẢNH SẢN PHẨM (Đã gắn ID để bay vào giỏ và ép chiều cao lọt màn hình) */}
+                {/* ẢNH SẢN PHẨM (ĐÃ THÊM TÍNH NĂNG ZOOM KÍNH LÚP) */}
                 <div className="w-full md:w-[45%] lg:w-[40%] flex flex-col gap-3 flex-shrink-0">
-                  <div className="w-full h-[300px] md:h-[350px] lg:h-[450px] bg-slate-50 border border-slate-100 rounded-2xl md:rounded-[32px] flex items-center justify-center relative group overflow-hidden">
-                     <img id="detail-main-image" src={(selectedProduct.images && selectedProduct.images.length > 0) ? selectedProduct.images[activeImgIdx] : selectedProduct.imageUrl} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" alt={selectedProduct.name}/>
+                  <div 
+                    className="w-full h-[300px] md:h-[350px] lg:h-[450px] bg-slate-50 border border-slate-100 rounded-2xl md:rounded-[32px] flex items-center justify-center relative overflow-hidden cursor-crosshair group shadow-inner"
+                    onMouseMove={(e) => {
+                      const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+                      const x = ((e.clientX - left) / width) * 100;
+                      const y = ((e.clientY - top) / height) * 100;
+                      e.currentTarget.querySelector('img').style.transformOrigin = `${x}% ${y}%`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.querySelector('img').style.transformOrigin = `center center`;
+                    }}
+                  >
+                     <img 
+                        id="detail-main-image" 
+                        src={(selectedProduct.images && selectedProduct.images.length > 0) ? selectedProduct.images[activeImgIdx] : selectedProduct.imageUrl} 
+                        className="w-full h-full object-cover transition-transform duration-[0.4s] ease-out group-hover:scale-[2.5]" 
+                        alt={selectedProduct.name}
+                     />
                   </div>
+                  
+                  {/* Băng chuyền các ảnh nhỏ */}
                   {(selectedProduct.images && selectedProduct.images.length > 1) && (
                     <div className="flex gap-2 overflow-x-auto custom-scrollbar py-1">
                       {selectedProduct.images.map((img, idx) => (
@@ -1175,7 +1209,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                       ))}
                     </div>
                   )}
-                </div>
+                </div> {/* <-- CHÍNH LÀ CÁI THẺ DIV ĐÓNG NÀY ĐÃ BỊ XÓA NHẦM LÀM LỖI WEB ĐÓ! */}
 
                 {/* THÔNG TIN SẢN PHẨM */}
                 <div className="w-full md:w-[55%] lg:w-[60%] flex flex-col justify-center relative">
@@ -2137,7 +2171,26 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
               </div>
            </div>
         )}
-        {/* MENU 3 GẠCH (TRẢI NGANG, HÌNH VUÔNG KHÔNG GÂY BLUR) */}
+
+        {/* BẢNG THÔNG BÁO COOKIE & CHÍNH SÁCH BẢO MẬT (CHỈ HIỆN LẦN ĐẦU) */}
+        {showCookieConsent && (
+          <div className="fixed bottom-0 left-0 w-full bg-slate-900 text-white p-4 md:px-8 z-[99999] flex flex-col md:flex-row justify-between items-center text-sm shadow-[0_-10px_40px_rgba(0,0,0,0.2)] animate-fade-in-up">
+            <p className="mb-4 md:mb-0 font-medium text-slate-300 text-center md:text-left">
+              Trimi sử dụng cookie để theo dõi trải nghiệm nhằm cung cấp các đề xuất AI chính xác nhất. Khi tiếp tục, bạn đồng ý với <span onClick={() => setShowPrivacyModal(true)} className="text-sky-400 cursor-pointer font-bold hover:underline">Chính sách bảo mật</span> của chúng tôi.
+            </p>
+            <button 
+              onClick={() => {
+                localStorage.setItem('trimi_cookies', 'true');
+                setShowCookieConsent(false);
+              }} 
+              className="bg-sky-500 hover:bg-sky-600 px-8 py-2.5 rounded-full font-bold text-white shadow-lg transition-colors whitespace-nowrap cursor-pointer"
+            >
+              Tôi đồng ý
+            </button>
+          </div>
+        )}
+
+        {/* MENU 3 GẠCH (TRẢI NGANG, HÌNH VUÔNG, KHÔNG GÂY BLUR) */}
         {isUnifiedMenuOpen && (
            <>
               {/* Lớp nền tàng hình để click ra ngoài thì đóng menu */}
@@ -2164,6 +2217,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
               </div>
            </>
         )}
+
       </div>
     </>
   );
