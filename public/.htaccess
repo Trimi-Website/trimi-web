@@ -1,0 +1,19 @@
+<IfModule mod_expires.c>
+  ExpiresActive On
+  
+  # Nén và lưu Cache Hình ảnh trong 1 năm
+  ExpiresByType image/jpg "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/gif "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType image/x-icon "access plus 1 year"
+  
+  # Lưu Cache CSS, JS trong 1 tháng
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+  
+  # Các file font chữ
+  ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>

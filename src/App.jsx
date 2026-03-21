@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'; // <--- Thêm useRef vào đây
 import { 
-  FiMenu, FiMail, FiLock, FiLogOut, FiShoppingCart, FiSearch, 
+  FiMenu, FiHome, FiMail, FiLock, FiLogOut, FiShoppingCart, FiSearch, 
   FiUser, FiStar, FiTruck, FiShield, FiCornerUpLeft, FiX, 
   FiTrash2, FiCheckCircle, FiRefreshCcw, FiSettings, 
   FiPlus, FiUploadCloud, FiArchive, FiCamera, FiEdit3, FiSave, FiMove, FiImage,
@@ -122,6 +122,15 @@ export default function App() {
   const [selectedProduct, setSelectedProduct] = useState(null); 
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+ 
+
+  // Tự động chuyển sang Cửa hàng nếu là Mobile khi vừa load trang
+  useEffect(() => {
+    if (window.innerWidth < 768 && currentView === 'home') {
+      setCurrentView('shop'); 
+      setCurrentCategory('all');
+    }
+  }, []);
   const [sortOrder, setSortOrder] = useState('default');
   const [selectedTag, setSelectedTag] = useState(null);
   const [isUnifiedMenuOpen, setIsUnifiedMenuOpen] = useState(false);
@@ -235,6 +244,81 @@ export default function App() {
 
   const [toastMsg, setToastMsg] = useState(''); 
   const [showScrollTop, setShowScrollTop] = useState(false);
+  
+  // --- HÀM CHUYỂN TRANG CÓ TÍCH HỢP LỊCH SỬ TRÌNH DUYỆT (NATIVE BACK) ---
+  const navigateTo = (view, category = 'all', product = null) => {
+    setCurrentView(view);
+    setCurrentCategory(category);
+    setSelectedProduct(product);
+    setSearchQuery(''); 
+    setIsUnifiedMenuOpen(false); 
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Đẩy lịch sử thật vào trình duyệt để khách có thể vuốt/bấm nút Back
+    window.history.pushState({ view, category, product }, '', `?view=${view}`);
+  };
+
+  // --- HÀM CUỘN LÊN ĐẦU TRANG (Bổ sung lại hàm bị mất) ---
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // --- HÀM QUAY LẠI TRANG TRƯỚC ---
+  const goBack = () => {
+    if (viewHistory.length > 0) {
+      // Lấy trang gần nhất ra khỏi lịch sử
+      const lastPage = viewHistory[viewHistory.length - 1];
+      
+      // Cập nhật State để hiển thị trang đó
+      setCurrentView(lastPage.view);
+      setCurrentCategory(lastPage.category);
+      
+      // Xóa trang đó khỏi mảng lịch sử
+      setViewHistory(prev => prev.slice(0, -1));
+      
+      // Cuộn lên đầu trang
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+        // Nếu không còn lịch sử trong app, mặc định về Cửa hàng trên mobile
+        if (window.innerWidth < 768) {
+            setCurrentView('shop');
+            setCurrentCategory('all');
+        } else {
+            setCurrentView('home');
+        }
+    }
+  };
+
+  // --- BỘ LẮNG NGHE THAO TÁC VUỐT HOẶC BẤM BACK TỪ TRÌNH DUYỆT ---
+  useEffect(() => {
+    const handlePopState = (e) => {
+      if (e.state) {
+        // Khôi phục lại trang trước đó từ bộ nhớ trình duyệt
+        setCurrentView(e.state.view || 'home'); 
+        setCurrentCategory(e.state.category || 'all'); 
+        setSelectedProduct(e.state.product || null);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        // Nếu lùi về tận cùng, tự động đẩy về Home (PC) hoặc Shop (Mobile)
+        if (window.innerWidth < 768) {
+          setCurrentView('shop');
+          setCurrentCategory('all');
+        } else {
+          setCurrentView('home');
+        }
+      }
+    };
+
+    // Lắng nghe sự kiện lùi trang
+    window.addEventListener('popstate', handlePopState);
+    
+    // Lưu lại cái mốc đầu tiên khi khách vừa vào web
+    if (!window.history.state) {
+      window.history.replaceState({ view: currentView, category: currentCategory, product: selectedProduct }, '', `?view=${currentView}`);
+    }
+
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const isAdmin = user?.email === 'phanbasongtoan112@gmail.com';
   const [showAddModal, setShowAddModal] = useState(false);
@@ -314,30 +398,43 @@ export default function App() {
 
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const lastScrollY = useRef(0);
-  const scrollTimeout = useRef(null); // Biến để nhận diện thao tác thả tay
+  const scrollTimeout = useRef(null); 
+  const scrollTopTimeout = useRef(null); // Thêm bộ đếm giờ cho nút cuộn
 
   useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      if (currentScrollY > 400) setShowScrollTop(true); 
-      else setShowScrollTop(false);
+    let ticking = false; // Biến chống giật (throttle)
 
-      if (currentScrollY < 80) {
-        setIsHeaderVisible(true); // Gần đầu trang luôn hiện
-      } else if (Math.abs(currentScrollY - lastScrollY.current) > 10) {
-        if (currentScrollY > lastScrollY.current) {
-          // LƯỚT XUỐNG -> Ẩn ngay lập tức
-          setIsHeaderVisible(false);
-          clearTimeout(scrollTimeout.current);
-        } else {
-          // LƯỚT LÊN -> Chờ người dùng thả tay (dừng cuộn 150ms) mới hiện Header
-          clearTimeout(scrollTimeout.current);
-          scrollTimeout.current = setTimeout(() => {
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          
+          // LOGIC MỚI: Chỉ hiện khi cuộn LÊN và đang ở xa top (400px)
+          if (currentScrollY > 400 && currentScrollY < lastScrollY.current) {
+            setShowScrollTop(true);
+            clearTimeout(scrollTopTimeout.current);
+            scrollTopTimeout.current = setTimeout(() => setShowScrollTop(false), 2000);
+          } else if (currentScrollY > lastScrollY.current || currentScrollY <= 400) {
+            setShowScrollTop(false);
+            clearTimeout(scrollTopTimeout.current);
+          }
+
+          // Xử lý ẩn/hiện Header
+          if (currentScrollY < 80) {
             setIsHeaderVisible(true);
-          }, 150); 
-        }
-        lastScrollY.current = currentScrollY;
+          } else if (Math.abs(currentScrollY - lastScrollY.current) > 10) {
+            if (currentScrollY > lastScrollY.current) {
+              setIsHeaderVisible(false);
+              clearTimeout(scrollTimeout.current);
+            } else {
+              clearTimeout(scrollTimeout.current);
+              scrollTimeout.current = setTimeout(() => setIsHeaderVisible(true), 150); 
+            }
+          }
+          lastScrollY.current = currentScrollY;
+          ticking = false; // Mở khóa cho khung hình tiếp theo
+        });
+        ticking = true; // Khóa lại chờ vẽ xong
       }
     };
     
@@ -345,57 +442,9 @@ export default function App() {
     return () => {
       window.removeEventListener('scroll', handleScroll);
       clearTimeout(scrollTimeout.current);
+      clearTimeout(scrollTopTimeout.current);
     };
   }, []);
-
-  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
-
-  // STATE QUẢN LÝ HIỆU ỨNG CHUYỂN TRANG
-  const [isPageLoading, setIsPageLoading] = useState(false);
-
-  const navigateTo = (view, category = 'all', product = null) => {
-    const isSameProduct = (selectedProduct && product) ? selectedProduct.id === product.id : selectedProduct === product;
-    if (currentView === view && currentCategory === category && isSameProduct) return;
-
-    // Hàm thực hiện chuyển đổi dữ liệu
-    const updateState = () => {
-      setCurrentView(view);
-      setCurrentCategory(category);
-      if (view === 'productDetail') setSelectedProduct(product);
-      window.history.pushState({ view, category, product }, '', `?view=${view}`);
-      window.scrollTo({ top: 0, behavior: 'instant' });
-    };
-
-    // Nếu trình duyệt không hỗ trợ, chuyển trang lập tức
-    if (!document.startViewTransition) {
-      updateState();
-      return;
-    }
-
-    // BẮT ĐẦU HIỆU ỨNG LAN TỎA GIỐNG VIDEO
-    const transition = document.startViewTransition(() => {
-      updateState();
-    });
-
-    transition.ready.then(() => {
-      const { x, y } = lastClickPos.current;
-      const endRadius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
-
-      document.documentElement.animate(
-        {
-          clipPath: [
-            `circle(0px at ${x}px ${y}px)`,
-            `circle(${endRadius}px at ${x}px ${y}px)`
-          ]
-        },
-        {
-          duration: 500, // Tốc độ vòng tròn lan ra (0.5s)
-          easing: 'ease-in-out',
-          pseudoElement: '::view-transition-new(root)'
-        }
-      );
-    });
-  };
 
   useEffect(() => {
     const handlePopState = (e) => {
@@ -716,7 +765,6 @@ export default function App() {
         const flyer = document.createElement('img');
         flyer.src = image.src; // Lấy đúng ảnh của sản phẩm
         flyer.className = "fixed object-cover shadow-2xl z-[10000] animate-add-to-cart-fly pointer-events-none rounded-xl border-2 border-white/50";
-        
         // Kích thước ảnh bay (To hơn bi cũ để nhìn rõ ảnh)
         const size = 60; 
         flyer.style.width = `${size}px`;
@@ -890,9 +938,10 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+        /* --- NHỊP ĐIỆU HOẠT HÌNH (CÓ ĐỘ NẨY) --- */
+        .cartoon-ease { transition-timing-function: cubic-bezier(0.68, -0.6, 0.27, 1.55) !important; }
         .font-brush { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 800; }
-        html, body, #root { overflow: visible !important; overflow-y: auto !important; height: auto !important; min-height: 100vh !important; }
+        html, body, #root { overflow-x: hidden !important; overflow-y: auto !important; height: auto !important; min-height: 100vh !important; }
         
         .grecaptcha-badge { visibility: hidden !important; }
         a, button, label, .cursor-pointer, [role="button"] { cursor: pointer !important; }
@@ -915,7 +964,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
         /* =========================================================
            3. CSS CHO HIỆU ỨNG CHUYỂN TRANG MỚI (TỔNG HỢP)
            ========================================================= */
-        main { position: relative; overflow: hidden; width: 100vw; }
+        main { position: relative; overflow: hidden; width: 100%; }
 
         /* --- LOẠI 1: KÉO TRANG (HOME -> SHOP) - Phong cách Hoạt hình --- */
         
@@ -975,7 +1024,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
         {/* NÚT CUỘN CHỐNG MỎI TAY */}
         <div className="fixed bottom-[80px] left-1/2 -translate-x-1/2 md:bottom-28 md:left-auto md:-translate-x-0 md:right-8 z-[8500] flex flex-col gap-3">
           {showScrollTop && (
-            <button onClick={scrollToTop} className="bg-slate-900/70 backdrop-blur-md border border-white/10 text-white w-11 h-11 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-lg hover:bg-sky-500 hover:scale-110 transition-all">
+            <button onClick={scrollToTop} aria-label="Cuộn lên đầu trang" className="bg-slate-900/70 backdrop-blur-md border border-white/10 text-white w-11 h-11 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-lg hover:bg-sky-500 hover:scale-110 transition-all">
                <FiArrowUp className="text-2xl"/>
             </button>
           )}
@@ -986,7 +1035,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
             <div className="bg-white w-[340px] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] mb-4 overflow-hidden border border-slate-200 animate-fade-in-up origin-bottom-right">
               <div className="bg-slate-900 text-white p-5 pr-4 flex justify-between items-start">
                 <div>
-                  <h3 className="font-bold text-[17px] mb-1">{t('chatHelp')}</h3>
+                  <h2 className="font-bold text-[17px] mb-1">{t('chatHelp')}</h2>
                   <p className="text-sm text-slate-300 flex items-center gap-1">{t('chatHow')}</p>
                 </div>
                 <button onClick={() => setIsHelpOpen(false)} className="text-slate-400 hover:text-white transition-colors p-1"><FiX className="text-xl"/></button>
@@ -1039,7 +1088,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
           {isAdmin && isHelpOpen && !activeChatTarget && (
             <div className="bg-white w-[340px] h-[480px] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] mb-4 overflow-hidden border border-slate-200 animate-fade-in-up origin-bottom-right flex flex-col">
               <div className="bg-slate-900 text-white p-4 flex justify-between items-center rounded-t-2xl shadow-md z-10">
-                <h3 className="font-bold">{t('adminInbox')}</h3>
+                <h2 className="font-bold">{t('adminInbox')}</h2>
                 <button onClick={() => setIsHelpOpen(false)} className="text-slate-400 hover:text-white p-1"><FiX className="text-xl"/></button>
               </div>
               <div className="flex-grow p-2 overflow-y-auto custom-scrollbar">
@@ -1102,7 +1151,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
 
           {/* NÚT BONG BÓNG CHAT (HIỆN LÊN KHI MỌI KHUNG CHAT ĐÃ ĐÓNG) */}
           {(!isChatBoxOpen && !isHelpOpen) && (
-            <button onClick={() => setIsHelpOpen(true)} className="hidden md:flex relative w-14 h-14 bg-slate-900/50 backdrop-blur-md border border-white/10 text-white rounded-full items-center justify-center shadow-lg hover:bg-sky-500 hover:scale-105 transition-all">
+            <button aria-label="Mở khung chat" onClick={() => setIsHelpOpen(true)} className="hidden md:flex relative w-14 h-14 bg-slate-900/50 backdrop-blur-md border border-white/10 text-white rounded-full items-center justify-center shadow-lg hover:bg-sky-500 hover:scale-105 transition-all">
                <FiMessageCircle className="text-2xl" />
                {/* CHẤM XANH BÁO ONLINE CHO KHÁCH HÀNG */}
                {!isAdmin && <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white/50 rounded-full shadow-sm"></span>}
@@ -1113,14 +1162,14 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
         </div>
 
         {/* HEADER CHÍNH (ĐÃ DỌN SẠCH CHỈ CÒN 1 Ô TÌM KIẾM Ở SHOP) */}
-        <header className={`fixed top-0 left-0 w-full z-[100] border-b flex-shrink-0 transition-all duration-500 ease-in-out ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'} ${currentView === 'home' ? (isDarkMode ? 'bg-[#111111]/30 border-slate-800' : 'bg-white/30 border-slate-200') : (isDarkMode ? 'bg-[#111111] border-slate-800' : 'bg-white border-slate-200 shadow-sm')}`}>
+        <header className={`fixed top-0 left-0 w-full z-[100] border-b flex-shrink-0 transition-all duration-500 ease-in-out ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'} ${currentView === 'home' ? (isDarkMode ? 'bg-[#111111] border-slate-800' : 'bg-white border-slate-200') : (isDarkMode ? 'bg-[#111111] border-slate-800' : 'bg-white border-slate-200 shadow-sm')}`}>
            <div className={`max-w-[1400px] mx-auto px-4 md:px-8 transition-all duration-500 ${currentView === 'home' ? 'py-2' : 'pt-3 pb-0'}`}>
               {/* THANH TOP BAR CỦA HEADER */}
               <div className={`flex items-center justify-between gap-3 md:gap-4 transition-all duration-500 ${currentView === 'home' ? 'pb-0' : 'pb-2 md:pb-3'}`}>
                  
                  {/* BÊN TRÁI: MENU (MOBILE) + LOGO */}
                  <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-                    <button onClick={() => setIsUnifiedMenuOpen(true)} className={`md:hidden p-1 transition-colors cursor-pointer ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                    <button aria-label="Mở menu" onClick={() => setIsUnifiedMenuOpen(true)} className={`md:hidden p-1 transition-colors cursor-pointer ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                        <FiMenu className="text-[26px]" />
                     </button>
                     <h1 className={`font-brush tracking-wide cursor-pointer transition-all duration-500 ${currentView === 'home' ? 'text-3xl md:text-4xl' : 'text-4xl md:text-[52px]'} ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`} onClick={() => navigateTo('home', 'all')} style={{ lineHeight: '1' }}>
@@ -1134,8 +1183,8 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                       {/* Search trên PC (Giữ nguyên, luôn hiện full) */}
                       <div className="hidden md:flex relative w-full max-w-[400px]">
                          <div className={`flex rounded-full w-full overflow-hidden border shadow-inner z-50 relative h-10 ${isDarkMode ? 'bg-white/10 border-slate-700 text-white focus-within:border-sky-500' : 'bg-slate-100 border-transparent focus-within:border-slate-300 focus-within:bg-white text-slate-800'}`}>
-                            <input type="text" value={searchQuery} onChange={(e) => {setSearchQuery(e.target.value); setCurrentView('shop');}} placeholder={t('search')} className="w-full px-4 text-sm outline-none bg-transparent placeholder-slate-400 font-medium"/>
-                            <button className="px-4 text-slate-400 hover:text-sky-500 transition-colors"><FiSearch className="text-lg"/></button>
+                            <input type="text" value={searchQuery} onChange={(e) => {setSearchQuery(e.target.value); setCurrentView('shop');}} placeholder={t('search')} className="w-full px-4 text-sm outline-none bg-transparent placeholder-slate-500 font-medium"/>
+                            <button aria-label="Tìm kiếm" className="px-4 text-slate-400 hover:text-sky-500 transition-colors"><FiSearch className="text-lg"/></button>
                          </div>
                          {searchQuery && (
                            <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 max-h-60 overflow-y-auto animate-fade-in-up">
@@ -1174,7 +1223,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                  <div className="flex items-center gap-2 md:gap-3 text-sm font-semibold text-slate-700 flex-shrink-0 relative z-[1001]">
                     {/* Nút Chat trên cùng (Chỉ Mobile, tự động ẩn khi khung Search bung ra để đỡ chật) */}
                     {!isMobileSearchOpen && (
-                      <button onClick={() => setIsHelpOpen(true)} className={`md:hidden p-1 transition-colors relative cursor-pointer ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`}>
+                      <button aria-label="Mở hỗ trợ chat" onClick={() => setIsHelpOpen(true)} className={`md:hidden p-1 transition-colors relative cursor-pointer ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`}>
                          <FiMessageCircle className="text-[22px]" />
                          {(!isAdmin && hasUnreadUser) && <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 border border-white rounded-full"></span>}
                          {(isAdmin && totalAdminUnread > 0) && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">{totalAdminUnread}</span>}
@@ -1182,7 +1231,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                     )}
 
                     {/* Giỏ hàng (Hiện trên cả Mobile và PC) */}
-                    <div className={`flex items-center gap-2 cursor-pointer transition-colors relative group p-1 md:p-2 ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`} onClick={() => setIsCartOpen(true)}>
+                    <div aria-label="Mở giỏ hàng" className={`flex items-center gap-2 cursor-pointer transition-colors relative group p-1 md:p-2 ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`} onClick={() => setIsCartOpen(true)}>
                        <div id="header-cart-icon" className="relative transition-transform duration-300">
                          <FiShoppingCart className={`${currentView === 'home' ? 'text-xl' : 'text-2xl'}`}/>
                          {cartItemCount > 0 && (
@@ -1194,7 +1243,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                     </div>
 
                     {/* Nút Menu PC */}
-                    <button onClick={() => setIsUnifiedMenuOpen(true)} className={`hidden md:block p-1.5 md:p-2 transition-colors cursor-pointer relative z-[1100] ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`}>
+                    <button aria-label="Mở menu" onClick={() => setIsUnifiedMenuOpen(true)} className={`hidden md:block p-1.5 md:p-2 transition-colors cursor-pointer relative z-[1100] ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`}>
                        <FiMenu className={`${currentView === 'home' ? 'text-2xl' : 'text-3xl'}`} />
                     </button>
                  </div>
@@ -1221,7 +1270,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
         </header>
 
         <main ref={mainRef} className={`flex-grow block relative w-full overflow-x-hidden pb-[65px] md:pb-0 ${currentView === 'home' ? 'pt-0' : 'pt-[100px] md:pt-[130px]'}`}>
-          {currentView === 'home' && (
+          {currentView === 'home' && window.innerWidth >= 768 && (
             <div className="w-full animate-fade-in relative">
                 
                 {/* --- KHU VỰC 1: BANNER ĐƯỢC ĐÓNG ĐINH (FIXED) VÀO MÀN HÌNH --- */}
@@ -1229,8 +1278,8 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                 <div className="fixed top-0 left-0 right-0 h-screen flex flex-col justify-center px-6 md:px-16 lg:px-24 overflow-hidden z-0 pt-[50px] md:pt-[60px]">
                     {/* ẢNH NỀN FULL */}
                     <div className="absolute inset-0 w-full h-full bg-[#0f172a]">
-                        <img src="/banner_model_light.jpg" className={`absolute inset-0 w-full h-full object-cover object-right-top md:object-right transition-opacity duration-1000 ease-in-out ${isDarkMode ? 'opacity-0' : 'opacity-100'}`} alt="Trimi Light" />
-                        <img src="/banner_model_dark.jpg" className={`absolute inset-0 w-full h-full object-cover object-right-top md:object-right transition-opacity duration-1000 ease-in-out ${isDarkMode ? 'opacity-100' : 'opacity-0'}`} alt="Trimi Dark" />
+                        <img src="/banner_model_light.webp" className={`absolute inset-0 w-full h-full object-cover object-right-top md:object-right transition-opacity duration-1000 ease-in-out ${isDarkMode ? 'opacity-0' : 'opacity-100'}`} alt="Trimi Light" />
+                        <img src="/banner_model_dark.webp" className={`absolute inset-0 w-full h-full object-cover object-right-top md:object-right transition-opacity duration-1000 ease-in-out ${isDarkMode ? 'opacity-100' : 'opacity-0'}`} alt="Trimi Dark" />
                     </div>
                     
                     {/* LỚP PHỦ GRADIENT TỐI */}
@@ -1238,14 +1287,14 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
 
                     {/* NỘI DUNG CHỮ */}
                     <div className="relative z-10 w-full max-w-2xl mt-10 md:mt-0">
-                       <h1 className="text-5xl md:text-7xl lg:text-8xl font-brush mb-6 leading-[0.9] text-white drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)]">
+                       <h1 className="text-[40px] md:text-7xl lg:text-8xl font-brush mb-6 leading-[1.1] text-white drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)]">
                           <span className="whitespace-nowrap">Dám Khác Biệt.</span><br/>
                           <span className="whitespace-nowrap">Dám Là Trimi.</span>
                        </h1>
                        <p className="mb-10 font-medium text-sm md:text-base leading-relaxed text-slate-200 drop-shadow-md max-w-lg">Chúng tôi tin rằng thời trang là ngôn ngữ không lời để thể hiện cá tính thực sự của bạn. Trải nghiệm sự khác biệt ngay hôm nay.</p>
-                       <button id="btn-mua-ngay" onClick={() => navigateTo('shop', 'all')} className="bg-white text-slate-900 px-10 py-4 rounded-full font-black uppercase tracking-widest hover:bg-sky-500 hover:text-white transition-all hover:scale-105 shadow-xl flex items-center justify-center gap-3 w-fit text-sm cursor-pointer shadow-sky-500/20">
-                          Mua ngay <FiShoppingCart className="text-xl"/>
-                      </button>
+                       <button onClick={() => navigateTo('shop', 'all')} className="flex items-center gap-2 bg-white text-slate-900 px-8 py-4 rounded-full font-bold hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+                          MUA NGAY <FiShoppingCart />
+                       </button>
                     </div>
                 </div>
 
@@ -1257,14 +1306,15 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                 {/* NỘI DUNG CUỘN LÊN ĐÈ LÊN BANNER (Dùng style chuẩn để vừa khít mép dưới 100%) */}
                   <div className={`relative z-10 w-full flex flex-col shadow-[0_-20px_50px_rgba(0,0,0,0.8)] ${isDarkMode ? 'bg-[#111111]' : 'bg-[#f8fafc]'}`} style={{ marginTop: '100vh' }}>
                     
-                    {/* LOOKBOOK GRID (5 MỤC) */}
-                    <div className="w-full h-auto md:h-[70vh] grid grid-cols-2 md:grid-cols-5 relative transition-all duration-300 bg-black">
+                    {/* LOOKBOOK GRID (Vuốt ngang trên Mobile, Lưới 5 cột trên PC) */}
+                    <div className="w-full flex md:grid md:grid-cols-5 overflow-x-auto snap-x snap-mandatory custom-scrollbar relative transition-all duration-300 bg-black h-[45vh] md:h-[70vh]">
                       {lookbook.map((block) => (
-                        <div key={block.id} className="w-full h-[30vh] md:h-full relative group cursor-pointer overflow-hidden border-r border-b border-white/10" onClick={() => navigateTo('shop', block.targetCategory || 'all')}>
-                          <img src={block.img} className="w-full h-full object-cover transition-transform duration-[1.5s] ease-out opacity-80 group-hover:opacity-100 group-hover:scale-110" alt={block.title} />
+                        <div key={block.id} className="w-[80vw] md:w-full flex-shrink-0 h-full relative group cursor-pointer overflow-hidden border-r border-white/10 snap-center" onClick={() => navigateTo('shop', block.targetCategory || 'all')}>
+                          {/* Dùng object-[center_top] để ảnh ưu tiên hiển thị mặt người mẫu */}
+                          <img src={block.img} className="w-full h-full object-cover object-[center_top] transition-transform duration-[1.5s] ease-out opacity-80 group-hover:opacity-100 group-hover:scale-110" alt={block.title} />
                           <div className="absolute inset-0 bg-black/40 group-hover:bg-black/10 transition-colors duration-500"></div>
                           <div className="absolute inset-0 flex items-center justify-center md:items-end md:justify-start md:bottom-10 md:left-6 lg:left-8 z-10 pointer-events-none p-4">
-                            <h3 className="text-white text-center md:text-left text-base md:text-xl lg:text-2xl font-black uppercase tracking-widest transform md:translate-y-6 opacity-100 md:opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 drop-shadow-md">
+                            <h3 className="text-white text-center md:text-left text-2xl lg:text-3xl font-black uppercase tracking-widest transform md:translate-y-6 opacity-100 md:opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 drop-shadow-md">
                               {block.title.split(' ').map((word, i) => <span key={i} className="block">{word}</span>)}
                             </h3>
                           </div>
@@ -1274,7 +1324,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
 
                     {/* SLOGAN (ĐÃ ĐỔI FONT VIẾT TAY TRÊN NỀN SKY-500 NHƯ ÁO) */}
                     <div className={`w-full py-16 md:py-24 px-6 text-center border-b ${isDarkMode ? 'border-slate-800' : 'border-slate-200'} transition-colors duration-300`}>
-                      <h2 className="text-6xl md:text-8xl font-brush mb-6 text-sky-500 normal-case tracking-normal drop-shadow-sm">{t('sloganTitle')}</h2>
+                      <h2 className="text-5xl md:text-7xl lg:text-8xl font-brush mb-4 md:mb-6 text-sky-500 normal-case tracking-normal drop-shadow-sm px-2 break-words">{t('sloganTitle')}</h2>
                       <p className={`max-w-xl mx-auto mb-10 font-medium text-sm md:text-base leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{t('sloganDesc')}</p>
                     </div>
 
@@ -1287,7 +1337,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
               {currentCategory === 'all' && (
                 <div className="w-full h-[180px] md:h-[250px] rounded-[32px] overflow-hidden mb-8 shadow-sm border border-slate-100 relative group cursor-pointer" onClick={() => navigateTo('shop', 'all')}>
                    {/* LƯU Ý: TẠO 1 TẤM ẢNH TÊN LÀ shop_banner.jpg BỎ VÀO THƯ MỤC public CỦA BẠN NHÉ */}
-                   <img src="/shop_banner.jpg" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Shop Banner" />
+                   <img src="/shop_banner.webp" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Shop Banner" />
                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors"></div>
                 </div>
               )}
@@ -1334,7 +1384,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                   {displayedProducts.map((item) => (
                     <div key={item.id} className="flex flex-col gap-3 group">
                       <div className="bg-slate-100 rounded-[32px] border border-slate-200 relative aspect-[4/5] flex items-center justify-center cursor-pointer transition-all duration-300 hover:shadow-2xl hover:border-sky-400 hover:-translate-y-2 hover:scale-[1.02] hover:rotate-1 overflow-hidden" onClick={() => navigateTo('productDetail', currentCategory, item)}>
-                         <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
+                         <img src={item.imageUrl} alt={item.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
                          <button onClick={(e) => handleAddToCart(item, e)} className="absolute bottom-3 right-3 md:bottom-5 md:right-5 w-9 h-9 md:w-12 md:h-12 bg-slate-900 text-white rounded-full flex items-center justify-center hover:scale-110 hover:bg-sky-500 transition-all shadow-lg shadow-slate-900/30">
                            <FiPlus className="text-lg md:text-2xl"/>
                          </button>
@@ -1752,24 +1802,21 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
             </div>
           )}
         </main>
-        {/* --- BOTTOM NAVIGATION BAR (CHỈ HIỆN TRÊN MOBILE) --- */}
+        {/* --- BOTTOM NAVIGATION BAR (2 ICON, CHỈ HIỆN TRÊN MOBILE) --- */}
         <nav className={`md:hidden fixed bottom-0 left-0 w-full z-[9999] border-t px-2 pb-safe flex justify-around items-center h-[65px] transition-colors duration-300 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] ${isDarkMode ? 'bg-[#181512] border-slate-800' : 'bg-white border-slate-200'}`}>
-            <button onClick={() => navigateTo('home', 'all')} className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${currentView === 'home' ? 'text-sky-500' : (isDarkMode ? 'text-slate-400' : 'text-slate-500')}`}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill={currentView === 'home' ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                <span className="text-[10px] font-bold">Trang chủ</span>
-            </button>
+            
+            {/* Nút Cửa hàng (Dùng Icon Home thay thế theo ý bạn) */}
             <button onClick={() => navigateTo('shop', 'all')} className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${currentView === 'shop' ? 'text-sky-500' : (isDarkMode ? 'text-slate-400' : 'text-slate-500')}`}>
-                <FiShoppingCart className="text-2xl" fill={currentView === 'shop' ? "currentColor" : "none"} />
+                <FiHome className="text-2xl" fill={currentView === 'shop' ? "currentColor" : "none"} />
                 <span className="text-[10px] font-bold">Cửa hàng</span>
             </button>
+
+            {/* Nút Tài khoản */}
             <button onClick={() => requireLogin(() => navigateTo('profile'))} className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${currentView === 'profile' ? 'text-sky-500' : (isDarkMode ? 'text-slate-400' : 'text-slate-500')}`}>
                 <FiUser className="text-2xl" fill={currentView === 'profile' ? "currentColor" : "none"} />
                 <span className="text-[10px] font-bold">Tài khoản</span>
             </button>
-            <button onClick={() => setIsUnifiedMenuOpen(true)} className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                <FiMenu className="text-2xl" />
-                <span className="text-[10px] font-bold">Menu</span>
-            </button>
+
         </nav>
         <footer className="bg-[#111111] text-white pt-16 pb-8 mt-auto border-t border-slate-800 flex-shrink-0 z-30 relative transition-colors duration-300">
           <div className="max-w-[1400px] mx-auto px-4 md:px-8">
@@ -1777,10 +1824,10 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
               <div className="lg:col-span-1">
                 <h2 className="text-[65px] font-brush mb-2 leading-[0.8] tracking-wider">Trimi</h2>
                 <div className="flex gap-4 text-slate-400 mt-6">
-                   <div onClick={() => showToast('Đang chuyển đến Instagram!')} className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 cursor-pointer transition-colors"><FiInstagram className="text-lg"/></div>
-                   <a href="https://www.facebook.com/profile.php?id=61578555688928" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 cursor-pointer transition-colors"><FaFacebook className="text-lg"/></a>
-                   <div onClick={() => showToast('Đang chuyển đến LinkedIn!')} className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 cursor-pointer transition-colors"><FiLinkedin className="text-lg"/></div>
-                   <div onClick={() => showToast('Đang chuyển đến YouTube!')} className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 cursor-pointer transition-colors"><FiYoutube className="text-lg"/></div>
+                   <button aria-label="Trang Instagram của Trimi" onClick={() => showToast('Đang chuyển đến Instagram!')} className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 cursor-pointer transition-colors"><FiInstagram className="text-lg"/></button>
+                   <a aria-label="Trang Facebook của Trimi" href="https://www.facebook.com/profile.php?id=61578555688928" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 cursor-pointer transition-colors"><FaFacebook className="text-lg"/></a>
+                   <button aria-label="Trang LinkedIn của Trimi" onClick={() => showToast('Đang chuyển đến LinkedIn!')} className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 cursor-pointer transition-colors"><FiLinkedin className="text-lg"/></button>
+                   <button aria-label="Kênh Youtube của Trimi" onClick={() => showToast('Đang chuyển đến YouTube!')} className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-sky-500 cursor-pointer transition-colors"><FiYoutube className="text-lg"/></button>
                 </div>
               </div>
               <div>
@@ -1848,7 +1895,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                         <img src={item.imageUrl} className="w-full h-full object-cover rounded-lg" alt=""/>
                       </div>
                       <div className="flex-1 flex flex-col justify-center">
-                        <h4 className="text-xs font-bold line-clamp-2 leading-snug">{t_prod(item.id, 'name', item.name)}</h4>
+                        <h3 className="text-xs font-bold line-clamp-2 leading-snug">{t_prod(item.id, 'name', item.name)}</h3>
                         <p className="font-black text-sm mt-0.5 text-sky-500">{(Number(item.price) || 0).toLocaleString('vi-VN')}đ</p>
                         <div className={`flex items-center border rounded-lg w-fit mt-2 overflow-hidden ${isDarkMode ? 'border-white/20 bg-black/20' : 'border-black/10 bg-white/50'}`}>
                           <button onClick={() => updateCartQuantity(item.id, -1)} className={`px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer ${isDarkMode ? 'hover:bg-white/10' : 'hover:bg-black/5'}`}>-</button>
@@ -2453,32 +2500,63 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
           </div>
         )}
 
-        {/* MENU 3 GẠCH (TRẢI NGANG, HÌNH VUÔNG, KHÔNG GÂY BLUR) */}
+        {/* --- UNIFIED MENU DRAWER (CHUYỂN SANG BÊN PHẢI, CARTOON, THÊM PROFILE) --- */}
         {isUnifiedMenuOpen && (
-           <>
-              {/* Lớp nền tàng hình để click ra ngoài thì đóng menu */}
-              <div className="fixed inset-0 z-[99998]" onClick={() => setIsUnifiedMenuOpen(false)}></div>
+            <div className={`fixed inset-0 z-[100000] flex justify-end transition-opacity duration-400 ${isUnifiedMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
               
-              {/* 3 Icon xổ ngang (flex-row), bo góc hình vuông (rounded-2xl) */}
-              <div className={`fixed top-[70px] right-4 md:right-8 z-[99999] flex flex-row gap-2 p-2 rounded-2xl shadow-2xl animate-fade-in border ${isDarkMode ? 'bg-[#181512] border-slate-800' : 'bg-white border-slate-100'}`}>
-                 
-                 {/* 1. Icon Tài Khoản */}
-                 <button onClick={() => { setIsUnifiedMenuOpen(false); requireLogin(() => navigateTo('profile')); }} className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl transition-all ${isDarkMode ? 'text-slate-300 hover:bg-slate-800 hover:text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-sky-600'}`} title="Tài khoản">
-                    <FiUser />
-                 </button>
+              {/* Lớp nền đen solid, không làm mờ (remove backdrop-blur) */}
+              <div className="absolute inset-0 bg-slate-900/70" onClick={() => setIsUnifiedMenuOpen(false)}></div>
+              
+              {/* Khung Menu - Trượt ra từ bên PHẢI (translate-x-full), Hiệu ứng CARTOON */}
+              <div className={`relative w-[280px] md:w-[320px] h-full flex flex-col shadow-2xl border-l overflow-y-auto transform transition-transform duration-400 cartoon-ease ${isUnifiedMenuOpen ? 'translate-x-0' : 'translate-x-full'} ${isDarkMode ? 'bg-[#111111] border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
+                  
+                  {/* Header của Sidebar - Đảo ngược vị trí Logo và X */}
+                  <div className={`flex justify-between items-center p-5 border-b ${isDarkMode ? 'border-slate-800' : 'border-slate-100'}`}>
+                     <button onClick={() => setIsUnifiedMenuOpen(false)} className={`p-2 rounded-full transition-colors ${isDarkMode ? 'bg-slate-800 hover:bg-slate-700' : 'bg-slate-100 hover:bg-slate-200'}`}><FiX className="text-xl"/></button>
+                     <h2 className="text-4xl font-brush font-black tracking-wide">Trimi</h2>
+                  </div>
 
-                 {/* 2. Icon Đổi Nền (Sáng/Tối) - ĐÃ GẮN HIỆU ỨNG */}
-                 <button onClick={(e) => {handleThemeToggle(e); setIsUnifiedMenuOpen(false);}} className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl transition-all ${isDarkMode ? 'text-sky-400 hover:bg-slate-800' : 'text-sky-500 hover:bg-slate-100'}`} title="Đổi giao diện">
-                    {isDarkMode ? <FiSun /> : <FiMoon />}
-                 </button>
+                  {/* Danh sách các tính năng Menu - Đã xóa Home/Shop */}
+                  <div className="flex-grow flex flex-col p-4 gap-1.5">
+                     
+                     {/* 1. KHỐI GIAO DIỆN & CÀI ĐẶT */}
+                     <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 mt-2 ml-2">Giao diện</p>
+                     <div className="grid grid-cols-2 gap-3">
+                        {/* Theme Button */}
+                        <button onClick={(e) => handleThemeToggle(e)} className={`flex flex-col items-center justify-center p-4 rounded-2xl font-bold transition-colors border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-sky-400' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
+                          {isDarkMode ? <FiSun className="text-2xl mb-2"/> : <FiMoon className="text-2xl mb-2"/>}
+                          <span className="text-xs">Giao diện</span>
+                        </button>
+                        {/* Language Button */}
+                        <button onClick={() => setLang(lang === 'VI' ? 'EN' : 'VI')} className={`flex flex-col items-center justify-center p-4 rounded-2xl font-bold transition-colors border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
+                          <FiGlobe className="text-2xl mb-2"/>
+                          <span className="text-xs">{lang === 'VI' ? 'Tiếng Việt' : 'English'}</span>
+                        </button>
+                     </div>
 
-                 {/* 3. Icon Đổi Ngôn Ngữ */}
-                 <button onClick={() => {setLang(lang === 'VI' ? 'EN' : 'VI'); setIsUnifiedMenuOpen(false);}} className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-black transition-all ${isDarkMode ? 'text-slate-300 hover:bg-slate-800 hover:text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-sky-600'}`} title="Đổi ngôn ngữ">
-                    {lang}
-                 </button>
+                     {/* 2. KHỐI CÁ NHÂN (Yêu cầu 3 & 4: Thêm Profile vào menu) */}
+                     <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 mt-6 ml-2">Cá nhân</p>
+                     
+                     {/* Nút Profile - Chỉ chuyển trang nếu đã đăng nhập */}
+                     <button 
+                        onClick={() => requireLogin(() => { setIsUnifiedMenuOpen(false); navigateTo('profile'); })} 
+                        className={`flex items-center gap-3 p-3.5 rounded-2xl font-bold transition-all text-left group border ${currentView === 'profile' ? (isDarkMode ? 'bg-white text-black border-white' : 'bg-slate-900 text-white border-slate-900') : (isDarkMode ? 'bg-black/20 border-white/5 hover:border-sky-500 hover:text-sky-400' : 'bg-slate-50 border-slate-100 text-slate-900 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-600')}`}
+                     >
+                        <FiUser className="text-xl"/> Tài khoản của tôi
+                     </button>
+                     
+                  </div>
 
+                  {/* FOOTER MENU: NÚT ĐĂNG XUẤT */}
+                  <div className={`p-4 mt-auto border-tSticky bottom-0 ${isDarkMode ? 'border-slate-800 bg-[#111111]' : 'border-slate-100 bg-white'}`}>
+                     {isAuthenticated && (
+                        <button onClick={handleLogout} className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 p-3.5 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 border border-slate-200">
+                          <FiLogOut/> {t('logout')}
+                        </button>
+                     )}
+                  </div>
               </div>
-           </>
+            </div>
         )}
 
       </div>
