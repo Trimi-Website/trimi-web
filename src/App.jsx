@@ -121,6 +121,7 @@ export default function App() {
   const [currentCategory, setCurrentCategory] = useState('all'); 
   const [selectedProduct, setSelectedProduct] = useState(null); 
   const [searchQuery, setSearchQuery] = useState('');
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [sortOrder, setSortOrder] = useState('default');
   const [selectedTag, setSelectedTag] = useState(null);
   const [isUnifiedMenuOpen, setIsUnifiedMenuOpen] = useState(false);
@@ -972,9 +973,9 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
       <div className={`min-h-screen w-full font-sans flex flex-col relative transition-colors duration-300 ${isDarkMode ? 'dark-mode text-white bg-[#111111]' : 'text-slate-900 bg-[#f8fafc]'}`}>
         
         {/* NÚT CUỘN CHỐNG MỎI TAY */}
-        <div className="fixed bottom-[95px] right-4 md:bottom-28 md:right-8 z-[8500] flex flex-col gap-3">
+        <div className="fixed bottom-[80px] left-1/2 -translate-x-1/2 md:bottom-28 md:left-auto md:-translate-x-0 md:right-8 z-[8500] flex flex-col gap-3">
           {showScrollTop && (
-            <button onClick={scrollToTop} className="bg-slate-900/50 backdrop-blur-md border border-white/10 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:bg-sky-500 hover:scale-110 transition-all">
+            <button onClick={scrollToTop} className="bg-slate-900/70 backdrop-blur-md border border-white/10 text-white w-11 h-11 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-lg hover:bg-sky-500 hover:scale-110 transition-all">
                <FiArrowUp className="text-2xl"/>
             </button>
           )}
@@ -1101,7 +1102,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
 
           {/* NÚT BONG BÓNG CHAT (HIỆN LÊN KHI MỌI KHUNG CHAT ĐÃ ĐÓNG) */}
           {(!isChatBoxOpen && !isHelpOpen) && (
-            <button onClick={() => setIsHelpOpen(true)} className="relative w-14 h-14 bg-slate-900/50 backdrop-blur-md border border-white/10 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-sky-500 hover:scale-105 transition-all">
+            <button onClick={() => setIsHelpOpen(true)} className="hidden md:flex relative w-14 h-14 bg-slate-900/50 backdrop-blur-md border border-white/10 text-white rounded-full items-center justify-center shadow-lg hover:bg-sky-500 hover:scale-105 transition-all">
                <FiMessageCircle className="text-2xl" />
                {/* CHẤM XANH BÁO ONLINE CHO KHÁCH HÀNG */}
                {!isAdmin && <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white/50 rounded-full shadow-sm"></span>}
@@ -1114,43 +1115,74 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
         {/* HEADER CHÍNH (ĐÃ DỌN SẠCH CHỈ CÒN 1 Ô TÌM KIẾM Ở SHOP) */}
         <header className={`fixed top-0 left-0 w-full z-[100] border-b flex-shrink-0 transition-all duration-500 ease-in-out ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'} ${currentView === 'home' ? (isDarkMode ? 'bg-[#111111]/30 border-slate-800' : 'bg-white/30 border-slate-200') : (isDarkMode ? 'bg-[#111111] border-slate-800' : 'bg-white border-slate-200 shadow-sm')}`}>
            <div className={`max-w-[1400px] mx-auto px-4 md:px-8 transition-all duration-500 ${currentView === 'home' ? 'py-2' : 'pt-3 pb-0'}`}>
+              {/* THANH TOP BAR CỦA HEADER */}
               <div className={`flex items-center justify-between gap-3 md:gap-4 transition-all duration-500 ${currentView === 'home' ? 'pb-0' : 'pb-2 md:pb-3'}`}>
                  
-                 {/* LOGO */}
-                 <div className="flex items-center flex-shrink-0">
+                 {/* BÊN TRÁI: MENU (MOBILE) + LOGO */}
+                 <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+                    <button onClick={() => setIsUnifiedMenuOpen(true)} className={`md:hidden p-1 transition-colors cursor-pointer ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                       <FiMenu className="text-[26px]" />
+                    </button>
                     <h1 className={`font-brush tracking-wide cursor-pointer transition-all duration-500 ${currentView === 'home' ? 'text-3xl md:text-4xl' : 'text-4xl md:text-[52px]'} ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`} onClick={() => navigateTo('home', 'all')} style={{ lineHeight: '1' }}>
                       Trimi
                     </h1>
                  </div>
                  
-                 {/* THANH TÌM KIẾM (CHỈ HIỆN Ở SHOP - ĐÃ SỬA LỖI TRÙNG LẶP) */}
+                 {/* Ở GIỮA: THANH TÌM KIẾM */}
                  {currentView !== 'home' ? (
-                   <div className="flex relative w-full max-w-[400px] flex-grow mx-2 md:mx-6 animate-fade-in">
-                      <div className={`flex rounded-full w-full overflow-hidden border shadow-inner z-50 relative h-9 md:h-10 ${isDarkMode ? 'bg-white/10 border-slate-700 text-white focus-within:border-sky-500' : 'bg-slate-100 border-transparent focus-within:border-slate-300 focus-within:bg-white text-slate-800'}`}>
-                         <input type="text" value={searchQuery} onChange={(e) => {setSearchQuery(e.target.value); setCurrentView('shop');}} placeholder={t('search')} className="w-full px-4 text-xs md:text-sm outline-none bg-transparent placeholder-slate-400 font-medium"/>
-                         <button className="px-3 md:px-4 text-slate-400 hover:text-sky-500 transition-colors"><FiSearch className="text-base md:text-lg"/></button>
-                      </div>
-                      {searchQuery && (
-                        <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 max-h-60 overflow-y-auto animate-fade-in-up">
-                           {displayedProducts.length > 0 ? displayedProducts.map(p => (
-                              <div key={p.id} onClick={() => {setSearchQuery(''); navigateTo('productDetail', p.category, p);}} className="px-4 py-2 hover:bg-slate-50 cursor-pointer flex items-center gap-3 transition-colors">
-                                 <img src={p.imageUrl} className="w-10 h-10 object-cover rounded-md border border-slate-100" />
-                                 <div className="flex-1">
-                                   <p className="text-sm font-bold text-slate-800 line-clamp-1">{t_prod(p.id, 'name', p.name)}</p>
-                                   <p className="text-xs text-sky-600 font-black">{(Number(p.price) || 0).toLocaleString('vi-VN')}đ</p>
+                   <div className="flex relative flex-grow justify-end md:justify-center mx-2 md:mx-6 animate-fade-in">
+                      {/* Search trên PC (Giữ nguyên, luôn hiện full) */}
+                      <div className="hidden md:flex relative w-full max-w-[400px]">
+                         <div className={`flex rounded-full w-full overflow-hidden border shadow-inner z-50 relative h-10 ${isDarkMode ? 'bg-white/10 border-slate-700 text-white focus-within:border-sky-500' : 'bg-slate-100 border-transparent focus-within:border-slate-300 focus-within:bg-white text-slate-800'}`}>
+                            <input type="text" value={searchQuery} onChange={(e) => {setSearchQuery(e.target.value); setCurrentView('shop');}} placeholder={t('search')} className="w-full px-4 text-sm outline-none bg-transparent placeholder-slate-400 font-medium"/>
+                            <button className="px-4 text-slate-400 hover:text-sky-500 transition-colors"><FiSearch className="text-lg"/></button>
+                         </div>
+                         {searchQuery && (
+                           <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 max-h-60 overflow-y-auto animate-fade-in-up">
+                              {displayedProducts.length > 0 ? displayedProducts.map(p => (
+                                 <div key={p.id} onClick={() => {setSearchQuery(''); navigateTo('productDetail', p.category, p);}} className="px-4 py-2 hover:bg-slate-50 cursor-pointer flex items-center gap-3 transition-colors">
+                                    <img src={p.imageUrl} className="w-10 h-10 object-cover rounded-md border border-slate-100" />
+                                    <div className="flex-1">
+                                      <p className="text-sm font-bold text-slate-800 line-clamp-1">{t_prod(p.id, 'name', p.name)}</p>
+                                      <p className="text-xs text-sky-600 font-black">{(Number(p.price) || 0).toLocaleString('vi-VN')}đ</p>
+                                    </div>
                                  </div>
-                              </div>
-                           )) : <div className="px-4 py-3 text-sm text-slate-500 text-center font-medium">Không tìm thấy sản phẩm</div>}
-                        </div>
-                      )}
+                              )) : <div className="px-4 py-3 text-sm text-slate-500 text-center font-medium">Không tìm thấy sản phẩm</div>}
+                           </div>
+                         )}
+                      </div>
+
+                      {/* Search Mở rộng trên Mobile (Bấm vào mới bung ra) */}
+                      <div className="md:hidden flex items-center justify-end w-full">
+                         {isMobileSearchOpen ? (
+                           <div className={`flex rounded-full w-full overflow-hidden border shadow-inner z-50 relative h-9 ${isDarkMode ? 'bg-white/10 border-slate-700 text-white' : 'bg-slate-100 border-transparent text-slate-800'} animate-fade-in-right`}>
+                             <input autoFocus type="text" value={searchQuery} onChange={(e) => {setSearchQuery(e.target.value); setCurrentView('shop');}} onBlur={() => setTimeout(() => setIsMobileSearchOpen(false), 200)} placeholder={t('search')} className="w-full px-4 text-xs outline-none bg-transparent"/>
+                             <button className="px-3 text-slate-400"><FiSearch/></button>
+                           </div>
+                         ) : (
+                           <button onClick={() => setIsMobileSearchOpen(true)} className={`p-2 transition-colors ${isDarkMode ? 'text-white' : 'text-slate-600'}`}>
+                             <FiSearch className="text-xl"/>
+                           </button>
+                         )}
+                      </div>
                    </div>
                  ) : (
-                   <div className="flex-grow"></div> /* Thẻ rỗng để đẩy Logo và Menu về 2 góc */
+                   <div className="flex-grow"></div>
                  )}
 
-                 {/* CÁC NÚT ICON BÊN PHẢI */}
-                 <div className="flex items-center gap-3 text-sm font-semibold text-slate-700 flex-shrink-0 relative z-[1001]">
-                    <div className={`flex items-center gap-2 cursor-pointer transition-colors relative group p-1.5 md:p-2 ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`} onClick={() => setIsCartOpen(true)}>
+                 {/* BÊN PHẢI: CHAT (MOBILE) + GIỎ HÀNG + MENU (PC) */}
+                 <div className="flex items-center gap-2 md:gap-3 text-sm font-semibold text-slate-700 flex-shrink-0 relative z-[1001]">
+                    {/* Nút Chat trên cùng (Chỉ Mobile, tự động ẩn khi khung Search bung ra để đỡ chật) */}
+                    {!isMobileSearchOpen && (
+                      <button onClick={() => setIsHelpOpen(true)} className={`md:hidden p-1 transition-colors relative cursor-pointer ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`}>
+                         <FiMessageCircle className="text-[22px]" />
+                         {(!isAdmin && hasUnreadUser) && <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 border border-white rounded-full"></span>}
+                         {(isAdmin && totalAdminUnread > 0) && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">{totalAdminUnread}</span>}
+                      </button>
+                    )}
+
+                    {/* Giỏ hàng (Hiện trên cả Mobile và PC) */}
+                    <div className={`flex items-center gap-2 cursor-pointer transition-colors relative group p-1 md:p-2 ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`} onClick={() => setIsCartOpen(true)}>
                        <div id="header-cart-icon" className="relative transition-transform duration-300">
                          <FiShoppingCart className={`${currentView === 'home' ? 'text-xl' : 'text-2xl'}`}/>
                          {cartItemCount > 0 && (
@@ -1160,6 +1192,8 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                          )}
                        </div>
                     </div>
+
+                    {/* Nút Menu PC */}
                     <button onClick={() => setIsUnifiedMenuOpen(true)} className={`hidden md:block p-1.5 md:p-2 transition-colors cursor-pointer relative z-[1100] ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`}>
                        <FiMenu className={`${currentView === 'home' ? 'text-2xl' : 'text-3xl'}`} />
                     </button>
