@@ -1,5 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
-
+import { useState, useEffect, useRef } from 'react'; // <--- Thêm useRef vào đây
 import { 
   FiMenu, FiMail, FiLock, FiLogOut, FiShoppingCart, FiSearch, 
   FiUser, FiStar, FiTruck, FiShield, FiCornerUpLeft, FiX, 
@@ -113,8 +112,10 @@ const defaultLookbookData = [
 const fakeColorSpheres = ['from-white to-slate-300', 'from-zinc-700 to-black', 'from-amber-200 to-amber-600', 'from-sky-300 to-sky-600'];
 
 export default function App() {
+  const mainRef = useRef(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
+  const [animType, setAnimType] = useState('none');
   
   const [currentView, setCurrentView] = useState('home'); 
   const [currentCategory, setCurrentCategory] = useState('all'); 
@@ -123,6 +124,13 @@ export default function App() {
   const [sortOrder, setSortOrder] = useState('default');
   const [selectedTag, setSelectedTag] = useState(null);
   const [isUnifiedMenuOpen, setIsUnifiedMenuOpen] = useState(false);
+  // LƯU TỌA ĐỘ CHUỘT ĐỂ LÀM TÂM CHO VÒNG TRÒN LAN TỎA
+  const lastClickPos = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+  useEffect(() => {
+    const handleClick = (e) => { lastClickPos.current = { x: e.clientX, y: e.clientY }; };
+    window.addEventListener('click', handleClick);
+    return () => window.removeEventListener('click', handleClick);
+  }, []);
   
 
   const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('trimi_theme') === 'dark');
@@ -341,36 +349,51 @@ export default function App() {
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  // STATE CHO HIỆU ỨNG 5 LÁT CẮT
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [isTransitionOut, setIsTransitionOut] = useState(false);
+  // STATE QUẢN LÝ HIỆU ỨNG CHUYỂN TRANG
+  const [isPageLoading, setIsPageLoading] = useState(false);
 
-  const navigateTo = async (view, category = 'all', product = null) => {
-    // 1. Kéo 5 tấm rèm xuống
-    setIsTransitioning(true);
-    setIsTransitionOut(false);
-    
-    // Chờ 0.8 giây cho rèm kéo kín màn hình
-    await new Promise(resolve => setTimeout(resolve, 800));
+  const navigateTo = (view, category = 'all', product = null) => {
+    const isSameProduct = (selectedProduct && product) ? selectedProduct.id === product.id : selectedProduct === product;
+    if (currentView === view && currentCategory === category && isSameProduct) return;
 
-    // 2. Đổi dữ liệu trang lúc rèm đang che kín
-    setCurrentView(view); 
-    setCurrentCategory(category);
-    if (view === 'productDetail') {
-      setSelectedProduct(product);
-      if (user && product) {
-        try { await setDoc(doc(db, 'users', user.uid), { viewHistory: arrayUnion(product.category) }, { merge: true }); } catch (e) {}
-      }
+    // Hàm thực hiện chuyển đổi dữ liệu
+    const updateState = () => {
+      setCurrentView(view);
+      setCurrentCategory(category);
+      if (view === 'productDetail') setSelectedProduct(product);
+      window.history.pushState({ view, category, product }, '', `?view=${view}`);
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    };
+
+    // Nếu trình duyệt không hỗ trợ, chuyển trang lập tức
+    if (!document.startViewTransition) {
+      updateState();
+      return;
     }
-    window.history.pushState({ view, category, product }, '', `?view=${view}`);
-    window.scrollTo({ top: 0, behavior: 'instant' }); 
 
-    // 3. Kéo rèm tuột xuống dưới để lộ trang mới
-    setIsTransitioning(false);
-    setIsTransitionOut(true);
-    
-    // Reset lại rèm về vị trí ban đầu
-    setTimeout(() => { setIsTransitionOut(false); }, 800);
+    // BẮT ĐẦU HIỆU ỨNG LAN TỎA GIỐNG VIDEO
+    const transition = document.startViewTransition(() => {
+      updateState();
+    });
+
+    transition.ready.then(() => {
+      const { x, y } = lastClickPos.current;
+      const endRadius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+
+      document.documentElement.animate(
+        {
+          clipPath: [
+            `circle(0px at ${x}px ${y}px)`,
+            `circle(${endRadius}px at ${x}px ${y}px)`
+          ]
+        },
+        {
+          duration: 500, // Tốc độ vòng tròn lan ra (0.5s)
+          easing: 'ease-in-out',
+          pseudoElement: '::view-transition-new(root)'
+        }
+      );
+    });
   };
 
   useEffect(() => {
@@ -888,34 +911,76 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
         ::view-transition-old(root) { z-index: 1; }
         ::view-transition-new(root) { z-index: 999999; }
 
-        /* 2. CSS CHO HIỆU ỨNG CHUYỂN TRANG 5 LÁT CẮT DỌC */
-        .page-transition-overlay { position: fixed; inset: 0; z-index: 100001; pointer-events: none; display: flex; }
-        .page-transition-overlay .slice { flex: 1; height: 100vh; background-color: #0f172a; transform: translateY(-100%); transition: transform 0.5s cubic-bezier(0.7, 0, 0.3, 1); }
-        .dark-mode .page-transition-overlay .slice { background-color: #000000; }
-        
-        .page-transition-overlay.active .slice { transform: translateY(0); }
-        .page-transition-overlay.active-out .slice { transform: translateY(100%); } /* Trượt tuột xuống dưới khi mở ra */
+        /* =========================================================
+           3. CSS CHO HIỆU ỨNG CHUYỂN TRANG MỚI (TỔNG HỢP)
+           ========================================================= */
+        main { position: relative; overflow: hidden; width: 100vw; }
 
-        /* Độ trễ cho từng thanh dọc để tạo hiệu ứng lượn sóng */
-        .slice-1 { transition-delay: 0s; }
-        .slice-2 { transition-delay: 0.1s; }
-        .slice-3 { transition-delay: 0.2s; }
-        .slice-4 { transition-delay: 0.3s; }
-        .slice-5 { transition-delay: 0.4s; }  
+        /* --- LOẠI 1: KÉO TRANG (HOME -> SHOP) - Phong cách Hoạt hình --- */
+        
+        /* Nhịp điệu hoạt hình (có độ nảy) */
+        .cartoon-ease { transition-timing-function: cubic-bezier(0.68, -0.6, 0.27, 1.55) !important; }
+
+        /* Nút Mua Ngay chạy mất dép (Hoạt hình) */
+        .btn-run-away {
+            transform: translateX(120vw) rotate(15deg) !important;
+            transition: transform 0.6s cubic-bezier(0.68, -0.6, 0.27, 1.55) !important;
+        }
+
+        /* Trạng thái 1: Chuẩn bị kéo - Shop đứng sẵn ở bên phải màn hình */
+        .anim-home-to-shop-prepare #other-pages-content { transform: translateX(100%); transition: none; }
+        
+        /* Trạng thái 2: Chạy - Nút "Mua ngay" bay sang phải */
+        .anim-home-to-shop-run .hero-buy-button { transform: translateX(100vw); transition: transform 0.8s cubic-bezier(0.7, 0, 0.3, 1); }
+        
+        /* Trạng thái 2: Chạy - Trang chủ bị kéo sang trái */
+        .anim-home-to-shop-run #home-page-content { transform: translateX(-100%); transition: transform 0.7s cubic-bezier(0.68, -0.6, 0.27, 1.55); }
+        
+        /* Trạng thái 2: Chạy - Trang Shop được kéo vào giữa */
+        .anim-home-to-shop-run #other-pages-content { transform: translateX(0); transition: transform 0.7s cubic-bezier(0.68, -0.6, 0.27, 1.55); transition-delay: 0.1s; }
+
+        /* --- LOẠI 2: GIỌT NƯỚC LAN TỎA (SHOP -> HOME) - Giống đổi mode --- */
+        
+        /* ============================================================ */
+/* STYLE CHUYỂN TRANG DẠNG CHỚP (LIKE LIGHT/DARK MODE)       */
+/* ============================================================ */
+.page-transition-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: white; /* Màu nền lúc chuyển, có thể đổi tùy ý */
+  z-index: 9999; /* Luôn trên cùng */
+  
+  /* Bắt đầu: Ẩn đi hoàn toàn */
+  opacity: 0;
+  visibility: hidden;
+  
+  /* Hiệu ứng mượt mà */
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+/* Khi đang tải trang */
+.page-transition-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+        }
       `}</style>
 
       <div className={`min-h-screen w-full font-sans flex flex-col relative transition-colors duration-300 ${isDarkMode ? 'dark-mode text-white bg-[#111111]' : 'text-slate-900 bg-[#f8fafc]'}`}>
         
         {/* NÚT CUỘN CHỐNG MỎI TAY */}
-        <div className="fixed bottom-24 right-6 md:bottom-28 md:right-8 z-[8500] flex flex-col gap-3">
+        <div className="fixed bottom-[95px] right-4 md:bottom-28 md:right-8 z-[8500] flex flex-col gap-3">
           {showScrollTop && (
-            <button onClick={scrollToTop} className="bg-slate-900 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-2xl hover:bg-sky-500 hover:scale-110 transition-all">
+            <button onClick={scrollToTop} className="bg-slate-900/50 backdrop-blur-md border border-white/10 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg hover:bg-sky-500 hover:scale-110 transition-all">
                <FiArrowUp className="text-2xl"/>
             </button>
           )}
         </div>
         {/* BONG BÓNG CHAT VÀ CỘNG ĐỒNG */}
-        <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-[9000] flex flex-col items-end">
+        <div className="fixed bottom-[85px] right-4 md:bottom-8 md:right-8 z-[9000] flex flex-col items-end">
           {!isAdmin && isHelpOpen && !isChatBoxOpen && (
             <div className="bg-white w-[340px] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] mb-4 overflow-hidden border border-slate-200 animate-fade-in-up origin-bottom-right">
               <div className="bg-slate-900 text-white p-5 pr-4 flex justify-between items-start">
@@ -1036,18 +1101,19 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
 
           {/* NÚT BONG BÓNG CHAT (HIỆN LÊN KHI MỌI KHUNG CHAT ĐÃ ĐÓNG) */}
           {(!isChatBoxOpen && !isHelpOpen) && (
-            <button onClick={() => setIsHelpOpen(true)} className="relative w-14 h-14 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-2xl hover:bg-black hover:scale-105 transition-all">
+            <button onClick={() => setIsHelpOpen(true)} className="relative w-14 h-14 bg-slate-900/50 backdrop-blur-md border border-white/10 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-sky-500 hover:scale-105 transition-all">
                <FiMessageCircle className="text-2xl" />
                {/* CHẤM XANH BÁO ONLINE CHO KHÁCH HÀNG */}
-               {!isAdmin && <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full shadow-sm"></span>}
-               {(!isAdmin && hasUnreadUser) && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white animate-bounce">1</span>}
-               {(isAdmin && totalAdminUnread > 0) && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white animate-bounce">{totalAdminUnread}</span>}
+               {!isAdmin && <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white/50 rounded-full shadow-sm"></span>}
+               {(!isAdmin && hasUnreadUser) && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white/50 animate-bounce">1</span>}
+               {(isAdmin && totalAdminUnread > 0) && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white/50 animate-bounce">{totalAdminUnread}</span>}
             </button>
           )}
         </div>
 
         {/* HEADER CHÍNH (ĐÃ DỌN SẠCH CHỈ CÒN 1 Ô TÌM KIẾM Ở SHOP) */}
-        <header className={`fixed top-0 left-0 w-full z-[100] border-b flex-shrink-0 transition-all duration-500 ease-in-out ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'} ${currentView === 'home' ? (isDarkMode ? 'bg-[#111111]/30 border-slate-800' : 'bg-white/30 border-slate-200') : (isDarkMode ? 'bg-[#111111] border-slate-800' : 'bg-white border-slate-200 shadow-sm')}`}>
+        // ✏️ Sửa thành:
+        <header className="overflow-hidden fixed top-0 left-0 w-full z-[1000] h-[75px] md:h-[90px] border-b ... transition-all duration-300">
            <div className={`max-w-[1400px] mx-auto px-4 md:px-8 transition-all duration-500 ${currentView === 'home' ? 'py-2' : 'pt-3 pb-0'}`}>
               <div className={`flex items-center justify-between gap-3 md:gap-4 transition-all duration-500 ${currentView === 'home' ? 'pb-0' : 'pb-2 md:pb-3'}`}>
                  
@@ -1095,7 +1161,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                          )}
                        </div>
                     </div>
-                    <button onClick={() => setIsUnifiedMenuOpen(true)} className={`p-1.5 md:p-2 transition-colors cursor-pointer relative z-[1100] ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`}>
+                    <button onClick={() => setIsUnifiedMenuOpen(true)} className={`hidden md:block p-1.5 md:p-2 transition-colors cursor-pointer relative z-[1100] ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`}>
                        <FiMenu className={`${currentView === 'home' ? 'text-2xl' : 'text-3xl'}`} />
                     </button>
                  </div>
@@ -1121,7 +1187,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
            </div>
         </header>
 
-        <main className={`flex-grow flex flex-col transition-all duration-500 ${currentView === 'home' ? 'pt-[50px] md:pt-[60px]' : 'pt-[110px] md:pt-[130px]'}`}>
+        <main ref={mainRef} className={`flex-grow flex relative overflow-hidden transition-all duration-500 pb-[70px] md:pb-0 ${currentView === 'home' ? 'pt-0' : 'pt-[110px] md:pt-[130px]'}`}>
           {currentView === 'home' && (
             <div className="w-full animate-fade-in relative">
                 
@@ -1140,17 +1206,20 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
 
                     {/* NỘI DUNG CHỮ */}
                     <div className="relative z-10 w-full max-w-2xl mt-10 md:mt-0">
-                       <h1 className="text-5xl md:text-7xl lg:text-8xl font-brush mb-6 leading-[0.9] text-white drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)]">Dám Khác Biệt.<br/>Dám Là Trimi.</h1>
+                       <h1 className="text-5xl md:text-7xl lg:text-8xl font-brush mb-6 leading-[0.9] text-white drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)]">
+                          <span className="whitespace-nowrap">Dám Khác Biệt.</span><br/>
+                          <span className="whitespace-nowrap">Dám Là Trimi.</span>
+                       </h1>
                        <p className="mb-10 font-medium text-sm md:text-base leading-relaxed text-slate-200 drop-shadow-md max-w-lg">Chúng tôi tin rằng thời trang là ngôn ngữ không lời để thể hiện cá tính thực sự của bạn. Trải nghiệm sự khác biệt ngay hôm nay.</p>
-                       <button onClick={() => navigateTo('shop', 'all')} className="bg-white text-slate-900 px-10 py-4 rounded-full font-black uppercase tracking-widest hover:bg-sky-500 hover:text-white transition-all hover:scale-105 shadow-xl flex items-center justify-center gap-3 w-fit text-sm cursor-pointer shadow-sky-500/20">
+                       <button id="btn-mua-ngay" onClick={() => navigateTo('shop', 'all')} className="bg-white text-slate-900 px-10 py-4 rounded-full font-black uppercase tracking-widest hover:bg-sky-500 hover:text-white transition-all hover:scale-105 shadow-xl flex items-center justify-center gap-3 w-fit text-sm cursor-pointer shadow-sky-500/20">
                           Mua ngay <FiShoppingCart className="text-xl"/>
-                       </button>
+                      </button>
                     </div>
                 </div>
 
                 {/* --- KHU VỰC 2: KHOẢNG TRỐNG TÀNG HÌNH ĐỂ TẠO THANH CUỘN --- */}
                 {/* Đoạn này tạo ra 1 khoảng trống bằng đúng chiều cao màn hình để đẩy phần nội dung xuống dưới */}
-                <div className="w-full h-[calc(100vh-50px)] md:h-[calc(100vh-60px)] bg-transparent pointer-events-none relative z-0"></div>
+                <div className="w-full h-screen bg-transparent pointer-events-none relative z-0"></div>
 
                 {/* --- KHU VỰC 3: PHẦN NỘI DUNG TRƯỢT ĐÈ LÊN TRÊN (CÓ ĐỔ BÓNG ĐEN PHÍA TRÊN) --- */}
                 <div className={`relative z-10 w-full flex flex-col shadow-[0_-20px_50px_rgba(0,0,0,0.8)] ${isDarkMode ? 'bg-[#111111]' : 'bg-[#f8fafc]'}`}>
@@ -1266,7 +1335,8 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
           {currentView === 'productDetail' && selectedProduct && (
             <div className="max-w-[1200px] mx-auto w-full px-4 md:px-8 py-2 md:py-4 animate-fade-in flex items-center justify-center min-h-[calc(100vh-120px)]">
               
-              <div className="bg-white rounded-3xl md:rounded-[40px] border border-slate-100 p-4 md:p-6 lg:p-8 flex flex-col md:flex-row gap-6 lg:gap-10 shadow-sm w-full">
+              // ✏️ Sửa thành:
+              <div className="hidden md:block bg-white rounded-xl shadow-sm border border-slate-100 p-4 mb-6">
                 
                 {/* ẢNH SẢN PHẨM (ĐÃ THÊM TÍNH NĂNG ZOOM KÍNH LÚP) */}
                 <div className="w-full md:w-[45%] lg:w-[40%] flex flex-col gap-3 flex-shrink-0">
@@ -1651,7 +1721,25 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
             </div>
           )}
         </main>
-
+        {/* --- BOTTOM NAVIGATION BAR (CHỈ HIỆN TRÊN MOBILE) --- */}
+        <nav className={`md:hidden fixed bottom-0 left-0 w-full z-[9999] border-t px-2 pb-safe flex justify-around items-center h-[65px] transition-colors duration-300 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] ${isDarkMode ? 'bg-[#181512] border-slate-800' : 'bg-white border-slate-200'}`}>
+            <button onClick={() => navigateTo('home', 'all')} className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${currentView === 'home' ? 'text-sky-500' : (isDarkMode ? 'text-slate-400' : 'text-slate-500')}`}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill={currentView === 'home' ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span className="text-[10px] font-bold">Trang chủ</span>
+            </button>
+            <button onClick={() => navigateTo('shop', 'all')} className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${currentView === 'shop' ? 'text-sky-500' : (isDarkMode ? 'text-slate-400' : 'text-slate-500')}`}>
+                <FiShoppingCart className="text-2xl" fill={currentView === 'shop' ? "currentColor" : "none"} />
+                <span className="text-[10px] font-bold">Cửa hàng</span>
+            </button>
+            <button onClick={() => requireLogin(() => navigateTo('profile'))} className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${currentView === 'profile' ? 'text-sky-500' : (isDarkMode ? 'text-slate-400' : 'text-slate-500')}`}>
+                <FiUser className="text-2xl" fill={currentView === 'profile' ? "currentColor" : "none"} />
+                <span className="text-[10px] font-bold">Tài khoản</span>
+            </button>
+            <button onClick={() => setIsUnifiedMenuOpen(true)} className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                <FiMenu className="text-2xl" />
+                <span className="text-[10px] font-bold">Menu</span>
+            </button>
+        </nav>
         <footer className="bg-[#111111] text-white pt-16 pb-8 mt-auto border-t border-slate-800 flex-shrink-0 z-30 relative transition-colors duration-300">
           <div className="max-w-[1400px] mx-auto px-4 md:px-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-16">
@@ -2362,15 +2450,6 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
            </>
         )}
 
-      </div>
-      
-      {/* LỚP PHỦ CHUYỂN CẢNH 5 LÁT CẮT (VUỐT NGẦU) */}
-      <div className={`page-transition-overlay ${isTransitioning ? 'active' : ''} ${isTransitionOut ? 'active-out' : ''}`}>
-        <div className="slice slice-1"></div>
-        <div className="slice slice-2"></div>
-        <div className="slice slice-3"></div>
-        <div className="slice slice-4"></div>
-        <div className="slice slice-5"></div>
       </div>
     </>
   );
