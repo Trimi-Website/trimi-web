@@ -1112,7 +1112,6 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
         </div>
 
         {/* HEADER CHÍNH (ĐÃ DỌN SẠCH CHỈ CÒN 1 Ô TÌM KIẾM Ở SHOP) */}
-        // ✏️ Sửa thành:
         <header className={`fixed top-0 left-0 w-full z-[100] border-b flex-shrink-0 transition-all duration-500 ease-in-out ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'} ${currentView === 'home' ? (isDarkMode ? 'bg-[#111111]/30 border-slate-800' : 'bg-white/30 border-slate-200') : (isDarkMode ? 'bg-[#111111] border-slate-800' : 'bg-white border-slate-200 shadow-sm')}`}>
            <div className={`max-w-[1400px] mx-auto px-4 md:px-8 transition-all duration-500 ${currentView === 'home' ? 'py-2' : 'pt-3 pb-0'}`}>
               <div className={`flex items-center justify-between gap-3 md:gap-4 transition-all duration-500 ${currentView === 'home' ? 'pb-0' : 'pb-2 md:pb-3'}`}>
@@ -1187,14 +1186,13 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
            </div>
         </header>
 
-        <main ref={mainRef} className={`flex-grow flex relative overflow-hidden transition-all duration-500 pb-[70px] md:pb-0 ${currentView === 'home' ? 'pt-0' : 'pt-[110px] md:pt-[130px]'}`}>
+        <main ref={mainRef} className={`flex-grow block relative w-full overflow-x-hidden pb-[65px] md:pb-0 ${currentView === 'home' ? 'pt-0' : 'pt-[100px] md:pt-[130px]'}`}>
           {currentView === 'home' && (
             <div className="w-full animate-fade-in relative">
                 
                 {/* --- KHU VỰC 1: BANNER ĐƯỢC ĐÓNG ĐINH (FIXED) VÀO MÀN HÌNH --- */}
                 {/* ĐÃ FIX CHUẨN: Kéo top-0 và h-screen để ảnh phủ kín nóc màn hình */}
                 <div className="fixed top-0 left-0 right-0 h-screen flex flex-col justify-center px-6 md:px-16 lg:px-24 overflow-hidden z-0 pt-[50px] md:pt-[60px]">
-                    
                     {/* ẢNH NỀN FULL */}
                     <div className="absolute inset-0 w-full h-full bg-[#0f172a]">
                         <img src="/banner_model_light.jpg" className={`absolute inset-0 w-full h-full object-cover object-right-top md:object-right transition-opacity duration-1000 ease-in-out ${isDarkMode ? 'opacity-0' : 'opacity-100'}`} alt="Trimi Light" />
@@ -1222,7 +1220,8 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
                 <div className="w-full h-screen bg-transparent pointer-events-none relative z-0"></div>
 
                 {/* --- KHU VỰC 3: PHẦN NỘI DUNG TRƯỢT ĐÈ LÊN TRÊN (CÓ ĐỔ BÓNG ĐEN PHÍA TRÊN) --- */}
-                <div className={`relative z-10 w-full flex flex-col shadow-[0_-20px_50px_rgba(0,0,0,0.8)] ${isDarkMode ? 'bg-[#111111]' : 'bg-[#f8fafc]'}`}>
+                {/* NỘI DUNG CUỘN LÊN ĐÈ LÊN BANNER (Dùng style chuẩn để vừa khít mép dưới 100%) */}
+                  <div className={`relative z-10 w-full flex flex-col shadow-[0_-20px_50px_rgba(0,0,0,0.8)] ${isDarkMode ? 'bg-[#111111]' : 'bg-[#f8fafc]'}`} style={{ marginTop: '100vh' }}>
                     
                     {/* LOOKBOOK GRID (5 MỤC) */}
                     <div className="w-full h-auto md:h-[70vh] grid grid-cols-2 md:grid-cols-5 relative transition-all duration-300 bg-black">
@@ -1334,9 +1333,7 @@ const product = { id: newId, name: newProd.name, price: parseFloat(newProd.price
 
           {currentView === 'productDetail' && selectedProduct && (
             <div className="max-w-[1200px] mx-auto w-full px-4 md:px-8 py-2 md:py-4 animate-fade-in flex items-center justify-center min-h-[calc(100vh-120px)]">
-              
-              // ✏️ Sửa thành:
-              <div className="hidden md:block bg-white rounded-xl shadow-sm border border-slate-100 p-4 mb-6">
+              <div className="bg-white rounded-3xl md:rounded-[40px] border border-slate-100 p-4 md:p-6 lg:p-8 flex flex-col md:flex-row gap-6 lg:gap-10 shadow-sm w-full">
                 
                 {/* ẢNH SẢN PHẨM (ĐÃ THÊM TÍNH NĂNG ZOOM KÍNH LÚP) */}
                 <div className="w-full md:w-[45%] lg:w-[40%] flex flex-col gap-3 flex-shrink-0">
