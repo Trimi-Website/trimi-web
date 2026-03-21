@@ -83,7 +83,7 @@ const productDict = {
 };
 
 const initialProducts = [
-  { id: '101', name: 'Premium Basic T-Shirt', price: 250000, rating: 4.8, reviews: 120, category: 'shirt_1', imageUrl: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=800&auto=format&fit=crop', description: 'Áo thun basic cao cấp, chất liệu cotton 100% thoáng mát, form dáng chuẩn.' },
+  { id: '101', name: 'Premium Basic T-Shirt', price: 250000, rating: 4.8, reviews: 120, category: 'shirt_1', imageUrl: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=400&auto=format&fit=crop', description: 'Áo thun basic cao cấp, chất liệu cotton 100% thoáng mát, form dáng chuẩn.' },
   { id: '102', name: 'Oversized Street Tee', price: 290000, rating: 4.9, reviews: 85, category: 'shirt_1', imageUrl: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=800&auto=format&fit=crop', description: 'Áo thun oversize phong cách đường phố, chất vải dày dặn.' },
   { id: '201', name: 'Classic Oxford Shirt', price: 450000, rating: 4.7, reviews: 90, category: 'shirt_2', imageUrl: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?q=80&w=800&auto=format&fit=crop', description: 'Áo sơ mi Oxford thanh lịch, phù hợp công sở và tiệc sang trọng.' },
   { id: '202', name: 'Striped Casual Shirt', price: 395000, rating: 4.6, reviews: 60, category: 'shirt_2', imageUrl: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?q=80&w=800&auto=format&fit=crop', description: 'Áo sơ mi họa tiết kẻ sọc trẻ trung, vải lụa mỏng nhẹ.' },
