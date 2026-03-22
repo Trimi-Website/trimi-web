@@ -20,5 +20,13 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
-  }
+    // ── COOP/CORS fix for Google sign-in popup on localhost ──────────────────
+    // Without these headers, Chrome blocks the OAuth popup because the default
+    // COOP policy is 'same-origin' which prevents cross-origin window messaging
+    // that Firebase's signInWithPopup relies on.
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+      'Cross-Origin-Embedder-Policy': 'unsafe-none',
+    },
+  },
 })
