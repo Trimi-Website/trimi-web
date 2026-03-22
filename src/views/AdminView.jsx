@@ -5,6 +5,39 @@ import {
 } from 'react-icons/fi';
 import { doc, setDoc, deleteDoc } from 'firebase/firestore';
 
+// ── Notification helper ───────────────────────────────────────────────────────
+// Writes an order_status notification to the customer's notification bucket.
+// Called whenever admin changes an order's status (dropdown OR quick buttons).
+const notifyOrderStatus = async (db, order, newStatus) => {
+  if (!order?.uid) return;
+  const notifId = `status_${order.id}_${Date.now()}`;
+
+  const statusEmoji = {
+    'Đang chuẩn bị hàng': '📦',
+    'Đang giao hàng':      '🚚',
+    'Hoàn thành':           '✅',
+    'Đơn không đạt yêu cầu': '❌',
+    'Khách hàng tự hủy đơn': '🚫',
+    'Chờ xác nhận thanh toán': '⏳',
+  };
+  const emoji = statusEmoji[newStatus] || '📋';
+
+  await setDoc(
+    doc(db, 'notifications', order.uid, 'items', notifId),
+    {
+      type:        'order_status',
+      title:       `${emoji} Cập nhật đơn hàng`,
+      body:        `Đơn ${order.orderId}: ${newStatus}`,
+      isRead:      false,
+      createdAt:   Date.now(),
+      orderId:     order.id,
+      orderStatus: newStatus,
+    }
+  ).catch(() => {});
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function AdminView({
   isDarkMode, t, t_prod,
   localProducts, setLocalProducts,
@@ -15,7 +48,6 @@ export default function AdminView({
   setPreviewImg, showToast, navigateTo,
   db,
 }) {
-  // Internal state — only used inside this view
   const [adminTab, setAdminTab] = useState('products');
 
   return (
@@ -23,7 +55,6 @@ export default function AdminView({
 
       {/* ── PAGE HEADER ── */}
       <div>
-        {/* Breadcrumb */}
         <div className="text-xs font-bold text-slate-400 mb-6 tracking-wider uppercase flex items-center gap-2">
           <button
             onClick={() => navigateTo('profile')}
@@ -35,7 +66,6 @@ export default function AdminView({
           <span className="text-slate-800 truncate">{t('adminDashboard')}</span>
         </div>
 
-        {/* Title + Tab Switcher + Action Button */}
         <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-4">
           <h2 className="text-3xl md:text-4xl font-black text-slate-900 flex items-center gap-3 justify-start">
             <FiArchive className="text-sky-500"/> {t('adminDashboard')}
@@ -43,27 +73,14 @@ export default function AdminView({
 
           <div className="flex justify-center">
             <div className="bg-slate-100 p-1.5 rounded-full flex gap-1 w-fit">
-              <button
-                onClick={() => setAdminTab('products')}
-                className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all cursor-pointer ${adminTab === 'products' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-              >
+              <button onClick={() => setAdminTab('products')} className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all cursor-pointer ${adminTab === 'products' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>
                 Kho Hàng
               </button>
-              <button
-                onClick={() => setAdminTab('orders')}
-                className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${adminTab === 'orders' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-              >
+              <button onClick={() => setAdminTab('orders')} className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${adminTab === 'orders' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>
                 Đơn Đặt Hàng
-                {adminOrders.length > 0 && (
-                  <span className="bg-red-500 text-white w-5 h-5 flex items-center justify-center rounded-full text-[10px]">
-                    {adminOrders.length}
-                  </span>
-                )}
+                {adminOrders.length > 0 && <span className="bg-red-500 text-white w-5 h-5 flex items-center justify-center rounded-full text-[10px]">{adminOrders.length}</span>}
               </button>
-              <button
-                onClick={() => setAdminTab('feedback')}
-                className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all cursor-pointer ${adminTab === 'feedback' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
-              >
+              <button onClick={() => setAdminTab('feedback')} className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all cursor-pointer ${adminTab === 'feedback' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>
                 Phản Hồi & Hủy
               </button>
             </div>
@@ -71,10 +88,7 @@ export default function AdminView({
 
           <div className="flex justify-end">
             {adminTab === 'products' && (
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="bg-sky-500 text-white px-6 py-3.5 rounded-full font-bold shadow-lg flex items-center justify-center gap-2 cursor-pointer hover:bg-sky-600 transition-colors"
-              >
+              <button onClick={() => setShowAddModal(true)} className="bg-sky-500 text-white px-6 py-3.5 rounded-full font-bold shadow-lg flex items-center justify-center gap-2 cursor-pointer hover:bg-sky-600 transition-colors">
                 <FiPlus className="text-xl"/> Thêm Sản Phẩm
               </button>
             )}
@@ -106,9 +120,7 @@ export default function AdminView({
                       </div>
                     </td>
                     <td className="p-5 font-bold text-base text-slate-800 max-w-[250px] truncate">{item.name}</td>
-                    <td className="p-5 font-black text-slate-900 text-lg">
-                      {(Number(item.price) || 0).toLocaleString('vi-VN')}đ
-                    </td>
+                    <td className="p-5 font-black text-slate-900 text-lg">{(Number(item.price) || 0).toLocaleString('vi-VN')}đ</td>
                     <td className="p-5 text-right pr-8">
                       <button
                         onClick={() => handleDeleteProduct(item.id)}
@@ -138,23 +150,17 @@ export default function AdminView({
               </thead>
               <tbody>
                 {adminOrders.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" className="p-10 text-center text-slate-400 font-medium">Chưa có đơn hàng nào.</td>
-                  </tr>
+                  <tr><td colSpan="6" className="p-10 text-center text-slate-400 font-medium">Chưa có đơn hàng nào.</td></tr>
                 ) : (
                   adminOrders.map((order) => {
                     const customerUser = usersList.find(u => u.uid === order.uid);
                     return (
-                      <tr
-                        key={order.id}
-                        className={`border-b transition-colors ${isDarkMode ? 'border-slate-700/50 hover:bg-white/5' : 'border-slate-100 hover:bg-slate-50'}`}
-                      >
+                      <tr key={order.id} className={`border-b transition-colors ${isDarkMode ? 'border-slate-700/50 hover:bg-white/5' : 'border-slate-100 hover:bg-slate-50'}`}>
+
                         {/* Order ID */}
                         <td className="p-5 pl-8">
                           <span className={`font-black block ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{order.orderId}</span>
-                          <span className={`text-xs font-medium mt-1 block ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                            {new Date(order.createdAt).toLocaleString('vi-VN')}
-                          </span>
+                          <span className={`text-xs font-medium mt-1 block ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{new Date(order.createdAt).toLocaleString('vi-VN')}</span>
                         </td>
 
                         {/* Customer */}
@@ -185,23 +191,17 @@ export default function AdminView({
 
                         {/* Payment */}
                         <td className="p-5">
-                          <span className="font-black text-sky-500 block text-base">
-                            {order.paidAmount.toLocaleString('vi-VN')}đ
-                          </span>
+                          <span className="font-black text-sky-500 block text-base">{order.paidAmount.toLocaleString('vi-VN')}đ</span>
                           <span className={`text-xs font-bold px-2 py-0.5 rounded inline-block mt-1 ${isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-600'}`}>
                             {order.paymentMode === 'full' ? 'Đã CK 100%' : 'Đã Cọc 30%'}
                           </span>
                         </td>
 
-                        {/* Receipt image */}
+                        {/* Receipt */}
                         <td className="p-5 text-center">
                           {order.receiptImage ? (
                             <div onClick={() => setPreviewImg(order.receiptImage)} className="inline-block relative group">
-                              <img
-                                src={order.receiptImage}
-                                className={`w-16 h-16 object-cover rounded-xl border shadow-sm transition-transform cursor-pointer group-hover:scale-105 ${isDarkMode ? 'border-slate-600' : 'border-slate-200'}`}
-                                alt="Bill"
-                              />
+                              <img src={order.receiptImage} className={`w-16 h-16 object-cover rounded-xl border shadow-sm transition-transform cursor-pointer group-hover:scale-105 ${isDarkMode ? 'border-slate-600' : 'border-slate-200'}`} alt="Bill"/>
                               <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                                 <FiSearch className="text-white text-xl"/>
                               </div>
@@ -211,12 +211,16 @@ export default function AdminView({
                           )}
                         </td>
 
-                        {/* Status controls */}
+                        {/* ── STATUS CONTROLS ── */}
                         <td className="p-5 text-right pr-8">
+                          {/* Dropdown — triggers notification on change */}
                           <select
                             value={order.status}
                             onChange={async (e) => {
-                              await setDoc(doc(db, 'orders', order.id), { status: e.target.value }, { merge: true });
+                              const newStatus = e.target.value;
+                              await setDoc(doc(db, 'orders', order.id), { status: newStatus }, { merge: true });
+                              // Notify customer
+                              await notifyOrderStatus(db, order, newStatus);
                               showToast('Đã cập nhật trạng thái đơn!');
                             }}
                             className={`border text-sm font-bold rounded-xl px-4 py-2 outline-none cursor-pointer transition-colors focus:border-sky-500 mb-2 w-full ${isDarkMode ? 'bg-[#111111] border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-800'}`}
@@ -228,15 +232,27 @@ export default function AdminView({
                             <option value="Khách hàng tự hủy đơn">Khách tự hủy</option>
                             <option value="Đơn không đạt yêu cầu">Không đạt (Bill lỗi)</option>
                           </select>
+
+                          {/* Quick-action buttons — also trigger notifications */}
                           <div className="flex flex-wrap justify-end gap-1.5 mt-2">
                             <button
-                              onClick={async () => { await setDoc(doc(db, 'orders', order.id), { status: 'Hoàn thành' }, { merge: true }); showToast('Đã đánh dấu Hoàn Thành'); }}
+                              onClick={async () => {
+                                const s = 'Hoàn thành';
+                                await setDoc(doc(db, 'orders', order.id), { status: s }, { merge: true });
+                                await notifyOrderStatus(db, order, s);
+                                showToast('Đã đánh dấu Hoàn Thành');
+                              }}
                               className="bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-500 hover:text-white px-2 py-1 rounded-md text-[10px] font-bold transition-colors cursor-pointer"
                             >
                               Thành công
                             </button>
                             <button
-                              onClick={async () => { await setDoc(doc(db, 'orders', order.id), { status: 'Đơn không đạt yêu cầu' }, { merge: true }); showToast('Đã Từ chối'); }}
+                              onClick={async () => {
+                                const s = 'Đơn không đạt yêu cầu';
+                                await setDoc(doc(db, 'orders', order.id), { status: s }, { merge: true });
+                                await notifyOrderStatus(db, order, s);
+                                showToast('Đã Từ chối');
+                              }}
                               className="bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-500 hover:text-white px-2 py-1 rounded-md text-[10px] font-bold transition-colors cursor-pointer"
                             >
                               Từ chối
@@ -265,8 +281,6 @@ export default function AdminView({
           {/* ── FEEDBACK TAB ── */}
           {adminTab === 'feedback' && (
             <div className="p-6 md:p-8 flex flex-col gap-8 text-slate-800">
-
-              {/* Cancelled orders */}
               <div>
                 <h3 className="text-xl font-black mb-4 flex items-center gap-2">
                   <FiArchive className="text-red-500"/> Các đơn bị khách hủy
@@ -293,7 +307,6 @@ export default function AdminView({
 
               <hr className="border-slate-200"/>
 
-              {/* Survey data */}
               <div>
                 <h3 className="text-xl font-black mb-4 flex items-center gap-2">
                   <FiUsers className="text-sky-500"/> Dữ liệu Khảo sát Khách hàng
@@ -305,30 +318,17 @@ export default function AdminView({
                     usersList.filter(u => u.isSurveyCompleted).map(u => (
                       <div key={u.uid} className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col gap-2">
                         <p className="font-bold text-base flex items-center gap-2">
-                          {u.avatar
-                            ? <img src={u.avatar} className="w-6 h-6 rounded-full" alt=""/>
-                            : <FiUser/>
-                          }
+                          {u.avatar ? <img src={u.avatar} className="w-6 h-6 rounded-full" alt=""/> : <FiUser/>}
                           {u.nickname || u.email?.split('@')[0]}
                         </p>
-                        <p className="text-sm">
-                          <span className="text-slate-500 text-xs uppercase block">Nghề nghiệp</span>
-                          <span className="font-medium">{u.role}</span>
-                        </p>
-                        <p className="text-sm">
-                          <span className="text-slate-500 text-xs uppercase block">Nguồn biết đến</span>
-                          <span className="font-medium bg-sky-100 text-sky-700 px-2 py-0.5 rounded text-xs">{u.discoverySource}</span>
-                        </p>
-                        <p className="text-sm">
-                          <span className="text-slate-500 text-xs uppercase block">Sở thích Mua sắm</span>
-                          <span className="font-medium bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs">{u.interests}</span>
-                        </p>
+                        <p className="text-sm"><span className="text-slate-500 text-xs uppercase block">Nghề nghiệp</span><span className="font-medium">{u.role}</span></p>
+                        <p className="text-sm"><span className="text-slate-500 text-xs uppercase block">Nguồn biết đến</span><span className="font-medium bg-sky-100 text-sky-700 px-2 py-0.5 rounded text-xs">{u.discoverySource}</span></p>
+                        <p className="text-sm"><span className="text-slate-500 text-xs uppercase block">Sở thích Mua sắm</span><span className="font-medium bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs">{u.interests}</span></p>
                       </div>
                     ))
                   )}
                 </div>
               </div>
-
             </div>
           )}
 

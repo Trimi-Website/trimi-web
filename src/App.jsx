@@ -25,6 +25,7 @@ import { dict, productDict, initialProducts, defaultLookbookData, fakeColorSpher
 import { compressImage } from './utils/imageUtils';
 
 // Components
+import PushNotification from './components/PushNotification';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import BottomNav from './components/BottomNav';
@@ -78,7 +79,7 @@ export default function App() {
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [toastMsg, setToastMsg] = useState('');
+  const [toastMsg, setToastMsg] = useState(null);
   const [isUnifiedMenuOpen, setIsUnifiedMenuOpen] = useState(false);
 
   // ─── SEARCH ───────────────────────────────────────────────────────────────
@@ -419,7 +420,11 @@ export default function App() {
   // HANDLERS
   // ═══════════════════════════════════════════════════════════════════════════
 
-  const showToast = (msg) => { setToastMsg(msg); setTimeout(() => setToastMsg(''), 2500); };
+  // Accepts either a plain string or a rich object { title, body, type }
+  const showToast = (msg, type = 'default') => {
+    setToastMsg(typeof msg === 'string' ? { title: msg, body: null, type } : msg);
+    setTimeout(() => setToastMsg(null), 3000);
+  };
   const requireLogin = (action) => { if (!isAuthenticated) { setShowLoginModal(true); return; } action(); };
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -579,6 +584,18 @@ export default function App() {
       if (user) {
         await setDoc(doc(db, 'users', user.uid), { purchaseHistory: arrayUnion(...cart.map(i => i.id)) }, { merge: true }).catch(() => {});
       }
+      // ── NOTIFICATION 1: Alert admin about the new order ──────────────────
+      await setDoc(
+        doc(db, 'notifications', 'admin', 'items', `order_${currentOrderId}`),
+        {
+          type:      'new_order',
+          title:     '🛒 Đơn hàng mới!',
+          body:      `${nickname} vừa đặt đơn ${currentOrderId} — ${finalPayAmount.toLocaleString('vi-VN')}đ`,
+          isRead:    false,
+          createdAt: Date.now(),
+          orderId:   currentOrderId,
+        }
+      ).catch(() => {});
       setTimeout(() => {
         setIsCheckingPayment(false);
         setSuccessOrderInfo(currentOrderId);
@@ -635,13 +652,37 @@ export default function App() {
     setChatInput('');
     if (isAdmin) {
       const newMessage = { sender: 'bot', text: userMsgText, timestamp: Date.now() };
-      try { await setDoc(doc(db, 'users', activeChatTarget.uid), { messages: arrayUnion(newMessage), lastUpdated: Date.now(), hasUnreadUser: true }, { merge: true }); } catch { }
+      try {
+        await setDoc(doc(db, 'users', activeChatTarget.uid), { messages: arrayUnion(newMessage), lastUpdated: Date.now(), hasUnreadUser: true }, { merge: true });
+        // ── NOTIFICATION 2a: Admin → User message alert ──────────────────
+        await setDoc(
+          doc(db, 'notifications', activeChatTarget.uid, 'items', `msg_${Date.now()}`),
+          {
+            type:      'new_message',
+            title:     '💬 Tin nhắn từ Trimi',
+            body:      `Admin: ${userMsgText.substring(0, 80)}${userMsgText.length > 80 ? '...' : ''}`,
+            isRead:    false,
+            createdAt: Date.now(),
+          }
+        ).catch(() => {});
+      } catch { }
       return;
     }
     const newMessage = { sender: user.uid, text: userMsgText, timestamp: Date.now() };
     if (activeChatTarget === 'admin') {
       try {
         await setDoc(doc(db, 'users', user.uid), { messages: arrayUnion(newMessage), lastUpdated: Date.now(), userEmail: user.email || '', nickname, avatar: avatarUrl, hasUnreadAdmin: true }, { merge: true });
+        // ── NOTIFICATION 2b: User → Admin message alert ──────────────────
+        await setDoc(
+          doc(db, 'notifications', 'admin', 'items', `msg_${Date.now()}`),
+          {
+            type:      'new_message',
+            title:     '💬 Tin nhắn mới từ khách',
+            body:      `${nickname}: ${userMsgText.substring(0, 80)}${userMsgText.length > 80 ? '...' : ''}`,
+            isRead:    false,
+            createdAt: Date.now(),
+          }
+        ).catch(() => {});
         const lowerMsg = userMsgText.toLowerCase();
         let aiReply = '';
         if (lowerMsg.includes('ship') || lowerMsg.includes('giao')) aiReply = 'Trimi AI: Tụi mình freeship nội thành Đà Nẵng. Các quận khác phí ship là 20k nha!';
@@ -703,6 +744,7 @@ export default function App() {
         .anim-home-to-shop-run #other-pages-content { transform: translateX(0); transition: transform 0.7s cubic-bezier(0.68, -0.6, 0.27, 1.55); transition-delay: 0.1s; }
         .page-transition-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: white; z-index: 9999; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out; }
         .page-transition-overlay.active { opacity: 1; visibility: visible; }
+        @keyframes toastProgress { from { width: 100%; } to { width: 0%; } }
       `}</style>
 
       <div className={`min-h-screen w-full font-sans flex flex-col relative transition-colors duration-300 ${isDarkMode ? 'dark-mode text-white bg-[#111111]' : 'text-slate-900 bg-[#f8fafc]'}`}>
@@ -744,6 +786,7 @@ export default function App() {
           setIsHelpOpen={setIsHelpOpen}
           displayedProducts={displayedProducts}
           t_prod={t_prod}
+          user={user}
         />
 
         {/* ── MAIN CONTENT ───────────────────────────────────────────────────── */}
@@ -897,14 +940,16 @@ export default function App() {
           lang={lang} setLang={setLang} currentView={currentView}
           isAuthenticated={isAuthenticated} handleLogout={handleLogout}
           navigateTo={navigateTo} requireLogin={requireLogin} t={t}
+          showToast={showToast}
+          setShowPrivacyModal={setShowPrivacyModal}
+          setShowTermsModal={setShowTermsModal}
+          setShowStoryModal={setShowStoryModal}
+          setShowCareerModal={setShowCareerModal}
+          setShowContactModal={setShowContactModal}
         />
 
-        {/* TOAST */}
-        {toastMsg && (
-          <div className="fixed bottom-24 md:bottom-10 left-1/2 -translate-x-1/2 z-[999999] bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl font-bold text-sm animate-fade-in-up whitespace-nowrap border border-white/10">
-            {toastMsg}
-          </div>
-        )}
+        {/* PUSH NOTIFICATION — email-card style, slides from top */}
+        <PushNotification toast={toastMsg} onDismiss={() => setToastMsg(null)} />
       </div>
     </>
   );

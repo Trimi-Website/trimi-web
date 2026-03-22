@@ -1,5 +1,8 @@
 import { FiX, FiMessageCircle, FiShield, FiSearch, FiUsers, FiUserPlus, FiSend, FiCornerUpLeft } from 'react-icons/fi';
 
+// CHANGE 5: On mobile, when any panel is open (help hub, admin inbox, or chat box),
+//           the widget takes full screen (inset-0). On desktop the floating-corner
+//           behavior is identical to before (bottom-8 right-8).
 export default function ChatWidget({
   isAdmin, isHelpOpen, setIsHelpOpen,
   isChatBoxOpen, setIsChatBoxOpen,
@@ -14,18 +17,36 @@ export default function ChatWidget({
   openAdminChat, openP2PChat, openAdminChatWithUser, handleAddFriend,
   requireLogin, t, isDarkMode, user, avatarUrl, nickname,
 }) {
+  const anyPanelOpen = isHelpOpen || isChatBoxOpen;
+
   return (
-    <div className="fixed bottom-[85px] right-4 md:bottom-8 md:right-8 z-[9000] flex flex-col items-end">
+    // Wrapper: full-screen on mobile when open, floating on desktop always
+    <div className={`fixed z-[9000] flex flex-col ${
+      anyPanelOpen
+        ? 'inset-0 md:inset-auto md:bottom-8 md:right-8 md:items-end'
+        : 'bottom-[85px] right-4 md:bottom-8 md:right-8 items-end'
+    }`}>
+
+      {/* Mobile backdrop — tap outside panels to close */}
+      {anyPanelOpen && (
+        <div
+          className="absolute inset-0 bg-black/50 md:hidden"
+          onClick={() => { setIsHelpOpen(false); setIsChatBoxOpen(false); setActiveChatTarget(null); setAdminChatUser(null); }}
+        ></div>
+      )}
 
       {/* ── USER: HELP HUB PANEL ── */}
       {!isAdmin && isHelpOpen && !isChatBoxOpen && (
-        <div className="bg-white w-[340px] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] mb-4 overflow-hidden border border-slate-200 animate-fade-in-up origin-bottom-right">
+        <div className={`relative bg-white flex flex-col overflow-hidden border border-slate-200 animate-fade-in-up ${
+          // Mobile: full height minus bottom nav. Desktop: floating box
+          'w-full h-full md:w-[340px] md:h-auto md:max-h-[70vh] md:rounded-2xl md:shadow-[0_10px_40px_rgba(0,0,0,0.15)] md:mb-4 md:origin-bottom-right'
+        }`}>
 
           {/* Header */}
-          <div className="bg-slate-900 text-white p-5 pr-4 flex justify-between items-start">
+          <div className="bg-slate-900 text-white p-5 pr-4 flex justify-between items-start flex-shrink-0">
             <div>
               <h2 className="font-bold text-[17px] mb-1">{t('chatHelp')}</h2>
-              <p className="text-sm text-slate-300 flex items-center gap-1">{t('chatHow')}</p>
+              <p className="text-sm text-slate-300">{t('chatHow')}</p>
             </div>
             <button onClick={() => setIsHelpOpen(false)} className="text-slate-400 hover:text-white transition-colors p-1">
               <FiX className="text-xl"/>
@@ -33,7 +54,7 @@ export default function ChatWidget({
           </div>
 
           {/* Chat with admin */}
-          <div className="p-4 border-b border-slate-100">
+          <div className="p-4 border-b border-slate-100 flex-shrink-0">
             <p className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mb-3">HỖ TRỢ TRỰC TUYẾN</p>
             <div
               onClick={() => requireLogin(openAdminChat)}
@@ -46,14 +67,12 @@ export default function ChatWidget({
                 <span className="font-bold text-slate-800 text-sm block">{t('chatWithUs')}</span>
                 <span className="text-xs text-slate-500">{t('replyFast')}</span>
               </div>
-              {hasUnreadUser && (
-                <div className="absolute top-1/2 -translate-y-1/2 right-4 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-              )}
+              {hasUnreadUser && <div className="absolute top-1/2 -translate-y-1/2 right-4 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>}
             </div>
           </div>
 
-          {/* Community user list */}
-          <div className="p-4 flex-grow overflow-y-auto max-h-[300px] custom-scrollbar">
+          {/* Community list */}
+          <div className="p-4 flex-grow overflow-y-auto custom-scrollbar">
             <div className="flex justify-between items-center mb-3">
               <p className="text-[13px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
                 <FiUsers/> {t('community')}
@@ -73,28 +92,17 @@ export default function ChatWidget({
                     <div className="flex items-center gap-3">
                       <div className="relative">
                         <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0 font-bold text-xs text-slate-600 overflow-hidden">
-                          {u.avatar
-                            ? <img src={u.avatar} className="w-full h-full object-cover" alt=""/>
-                            : (u.nickname?.charAt(0).toUpperCase() || 'U')
-                          }
+                          {u.avatar ? <img src={u.avatar} className="w-full h-full object-cover" alt=""/> : (u.nickname?.charAt(0).toUpperCase() || 'U')}
                         </div>
                         <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${u.isOnline ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
                       </div>
                       <div>
-                        <span className="text-sm font-bold text-slate-800 block leading-none mb-1 max-w-[120px] truncate">
-                          {u.nickname || u.email?.split('@')[0]}
-                        </span>
-                        <span className="text-[10px] text-slate-400 leading-none">
-                          {u.isOnline ? t('online') : t('offline')}
-                        </span>
+                        <span className="text-sm font-bold text-slate-800 block leading-none mb-1 max-w-[120px] truncate">{u.nickname || u.email?.split('@')[0]}</span>
+                        <span className="text-[10px] text-slate-400 leading-none">{u.isOnline ? t('online') : t('offline')}</span>
                       </div>
                     </div>
                     {!friendsList.includes(u.uid) && (
-                      <button
-                        onClick={(e) => handleAddFriend(e, u.uid)}
-                        className="text-sky-500 bg-sky-50 hover:bg-sky-500 hover:text-white p-2 rounded-full transition-colors opacity-0 group-hover:opacity-100"
-                        title={t('add_friend')}
-                      >
+                      <button onClick={(e) => handleAddFriend(e, u.uid)} className="text-sky-500 bg-sky-50 hover:bg-sky-500 hover:text-white p-2 rounded-full transition-colors opacity-0 group-hover:opacity-100" title={t('add_friend')}>
                         <FiUserPlus className="text-sm"/>
                       </button>
                     )}
@@ -108,8 +116,10 @@ export default function ChatWidget({
 
       {/* ── ADMIN: INBOX PANEL ── */}
       {isAdmin && isHelpOpen && !activeChatTarget && (
-        <div className="bg-white w-[340px] h-[480px] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] mb-4 overflow-hidden border border-slate-200 animate-fade-in-up origin-bottom-right flex flex-col">
-          <div className="bg-slate-900 text-white p-4 flex justify-between items-center rounded-t-2xl shadow-md z-10">
+        <div className={`relative bg-white overflow-hidden border border-slate-200 animate-fade-in-up flex flex-col ${
+          'w-full h-full md:w-[340px] md:h-[480px] md:rounded-2xl md:shadow-[0_10px_40px_rgba(0,0,0,0.15)] md:mb-4 md:origin-bottom-right'
+        }`}>
+          <div className="bg-slate-900 text-white p-4 flex justify-between items-center flex-shrink-0 md:rounded-t-2xl shadow-md z-10">
             <h2 className="font-bold">{t('adminInbox')}</h2>
             <button onClick={() => setIsHelpOpen(false)} className="text-slate-400 hover:text-white p-1">
               <FiX className="text-xl"/>
@@ -120,29 +130,18 @@ export default function ChatWidget({
               <p className="text-center text-slate-400 text-sm mt-4">{t('adminWait')}</p>
             ) : (
               usersList.map(u => (
-                <div
-                  key={u.uid}
-                  onClick={() => openAdminChatWithUser(u)}
-                  className="flex items-center gap-3 p-3 hover:bg-slate-50 cursor-pointer rounded-xl border-b border-slate-100 last:border-0 relative"
-                >
+                <div key={u.uid} onClick={() => openAdminChatWithUser(u)} className="flex items-center gap-3 p-3 hover:bg-slate-50 cursor-pointer rounded-xl border-b border-slate-100 last:border-0 relative">
                   <div className="relative">
                     <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-slate-600 overflow-hidden">
-                      {u.avatar
-                        ? <img src={u.avatar} className="w-full h-full object-cover" alt=""/>
-                        : (u.nickname?.charAt(0).toUpperCase() || 'U')
-                      }
+                      {u.avatar ? <img src={u.avatar} className="w-full h-full object-cover" alt=""/> : (u.nickname?.charAt(0).toUpperCase() || 'U')}
                     </div>
                     <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${u.isOnline ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
                   </div>
                   <div className="flex-col flex flex-grow">
-                    <span className="text-sm font-bold text-slate-800">
-                      {u.nickname || (u.email ? u.email.split('@')[0] : 'Khách')}
-                    </span>
+                    <span className="text-sm font-bold text-slate-800">{u.nickname || (u.email ? u.email.split('@')[0] : 'Khách')}</span>
                     <span className="text-xs text-slate-500">{u.isOnline ? t('online') : t('offline')}</span>
                   </div>
-                  {u.hasUnreadAdmin && (
-                    <div className="w-3 h-3 bg-red-500 rounded-full mr-2 shadow-sm animate-pulse"></div>
-                  )}
+                  {u.hasUnreadAdmin && <div className="w-3 h-3 bg-red-500 rounded-full mr-2 shadow-sm animate-pulse"></div>}
                 </div>
               ))
             )}
@@ -150,12 +149,14 @@ export default function ChatWidget({
         </div>
       )}
 
-      {/* ── CHAT BOX (user ↔ admin, or user ↔ user P2P) ── */}
+      {/* ── CHAT BOX ── */}
       {isChatBoxOpen && activeChatTarget && (
-        <div className="bg-white w-[340px] h-[480px] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] mb-4 overflow-hidden border border-slate-200 animate-fade-in-up origin-bottom-right flex flex-col">
+        <div className={`relative bg-white overflow-hidden border border-slate-200 animate-fade-in-up flex flex-col ${
+          'w-full h-full md:w-[340px] md:h-[480px] md:rounded-2xl md:shadow-[0_10px_40px_rgba(0,0,0,0.15)] md:mb-4 md:origin-bottom-right'
+        }`}>
 
           {/* Chat header */}
-          <div className="bg-slate-900 text-white p-4 flex justify-between items-center rounded-t-2xl shadow-md z-10">
+          <div className="bg-slate-900 text-white p-4 flex justify-between items-center flex-shrink-0 md:rounded-t-2xl shadow-md z-10">
             <button
               onClick={() => { setIsChatBoxOpen(false); setIsHelpOpen(true); setActiveChatTarget(null); setAdminChatUser(null); }}
               className="text-slate-300 hover:text-white flex items-center gap-2 font-bold text-sm"
@@ -163,9 +164,7 @@ export default function ChatWidget({
               <FiCornerUpLeft/> Quay lại
             </button>
             <div className="flex items-center gap-2">
-              {activeChatTarget !== 'admin' && (
-                <div className={`w-2 h-2 rounded-full ${activeChatTarget.isOnline ? 'bg-emerald-500' : 'bg-slate-500'}`}></div>
-              )}
+              {activeChatTarget !== 'admin' && <div className={`w-2 h-2 rounded-full ${activeChatTarget.isOnline ? 'bg-emerald-500' : 'bg-slate-500'}`}></div>}
               <span className="text-sm font-bold truncate max-w-[120px]">
                 {activeChatTarget === 'admin' ? t('chatWithUs') : activeChatTarget.nickname}
               </span>
@@ -177,12 +176,9 @@ export default function ChatWidget({
             <div className="flex justify-center mb-2">
               <span className="text-xs text-slate-400 font-medium bg-white px-3 py-1 rounded-full border border-slate-100">Hôm nay</span>
             </div>
-
             {(isAdmin && activeChatTarget
               ? (adminChatUser?.messages || [])
-              : activeChatTarget === 'admin'
-                ? chatMessages
-                : p2pMessages
+              : activeChatTarget === 'admin' ? chatMessages : p2pMessages
             ).map((msg, idx) => {
               const isMe = msg.sender === user?.uid || (isAdmin && msg.sender === 'bot');
               return (
@@ -191,9 +187,7 @@ export default function ChatWidget({
                     <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0 font-bold text-xs mt-auto overflow-hidden shadow-sm">
                       {activeChatTarget === 'admin' || isAdmin
                         ? <FiShield className="text-sky-500"/>
-                        : activeChatTarget.avatar
-                          ? <img src={activeChatTarget.avatar} className="w-full h-full object-cover" alt=""/>
-                          : activeChatTarget.nickname?.charAt(0).toUpperCase()
+                        : activeChatTarget.avatar ? <img src={activeChatTarget.avatar} className="w-full h-full object-cover" alt=""/> : activeChatTarget.nickname?.charAt(0).toUpperCase()
                       }
                     </div>
                   )}
@@ -206,7 +200,7 @@ export default function ChatWidget({
           </div>
 
           {/* Input row */}
-          <div className="p-3 bg-white border-t border-slate-100 flex items-center gap-2">
+          <div className="p-3 bg-white border-t border-slate-100 flex items-center gap-2 flex-shrink-0">
             <input
               type="text"
               value={chatInput}
@@ -225,7 +219,7 @@ export default function ChatWidget({
         </div>
       )}
 
-      {/* ── FLOATING CHAT BUBBLE (when all panels are closed) ── */}
+      {/* ── FLOATING CHAT BUBBLE — desktop only ── */}
       {!isChatBoxOpen && !isHelpOpen && (
         <button
           aria-label="Mở khung chat"
@@ -233,20 +227,9 @@ export default function ChatWidget({
           className="hidden md:flex relative w-14 h-14 bg-slate-900/50 backdrop-blur-md border border-white/10 text-white rounded-full items-center justify-center shadow-lg hover:bg-sky-500 hover:scale-105 transition-all"
         >
           <FiMessageCircle className="text-2xl" />
-          {/* Online dot for users */}
-          {!isAdmin && (
-            <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white/50 rounded-full shadow-sm"></span>
-          )}
-          {/* Unread badge for user */}
-          {!isAdmin && hasUnreadUser && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white/50 animate-bounce">1</span>
-          )}
-          {/* Unread badge for admin */}
-          {isAdmin && totalAdminUnread > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white/50 animate-bounce">
-              {totalAdminUnread}
-            </span>
-          )}
+          {!isAdmin && <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white/50 rounded-full shadow-sm"></span>}
+          {!isAdmin && hasUnreadUser && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white/50 animate-bounce">1</span>}
+          {isAdmin && totalAdminUnread > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white/50 animate-bounce">{totalAdminUnread}</span>}
         </button>
       )}
 
