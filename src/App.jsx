@@ -11,6 +11,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { FaFacebook } from 'react-icons/fa';
 
 // Firebase
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { auth, googleProvider, db } from './firebase';
 import {
   signInWithPopup, signInWithRedirect, getRedirectResult,
@@ -29,6 +30,7 @@ import { compressImage } from './utils/imageUtils';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import BottomNav from './components/BottomNav';
+import FriendsModal from './components/FriendModal';
 import ChatWidget from './components/ChatWidget';
 import UnifiedMenuDrawer from './components/UnifiedMenuDrawer';
 import CartModal from './components/CartModal';
@@ -83,6 +85,8 @@ export default function App() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [toastMsg, setToastMsg] = useState(null);
   const [isUnifiedMenuOpen, setIsUnifiedMenuOpen] = useState(false);
+  const [unreadBellCount, setUnreadBellCount] = useState(0);
+  const [showFriendsModal, setShowFriendsModal] = useState(false);
 
   // ─── SEARCH ───────────────────────────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState('');
@@ -244,6 +248,13 @@ export default function App() {
     const handleClick = (e) => { lastClickPos.current = { x: e.clientX, y: e.clientY }; };
     window.addEventListener('click', handleClick);
     return () => window.removeEventListener('click', handleClick);
+  }, []);
+
+  // NotificationBell broadcasts its unread count so BottomNav badge stays in sync
+  useEffect(() => {
+    const handler = (e) => setUnreadBellCount(e.detail ?? 0);
+    document.addEventListener('trimi:bell-count', handler);
+    return () => document.removeEventListener('trimi:bell-count', handler);
   }, []);
 
   useEffect(() => {
@@ -450,18 +461,31 @@ export default function App() {
   }, [user, friendsList]);
 
   useEffect(() => {
+    // Guard: activeChatTarget must be a user object with a valid uid string
     if (!user || !activeChatTarget || activeChatTarget === 'admin' || isAdmin) return;
+    if (!activeChatTarget?.uid || typeof activeChatTarget.uid !== 'string') return;
     const chatId = [user.uid, activeChatTarget.uid].sort().join('_');
-    return onSnapshot(doc(db, 'p2p_chats', chatId), (docSnap) => {
-      if (docSnap.exists()) setP2pMessages(docSnap.data().messages || []); else setP2pMessages([]);
-    });
-  }, [user, activeChatTarget, isAdmin]);
+    if (!chatId || chatId.includes('undefined')) return; // extra safety
+    return onSnapshot(
+      doc(db, 'p2p_chats', chatId),
+      (docSnap) => {
+        setP2pMessages(docSnap.exists() ? (docSnap.data()?.messages || []) : []);
+      },
+      (err) => { console.warn('[P2P] snapshot error:', err.code); setP2pMessages([]); }
+    );
+  }, [user?.uid, activeChatTarget?.uid, isAdmin]);
 
   useEffect(() => {
-    if (!isAdmin || !adminChatUser) return;
-    return onSnapshot(doc(db, 'users', adminChatUser.uid), (docSnap) => {
-      if (docSnap.exists()) setAdminChatUser(prev => ({ ...prev, messages: docSnap.data().messages || [] }));
-    });
+    if (!isAdmin || !adminChatUser?.uid) return;
+    return onSnapshot(
+      doc(db, 'users', adminChatUser.uid),
+      (docSnap) => {
+        if (docSnap.exists()) {
+          setAdminChatUser(prev => prev ? { ...prev, messages: docSnap.data()?.messages || [] } : prev);
+        }
+      },
+      (err) => console.warn('[AdminChat] snapshot error:', err.code)
+    );
   }, [isAdmin, adminChatUser?.uid]);
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -761,26 +785,32 @@ export default function App() {
         }
       );
       showToast('Đã gửi lời mời kết bạn!');
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error('Lỗi Firestore:', err);
+      showToast('Lỗi: Firebase Rules đang chặn quyền gửi lời mời!');
+    }
   };
 
   const handleAcceptFriend = async (fromUid) => {
     if (!user) return;
     try {
-      // Add each other as friends
       await setDoc(doc(db, 'users', user.uid),    { friends: arrayUnion(fromUid)   }, { merge: true });
       await setDoc(doc(db, 'users', fromUid),     { friends: arrayUnion(user.uid)  }, { merge: true });
-      // Remove the friend_request notification
-      await deleteDoc(doc(db, 'notifications', user.uid, 'items', `fr_${fromUid}`)).catch(() => {});
-      // Notify the sender that request was accepted
-      await setDoc(
-        doc(db, 'notifications', fromUid, 'items', `fa_${user.uid}`),
-        {
-          type: 'friend_request', title: '✅ Đã chấp nhận kết bạn',
-          body: `${nickname} đã chấp nhận lời mời kết bạn của bạn`,
-          isRead: false, createdAt: Date.now(),
-        }
-      ).catch(() => {});
+      
+      // Đổi notification thành dạng tin nhắn thay vì xóa
+      await setDoc(doc(db, 'notifications', user.uid, 'items', `fr_${fromUid}`), {
+        type: 'new_message',
+        title: '✅ Đã chấp nhận kết bạn',
+        body: 'Hai bạn đã trở thành bạn bè.',
+        isRead: true
+      }, { merge: true }).catch(() => {});
+
+      await setDoc(doc(db, 'notifications', fromUid, 'items', `fa_${user.uid}`), {
+        type: 'new_message', title: '✅ Đã chấp nhận kết bạn',
+        body: `${nickname} đã chấp nhận lời mời kết bạn của bạn`,
+        isRead: false, createdAt: Date.now(),
+      }).catch(() => {});
+
       setFriendsList(prev => [...prev, fromUid]);
       setPendingRequests(prev => prev.filter(r => r.fromUid !== fromUid));
       showToast('Đã kết bạn thành công!');
@@ -790,7 +820,14 @@ export default function App() {
   const handleDeclineFriend = async (fromUid) => {
     if (!user) return;
     try {
-      await deleteDoc(doc(db, 'notifications', user.uid, 'items', `fr_${fromUid}`)).catch(() => {});
+      // Đổi notification thành dạng tin nhắn bị từ chối
+      await setDoc(doc(db, 'notifications', user.uid, 'items', `fr_${fromUid}`), {
+        type: 'new_message',
+        title: '❌ Đã từ chối kết bạn',
+        body: 'Bạn đã từ chối lời mời này.',
+        isRead: true
+      }, { merge: true }).catch(() => {});
+
       setPendingRequests(prev => prev.filter(r => r.fromUid !== fromUid));
       showToast('Đã từ chối lời mời kết bạn.');
     } catch (err) { console.error(err); }
@@ -843,19 +880,89 @@ export default function App() {
             createdAt: Date.now(),
           }
         ).catch(() => {});
-        const lowerMsg = userMsgText.toLowerCase();
-        let aiReply = '';
-        if (lowerMsg.includes('ship') || lowerMsg.includes('giao')) aiReply = 'Trimi AI: Tụi mình freeship nội thành Đà Nẵng. Các quận khác phí ship là 20k nha!';
-        else if (lowerMsg.includes('cọc') || lowerMsg.includes('thanh toán')) aiReply = 'Trimi AI: Khi đặt hàng, bạn cần thanh toán cọc trước 30% qua mã QR nhé.';
-        else if (lowerMsg.includes('chào') || lowerMsg.includes('hello') || lowerMsg.includes('hi') || lowerMsg.includes('yo')) aiReply = 'Trimi AI: Chào bạn! Trimi có thể giúp gì cho bạn hôm nay?';
-        else if (lowerMsg.includes('địa chỉ') || lowerMsg.includes('đà nẵng')) aiReply = 'Trimi AI: Hiện tại Trimi chỉ hỗ trợ giao dịch và ship hàng trong Đà Nẵng thôi ạ.';
-        else if (lowerMsg.includes('size') || lowerMsg.includes('kích thước')) aiReply = 'Trimi AI: Bạn cho mình xin chiều cao và cân nặng để tư vấn size chuẩn nhất nhé!';
-        else if (lowerMsg.includes('giá')) aiReply = 'Trimi AI: Dạ giá sản phẩm được niêm yết công khai trên web. Bạn vào mục Cửa hàng để xem nhé!';
-        if (aiReply) {
-          setTimeout(async () => {
-            await setDoc(doc(db, 'users', user.uid), { messages: arrayUnion({ sender: 'bot', text: aiReply, timestamp: Date.now() }), hasUnreadUser: true }, { merge: true });
-          }, 100);
+        // --- BẮT ĐẦU TÍCH HỢP GEMINI AI (BẢN XOAY TUA KEY + GIỚI HẠN) ---
+        // 1. Kiểm tra giới hạn lượt hỏi của khách
+        const userRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+        let currentUsage = userSnap.exists() ? (userSnap.data().usageCount || 0) : 0;
+        const MAX_QUESTIONS_PER_USER = 5; // Cho phép khách hỏi 5 câu/ngày
+
+        if (currentUsage >= MAX_QUESTIONS_PER_USER) {
+          // Nếu khách đã hỏi quá 5 câu -> Báo hết lượt, KHÔNG gọi AI nữa
+          const limitMsg = "Trimi-ni xin lỗi nha! Hôm nay cậu đã hỏi hết lượt tư vấn miễn phí rồi. Hẹn cậu quay lại ngày mai hoặc nhắn tin trực tiếp cho Fanpage Trimi để mình tư vấn thêm nhé! 🥰";
+          await setDoc(userRef, { 
+            messages: arrayUnion({ sender: 'bot', text: limitMsg, timestamp: Date.now() }), 
+            hasUnreadUser: true 
+          }, { merge: true });
+        } else {
+          // 2. Nếu còn lượt -> Chuẩn bị mảng 5 API Key (DÁN KEY CỦA TOÀN VÀO ĐÂY)
+          const apiKeys = [
+            "AIzaSyCEgQb0wyHTuxRVlfbKH1Wzu48eLde2TMI",
+            "AIzaSyBbMXo3kPSBqLZ_4kXfljk13LKyrlbl3aw",
+            "AIzaSyAQls4j7mpFU3FbmisR2rPqWHd62Zvh7AE",
+            "AIzaSyCgjNWb2EsJjLAz15MMVuOAKSHyomT3g4cz",
+            "AIzaSyCRNAFWKeuUHYErcrJJitHJrjtK6zhs4PQ"
+          ];
+
+          const productsInfo = localProducts.map(p => `- ${p.name}: ${p.price.toLocaleString('vi-VN')}đ`).join('\n');
+          const systemPrompt = `Bạn tên là "Trimi-ni" - một Gen Z chính hiệu, stylist cực chất và là chuyên viên tư vấn của thương hiệu thời trang local brand Trimi.
+          Bạn đang chat với khách hàng tên là: ${nickname}. 
+          
+          ⛔ QUY TẮC VỀ ĐỘ DÀI (CỰC KỲ QUAN TRỌNG - BẮT BUỘC TUÂN THỦ):
+          - TUYỆT ĐỐI KHÔNG VIẾT DÀI DÒNG. Hãy nhắn tin giống như đang chat Messenger/Zalo với bạn bè. 
+          - Khách chào ngắn (hi, hello, yo...): Chỉ chào lại đúng 1 câu ngắn.
+          - Khách hỏi giá/ship/thông tin đơn giản: Trả lời thẳng vào vấn đề ngay lập tức trong 1-2 câu ngắn.
+          - Khách nhờ tư vấn phối đồ: Trả lời tối đa 3 câu, ngắt dòng cho dễ đọc.
+          - KHÔNG ĐƯỢC tự ý hỏi thêm hoặc kể lể dài dòng nếu khách chưa yêu cầu.
+
+          🎯 ĐẶC ĐIỂM TÍNH CÁCH:
+          - Xưng là "Trimi-ni" (hoặc Trimi) và gọi khách là "${nickname}", "cậu", "bạn". 
+          - Tự nhiên, thân thiện, thả thính sương sương, dùng một ít emoji cho vui mắt.
+
+          📜 QUY ĐỊNH & KHO HÀNG CỦA SHOP:
+          - Freeship nội thành Đà Nẵng. Khách tỉnh khác phí ship 20.000đ.
+          - Thanh toán: Chuyển khoản thẳng 100% hoặc cọc 30% qua mã QR.
+          - Danh sách sản phẩm hiện có: \n${productsInfo}\n
+          
+          HƯỚNG DẪN XỬ LÝ TÌNH HUỐNG: 
+          - Nếu khách hỏi ngoài lề, đùa 1 câu cực ngắn rồi khéo léo bẻ lái về quần áo Trimi.`;
+
+          const prompt = `${systemPrompt}\n\nKhách hỏi: "${userMsgText}"\nTrimi AI trả lời:`;
+          let aiReply = "";
+
+          // 3. Vòng lặp Xoay tua Key
+          for (let i = 0; i < apiKeys.length; i++) {
+            try {
+              const genAI = new GoogleGenerativeAI(apiKeys[i]);
+              const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+              const result = await model.generateContent(prompt);
+              aiReply = result.response.text().replace(/\*\*/g, '').trim();
+              
+              if (aiReply) break; // Lấy câu trả lời thành công thì thoát vòng lặp ngay
+            } catch (error) {
+              if (error.message.includes("429")) {
+                console.warn(`Key số ${i+1} đã cạn. Đang tự động đổi sang Key tiếp theo...`);
+                continue; // Lỗi 429 thì nhảy sang Key tiếp theo
+              }
+              // Lỗi mạng hoặc lỗi khác
+              console.error("Lỗi AI:", error);
+              aiReply = "Xin lỗi bạn, Trimi AI đang bảo trì chút xíu, bạn chờ xíu hoặc nhắn lại sau nhé! 😅";
+              break;
+            }
+          }
+
+          // 4. Lưu câu trả lời và Cộng thêm 1 lượt dùng cho khách
+          if (aiReply) {
+            setTimeout(async () => {
+              await setDoc(userRef, { 
+                messages: arrayUnion({ sender: 'bot', text: aiReply, timestamp: Date.now() }), 
+                hasUnreadUser: true,
+                usageCount: currentUsage + 1 // CỘNG 1 LƯỢT
+              }, { merge: true });
+            }, 100);
+          }
         }
+        // --- KẾT THÚC TÍCH HỢP GEMINI AI ---
       } catch { }
     } else {
       const chatId = [user.uid, activeChatTarget.uid].sort().join('_');
@@ -951,6 +1058,9 @@ export default function App() {
           user={user}
           requireLogin={requireLogin}
           avatarUrl={avatarUrl}
+          onAcceptFriend={handleAcceptFriend}
+          onDeclineFriend={handleDeclineFriend}
+          onAddFriend={handleAddFriend}
         />
 
         {/* ── MAIN CONTENT ───────────────────────────────────────────────────── */}
@@ -1034,8 +1144,42 @@ export default function App() {
           )}
         </main>
 
-        {/* BOTTOM NAV (Mobile) */}
-        <BottomNav isDarkMode={isDarkMode} currentView={currentView} navigateTo={navigateTo} requireLogin={requireLogin} />
+        {/* BOTTOM NAV (Mobile) - Chỉ hiện khi Menu đang đóng */}
+        {!isUnifiedMenuOpen && (
+          <div className="z-[99990] relative"> 
+            <BottomNav
+              isDarkMode={isDarkMode}
+              currentView={currentView}
+              navigateTo={navigateTo}
+              requireLogin={requireLogin}
+              cartItemCount={cartItemCount}
+              hasUnreadUser={hasUnreadUser}
+              totalAdminUnread={totalAdminUnread}
+              isAdmin={isAdmin}
+              unreadBellCount={unreadBellCount}
+              pendingRequestsCount={pendingRequests.length}
+              setIsHelpOpen={setIsHelpOpen}
+              setIsCartOpen={setIsCartOpen}
+              setShowFriendsModal={setShowFriendsModal}
+            />
+          </div>
+        )}
+
+        {/* ── FRIENDS MODAL (mobile) ── */}
+        {showFriendsModal && (
+          <FriendsModal
+            isDarkMode={isDarkMode}
+            user={user}
+            usersList={usersList}
+            friendsList={friendsList}
+            pendingRequests={pendingRequests}
+            onAcceptFriend={handleAcceptFriend}
+            onDeclineFriend={handleDeclineFriend}
+            onAddFriend={handleAddFriend}
+            onChat={(u) => { setShowFriendsModal(false); openP2PChat(u); setIsHelpOpen(true); }}
+            onClose={() => setShowFriendsModal(false)}
+          />
+        )}
 
         {/* FOOTER */}
         <Footer
@@ -1139,6 +1283,17 @@ export default function App() {
           pendingRequests={pendingRequests}
           onAcceptFriend={handleAcceptFriend}
           onDeclineFriend={handleDeclineFriend}
+          onAddFriend={handleAddFriend}
+          setShowLoginModal={setShowLoginModal}
+          onUserClick={(u) => {
+            setIsUnifiedMenuOpen(false);
+            if (isAdmin) {
+              openAdminChatWithUser(u);
+            } else {
+              openP2PChat(u);
+              setIsHelpOpen(true);
+            }
+          }}
         />
 
         {/* TOAST — tiny pill at bottom-center, never overlaps header or nav buttons */}

@@ -12,7 +12,7 @@ export default function CartModal({
   if (!isCartOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[99999] flex md:justify-end pointer-events-none">
+    <div className="fixed inset-0 z-[80000] flex md:justify-end pointer-events-none">
       {/* Mobile: full-screen backdrop to close on tap outside */}
       <div
         className="absolute inset-0 bg-black/30 md:hidden pointer-events-auto"
@@ -95,7 +95,7 @@ export default function CartModal({
 
         {/* ── FOOTER: PAYMENT MODE + CHECKOUT ── */}
         {cart.length > 0 && (
-          <div className={`p-5 border-t ${isDarkMode ? 'border-white/10 bg-black/20' : 'border-black/10 bg-white/30'}`}>
+          <div className={`pb-[85px] md:pb-5 border-t ${isDarkMode ? 'border-white/10 bg-black/20' : 'border-black/10 bg-white/30'}`}>
             <div className={`flex gap-2 mb-4 p-1.5 rounded-xl border ${isDarkMode ? 'bg-black/40 border-white/10' : 'bg-white/50 border-black/5'}`}>
               <button
                 onClick={() => setPaymentMode('deposit')}

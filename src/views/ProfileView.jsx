@@ -308,7 +308,7 @@ export default function ProfileView({
   };
 
   return (
-    <div className="max-w-5xl mx-auto w-full px-4 py-8 animate-fade-in-up relative z-30">
+    <div className="max-w-5xl mx-auto w-full px-4 pt-8 pb-[100px] md:pb-8 animate-fade-in-up relative z-30">
 
       {/* Rating modal */}
       {ratingOrder && (
@@ -435,6 +435,7 @@ export default function ProfileView({
       </div>
 
       {/* ── ORDERS LIST ── */}
+      {/* ── ORDERS LIST ── */}
       {myOrders.length === 0 ? (
         <div className={`rounded-[40px] p-8 border shadow-sm text-center py-24 ${isDarkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
           <FiArchive className={`text-6xl mx-auto mb-6 ${isDarkMode ? 'text-slate-600' : 'text-slate-200'}`}/>
@@ -443,9 +444,9 @@ export default function ProfileView({
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {myOrders.map(order => (
-            <div key={order.id} className={`p-6 rounded-[32px] border shadow-sm flex flex-col gap-5 ${isDarkMode ? 'bg-[#1e293b] border-slate-700' : 'bg-white border-slate-200'}`}>
-
+          {myOrders.map((order) => (
+            <div key={order.id} id={`order-${order.orderId}`} className={`bg-white rounded-[32px] p-6 md:p-8 border shadow-sm flex flex-col gap-5 ${isDarkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
+              
               {/* Top row */}
               <div className="flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
                 <div>
@@ -471,8 +472,7 @@ export default function ProfileView({
 
                   {/* ── ACTION BUTTONS ── */}
                   <div className="flex flex-wrap gap-2 mt-1">
-
-                    {/* Cancel — only when waiting for bill review */}
+                    {/* Cancel */}
                     {order.status === 'Chờ xác nhận thanh toán' && (
                       <button
                         onClick={async () => {
@@ -488,7 +488,7 @@ export default function ProfileView({
                       </button>
                     )}
 
-                    {/* Report Issue — available on active orders (not completed/cancelled) */}
+                    {/* Report Issue */}
                     {!['Hoàn thành','Khách hàng tự hủy đơn','Đơn không đạt yêu cầu'].includes(order.status) && !order.issueReport && (
                       <button
                         onClick={() => setReportOrder(order)}
@@ -500,18 +500,13 @@ export default function ProfileView({
                       </button>
                     )}
 
-                    {/* Show "issue reported" badge */}
                     {order.issueReport && (
                       <span className="text-xs font-bold px-3 py-1.5 rounded-full bg-red-100 text-red-600 border border-red-200">
                         🚨 Đã báo lỗi
                       </span>
                     )}
 
-                    {/* ── CONFIRM RECEIVED ──
-                        Shows when status is "Đã giao - chờ khách xác nhận".
-                        Does NOT require deliveryProof.image — admin may have set
-                        the status manually via the dropdown without going through
-                        ShipperView, so we don't gate on proof existence. */}
+                    {/* CONFIRM RECEIVED */}
                     {order.status === 'Đã giao - chờ khách xác nhận' && !order.userConfirmed && (
                       <button
                         onClick={() => setRatingOrder(order)}
@@ -552,7 +547,6 @@ export default function ProfileView({
                     </a>
                   </div>
 
-                  {/* Delivery proof thumbnail (if available) */}
                   {order.deliveryProof?.image && (
                     <div className="flex flex-col items-center gap-1 flex-shrink-0">
                       <img src={order.deliveryProof.image} className="w-14 h-14 rounded-xl object-cover border-2 border-violet-300 shadow-sm" alt="Proof"/>
@@ -603,3 +597,4 @@ export default function ProfileView({
     </div>
   );
 }
+

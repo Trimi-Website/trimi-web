@@ -1,4 +1,101 @@
-import { FiRefreshCcw, FiArchive, FiPlus, FiX } from 'react-icons/fi';
+import { FiRefreshCcw, FiArchive, FiPlus, FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { useState, useRef, useEffect } from 'react';
+
+// ── Shop Banner Carousel ──────────────────────────────────────────────────────
+const BANNERS = [
+  '/shop_banner.webp',
+  '/shop_banner2.webp',
+  '/shop_banner3.webp',
+  '/shop_banner4.webp',
+  '/shop_banner5.webp',
+];
+
+function BannerCarousel() {
+  const [active, setActive] = useState(0);
+  const ref = useRef(null);
+
+  // Cập nhật chấm tròn khi người dùng tự lướt bằng tay
+  const handleScroll = () => {
+    if (!ref.current) return;
+    const idx = Math.round(ref.current.scrollLeft / ref.current.offsetWidth);
+    setActive(idx);
+  };
+
+  // Hàm cuộn đến một banner cụ thể (dùng cho nút bấm và auto-play)
+  const scrollToIndex = (index) => {
+    if (!ref.current) return;
+    // Nếu vượt quá số lượng thì quay lại từ đầu (loop)
+    const targetIndex = (index + BANNERS.length) % BANNERS.length;
+    ref.current.scrollTo({
+      left: targetIndex * ref.current.offsetWidth,
+      behavior: 'smooth'
+    });
+  };
+
+  // Auto-play: Tự động trượt mỗi 4 giây
+  useEffect(() => {
+    const timer = setInterval(() => {
+      scrollToIndex(active + 1);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [active]);
+
+  return (
+    <div className="relative w-full mb-8 group">
+      {/* Track hiển thị ảnh */}
+      <div
+        ref={ref}
+        onScroll={handleScroll}
+        className="flex w-full overflow-x-auto snap-x snap-mandatory rounded-[28px] md:rounded-[32px] custom-scrollbar-hide"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
+      >
+        {BANNERS.map((src, i) => (
+          <div
+            key={i}
+            className="flex-shrink-0 w-full snap-center h-[170px] md:h-[250px] overflow-hidden relative"
+          >
+            <img
+              src={src}
+              alt={`Banner ${i + 1}`}
+              className="w-full h-full object-cover"
+              loading={i === 0 ? 'eager' : 'lazy'}
+              onError={(e) => { e.target.src = '/shop_banner.webp'; }}
+            />
+            <div className="absolute inset-0 bg-black/5 pointer-events-none"/>
+          </div>
+        ))}
+      </div>
+
+      {/* Nút bấm Trái / Phải (Chỉ hiện trên PC khi rê chuột vào) */}
+      <button
+        onClick={() => scrollToIndex(active - 1)}
+        className="hidden md:flex absolute top-1/2 -translate-y-1/2 left-4 w-10 h-10 bg-white/70 hover:bg-white text-slate-800 rounded-full items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all cursor-pointer z-10"
+      >
+        <FiChevronLeft className="text-2xl" />
+      </button>
+      <button
+        onClick={() => scrollToIndex(active + 1)}
+        className="hidden md:flex absolute top-1/2 -translate-y-1/2 right-4 w-10 h-10 bg-white/70 hover:bg-white text-slate-800 rounded-full items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all cursor-pointer z-10"
+      >
+        <FiChevronRight className="text-2xl" />
+      </button>
+
+      {/* Dấu chấm chỉ báo (Dots) */}
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 pointer-events-none z-10">
+        {BANNERS.map((_, i) => (
+          <div
+            key={i}
+            className={`rounded-full transition-all duration-300 ${
+              i === active
+                ? 'w-5 h-2 bg-white shadow-md'
+                : 'w-2 h-2 bg-white/60'
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function ShopView({
   isDarkMode, t, t_prod, currentCategory, selectedTag, setSelectedTag,
@@ -6,22 +103,10 @@ export default function ShopView({
   navigateTo, handleAddToCart, translateTag, fakeColorSpheres,
 }) {
   return (
-    <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 py-8 md:py-10 animate-fade-in">
+    <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 pt-2 pb-8 md:pt-6 md:pb-10 animate-fade-in">
 
-      {/* SHOP BANNER */}
-      {currentCategory === 'all' && (
-        <div
-          className="w-full h-[180px] md:h-[250px] rounded-[32px] overflow-hidden mb-8 shadow-sm border border-slate-100 relative group cursor-pointer"
-          onClick={() => navigateTo('shop', 'all')}
-        >
-          <img
-            src="/shop_banner.webp"
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            alt="Shop Banner"
-          />
-          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors"></div>
-        </div>
-      )}
+      {/* SHOP BANNER CAROUSEL */}
+      {currentCategory === 'all' && <BannerCarousel />}
 
       {/* HEADER ROW: TITLE + SORT */}
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">

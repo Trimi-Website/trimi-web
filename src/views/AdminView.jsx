@@ -7,15 +7,6 @@ import {
 } from 'react-icons/fi';
 import { doc, setDoc, deleteDoc } from 'firebase/firestore';
 
-// ── Hardcoded shipper roster ──────────────────────────────────────────────────
-// email field enables the Shipper Dashboard to filter orders by login email
-const SHIPPERS = [
-  { name: 'Phạm Vũ Hoàng',    phone: '0865481225', image: '/shipper.jpg',  email: 'phanbasongtoan112@gmail.com' },
-  { name: 'Phan Bá Song Toàn', phone: '0914320196', image: '/shipper2.jpg', email: '690demonking069@gmail.com'   },
-  { name: 'Hồ Thành Tài',      phone: '0345543606', image: '/shipper3.jpg', email: ''                           },
-  { name: 'Lê Trần Bình An',   phone: '0342585006', image: '/shipper4.jpg', email: ''                           },
-];
-
 // ── Notification helper ───────────────────────────────────────────────────────
 const notifyOrderStatus = async (db, order, newStatus) => {
   if (!order?.uid) return;
@@ -41,11 +32,11 @@ const notifyOrderStatus = async (db, order, newStatus) => {
 };
 
 // ── Shipper Picker Modal ──────────────────────────────────────────────────────
-function ShipperPickerModal({ order, isDarkMode, onConfirm, onCancel }) {
+// shippers: array built from usersList where role === 'shipper', passed by AdminView
+function ShipperPickerModal({ order, isDarkMode, shippers, onConfirm, onCancel }) {
   const [selected, setSelected] = useState(
-    // Pre-select the currently assigned shipper if any
     order.shipper
-      ? SHIPPERS.findIndex(s => s.phone === order.shipper.phone)
+      ? shippers.findIndex(s => s.uid === order.shipper.uid || s.email === order.shipper.email)
       : null
   );
 
@@ -72,11 +63,17 @@ function ShipperPickerModal({ order, isDarkMode, onConfirm, onCancel }) {
           Đơn <span className="font-black text-slate-800">{order.orderId}</span> — Chọn shipper để giao hàng:
         </p>
 
-        {/* Shipper list — generous spacing */}
+        {/* Shipper list — dynamically populated from Firestore users with role==='shipper' */}
         <div className="flex flex-col gap-4 mb-10">
-          {SHIPPERS.map((shipper, idx) => (
+          {shippers.length === 0 ? (
+            <div className="text-center py-8 text-slate-400">
+              <FiTruck className="text-4xl mx-auto mb-3 opacity-40"/>
+              <p className="font-bold text-sm">Chưa có Shipper nào được cấp quyền</p>
+              <p className="text-xs mt-1 opacity-60">Vào tab Phân quyền để cấp quyền Shipper theo UID</p>
+            </div>
+          ) : shippers.map((shipper, idx) => (
             <button
-              key={idx}
+              key={shipper.uid || idx}
               onClick={() => setSelected(idx)}
               className={`flex items-center gap-5 p-5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
                 selected === idx
@@ -86,18 +83,17 @@ function ShipperPickerModal({ order, isDarkMode, onConfirm, onCancel }) {
             >
               {/* Avatar */}
               <div className="relative flex-shrink-0">
-                <img
-                  src={shipper.image}
-                  alt={shipper.name}
-                  className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-md"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
-                />
-                <div className="w-16 h-16 rounded-full bg-sky-500 text-white hidden items-center justify-center text-2xl font-black border-2 border-white shadow-md">
-                  {shipper.name.charAt(0)}
-                </div>
+                {shipper.avatar ? (
+                  <img
+                    src={shipper.avatar}
+                    alt={shipper.name}
+                    className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-md"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-sky-500 text-white flex items-center justify-center text-2xl font-black border-2 border-white shadow-md">
+                    {(shipper.name || shipper.nickname || '?').charAt(0).toUpperCase()}
+                  </div>
+                )}
                 {selected === idx && (
                   <span className="absolute -bottom-1 -right-1 w-6 h-6 bg-sky-500 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
                     <FiCheck className="text-white text-xs"/>
@@ -107,8 +103,9 @@ function ShipperPickerModal({ order, isDarkMode, onConfirm, onCancel }) {
 
               {/* Info */}
               <div className="flex-1">
-                <p className="font-black text-slate-900 text-base">{shipper.name}</p>
-                <p className="text-sky-500 font-bold text-sm mt-1">{shipper.phone}</p>
+                <p className="font-black text-slate-900 text-base">{shipper.name || shipper.nickname}</p>
+                {shipper.phone && <p className="text-sky-500 font-bold text-sm mt-1">{shipper.phone}</p>}
+                {shipper.email && <p className="text-slate-400 text-xs mt-0.5">{shipper.email}</p>}
               </div>
             </button>
           ))}
@@ -120,10 +117,10 @@ function ShipperPickerModal({ order, isDarkMode, onConfirm, onCancel }) {
             Hủy
           </button>
           <button
-            onClick={() => selected !== null && onConfirm(SHIPPERS[selected])}
-            disabled={selected === null}
+            onClick={() => selected !== null && onConfirm(shippers[selected])}
+            disabled={selected === null || shippers.length === 0}
             className={`flex-grow py-4 rounded-full font-bold text-white transition-colors flex items-center justify-center gap-2 cursor-pointer text-sm ${
-              selected !== null
+              selected !== null && shippers.length > 0
                 ? 'bg-sky-500 hover:bg-sky-600 shadow-lg shadow-sky-200'
                 : 'bg-slate-200 text-slate-400 cursor-not-allowed'
             }`}
@@ -142,37 +139,50 @@ function ShipperPickerModal({ order, isDarkMode, onConfirm, onCancel }) {
 function AnalyticsTab({ adminOrders, setPreviewImg }) {
   const [chartPeriod, setChartPeriod] = useState('day');
 
+  // Use ALL orders for total revenue display (including deposits on partial orders)
+  // For completed orders chart we use 'Hoàn thành' status
   const completedOrders = adminOrders.filter(o => o.status === 'Hoàn thành' && o.createdAt);
 
-  const fmt = {
-    day:   (ts) => new Date(ts).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
-    month: (ts) => new Date(ts).toLocaleDateString('vi-VN', { month: '2-digit', year: 'numeric' }),
+  // ── Date key formatters ───────────────────────────────────────────────────
+  // Returns a YYYY-MM-DD / YYYY-MM / YYYY key for reliable sorting
+  const fmtKey = {
+    day:   (ts) => {
+      const d = new Date(ts);
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    },
+    month: (ts) => {
+      const d = new Date(ts);
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    },
     year:  (ts) => new Date(ts).getFullYear().toString(),
+  };
+
+  // Display label (localized) — separate from the sort key
+  const fmtLabel = {
+    day:   (key) => { const [y,m,d] = key.split('-'); return `${d}/${m}`; },
+    month: (key) => { const [y,m]   = key.split('-'); return `${m}/${y.slice(2)}`; },
+    year:  (key) => key,
   };
 
   const buckets = {};
   completedOrders.forEach(o => {
-    const key = fmt[chartPeriod](o.createdAt);
+    const key = fmtKey[chartPeriod](o.createdAt);
     if (!buckets[key]) buckets[key] = { revenue: 0, items: 0, orders: 0 };
-    buckets[key].revenue += Number(o.paidAmount) || 0;
+    // Use totalAmount (full order value) for accurate revenue; fall back to paidAmount
+    buckets[key].revenue += Number(o.totalAmount || o.finalAmount || o.paidAmount) || 0;
     buckets[key].items   += (o.items || []).reduce((s, i) => s + (Number(i.quantity) || 1), 0);
     buckets[key].orders  += 1;
   });
 
   const MAX_BARS = chartPeriod === 'year' ? 5 : chartPeriod === 'month' ? 6 : 14;
-  const sortedKeys = Object.keys(buckets).sort((a, b) => {
-    const parse = s => {
-      const p = s.split('/');
-      if (p.length === 2 && p[0].length === 2) return new Date(`20${p[1].slice(-2)}-${p[0]}-01`).getTime();
-      if (p.length === 3) return new Date(`${p[2]}-${p[1]}-${p[0]}`).getTime();
-      return parseInt(s);
-    };
-    return parse(a) - parse(b);
-  }).slice(-MAX_BARS);
+  // Keys are now ISO-format so lexicographic sort = chronological sort
+  const sortedKeys = Object.keys(buckets).sort().slice(-MAX_BARS);
 
-  const data = sortedKeys.map(k => ({ label: k, ...buckets[k] }));
+  const data = sortedKeys.map(k => ({ label: fmtLabel[chartPeriod](k), ...buckets[k] }));
   const maxRevenue = Math.max(...data.map(d => d.revenue), 1);
-  const totalRevenue = completedOrders.reduce((s, o) => s + (Number(o.paidAmount) || 0), 0);
+
+  // All-time totals use totalAmount across ALL completed orders
+  const totalRevenue = completedOrders.reduce((s, o) => s + (Number(o.totalAmount || o.finalAmount || o.paidAmount) || 0), 0);
   const totalItems   = completedOrders.reduce((s, o) => s + (o.items || []).reduce((x, i) => x + (Number(i.quantity) || 1), 0), 0);
 
   return (
@@ -225,34 +235,38 @@ function AnalyticsTab({ adminOrders, setPreviewImg }) {
       ) : (
         <div className="w-full overflow-x-auto">
           <div className="min-w-[460px]">
-            <div className="flex gap-2 items-end h-52">
+            {/* FIX: Use items-stretch so bars area inherits the h-52 height properly */}
+            <div className="flex gap-2 h-52">
               {/* Y-axis */}
               <div className="flex flex-col justify-between h-full text-right pr-2 flex-shrink-0 w-20">
                 {[1, 0.75, 0.5, 0.25, 0].map(frac => (
                   <span key={frac} className="text-[10px] text-slate-400 font-medium leading-none">
-                    {Math.round(maxRevenue * frac / 1000)}k
+                    {maxRevenue >= 1000
+                      ? `${Math.round(maxRevenue * frac / 1000)}k`
+                      : Math.round(maxRevenue * frac)}
                   </span>
                 ))}
               </div>
-              {/* Bars area */}
-              <div className="flex-1 relative">
+              {/* Bars area — FIX: explicit h-52 so percentage heights resolve correctly */}
+              <div className="flex-1 relative h-52">
                 <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
                   {[0, 0.25, 0.5, 0.75, 1].map(f => (
                     <div key={f} className="border-t border-slate-100 w-full"/>
                   ))}
                 </div>
+                {/* FIX: items-end anchors bars to the bottom of the h-52 container */}
                 <div className="flex items-end gap-1.5 h-full relative z-10 px-1">
                   {data.map((d, idx) => {
-                    const pct = (d.revenue / maxRevenue) * 100;
+                    const pct = Math.max((Number(d.revenue) / maxRevenue) * 100, 2);
                     return (
                       <div key={idx} className="flex flex-col items-center flex-1 h-full justify-end group relative">
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-full mb-1 bg-slate-900 text-white text-[10px] font-bold rounded-lg px-2 py-1 whitespace-nowrap pointer-events-none z-20 shadow-lg">
-                          {d.revenue.toLocaleString('vi-VN')}đ<br/>
+                          {Number(d.revenue).toLocaleString('vi-VN')}đ<br/>
                           {d.orders} đơn · {d.items} sp
                         </div>
                         <div
                           className="w-full rounded-t-lg bg-gradient-to-t from-sky-600 to-sky-400 hover:from-sky-500 hover:to-sky-300 transition-all shadow-sm cursor-default"
-                          style={{ height: `${Math.max(pct, 2)}%`, minHeight: '4px' }}
+                          style={{ height: `${pct}%` }}
                         />
                       </div>
                     );
@@ -318,6 +332,36 @@ export default function AdminView({
   const [grantUid, setGrantUid] = useState('');
   const [grantLoading, setGrantLoading] = useState(false);
 
+  // ── Shipper list: hardcoded base + dynamic from Firestore users ─────────────
+  // Hardcoded entries are ALWAYS kept; users granted role='shipper' via UID
+  // are appended automatically, deduped by uid/email.
+  const HARDCODED_SHIPPERS = [
+    { name: 'Phạm Vũ Hoàng',    phone: '0865481225', avatar: '/shipper.jpg',  email: '690demonking069@gmail.com', uid: 'wqlPu6ZOUyaiu77195MXPnEf67g2' },
+    { name: 'Phan Bá Song Toàn', phone: '0914320196', avatar: '/shipper2.jpg', email: 'phanbasongtoan112@gmail.com',   uid: '' },
+    { name: 'Hồ Thành Tài',      phone: '0345543606', avatar: '/shipper3.jpg', email: '',                            uid: '' },
+    { name: 'Lê Trần Bình An',   phone: '0342585006', avatar: '/shipper4.jpg', email: '',                            uid: '' },
+  ];
+
+  const dynamicFromFirestore = (usersList || [])
+    .filter(u => u.role === 'shipper')
+    .map(u => ({
+      uid:    u.uid,
+      name:   u.nickname || u.email?.split('@')[0] || 'Shipper',
+      email:  u.email    || '',
+      phone:  u.phone    || '',
+      avatar: u.avatar   || '',
+    }));
+
+  // Merge: keep all hardcoded, append Firestore shippers not already represented
+  const dynamicShippers = [
+    ...HARDCODED_SHIPPERS,
+    ...dynamicFromFirestore.filter(
+      d => !HARDCODED_SHIPPERS.some(
+        h => (d.uid && h.uid === d.uid) || (d.email && h.email === d.email)
+      )
+    ),
+  ];
+
   // ── Grant shipper role by UID ─────────────────────────────────────────────
   const handleGrantShipper = async () => {
     const uid = grantUid.trim();
@@ -354,15 +398,14 @@ export default function AdminView({
   // ── Called when admin picks a shipper ─────────────────────────────────────
   const handleShipperConfirm = async (shipper) => {
     const { order, pendingStatus } = shipperPickerCtx;
-    // Find the matching user in usersList to get their Firebase UID
     await setDoc(doc(db, 'orders', order.id), {
       status: pendingStatus,
       shipper: {
-        name:  shipper.name,
-        phone: shipper.phone,
-        image: shipper.image,
-        email: shipper.email || '',
-        uid:   shipper.uid   || '',   // ← primary filter key for ShipperView
+        name:   shipper.name   || '',
+        phone:  shipper.phone  || '',
+        email:  shipper.email  || '',
+        uid:    shipper.uid    || '',
+        image:  shipper.avatar || '', // field name 'image' kept for ProfileView compat
       },
     }, { merge: true });
     await notifyOrderStatus(db, order, pendingStatus);
@@ -378,6 +421,7 @@ export default function AdminView({
         <ShipperPickerModal
           order={shipperPickerCtx.order}
           isDarkMode={isDarkMode}
+          shippers={dynamicShippers}
           onConfirm={handleShipperConfirm}
           onCancel={() => setShipperPickerCtx(null)}
         />

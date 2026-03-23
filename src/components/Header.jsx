@@ -11,8 +11,10 @@ export default function Header({
   setIsCartOpen, setIsUnifiedMenuOpen, setIsHelpOpen,
   displayedProducts, t_prod,
   user,
-  requireLogin,   // ← NEW: needed for profile button
-  avatarUrl,      // ← NEW: shows user's avatar if available
+  requireLogin,    // ← needed for profile button
+  avatarUrl,       // ← shows user's avatar if available
+  onAcceptFriend,  // ← passed through to NotificationBell
+  onDeclineFriend, // ← passed through to NotificationBell
 }) {
   const handleSearchChange = (value) => {
     setSearchQuery(value);
@@ -85,34 +87,34 @@ export default function Header({
           {/* RIGHT: Chat (mobile) + Cart + Bell + Profile + Desktop menu */}
           <div className="flex items-center gap-1 md:gap-1.5 text-sm font-semibold text-slate-700 flex-shrink-0 relative z-[1001]">
 
-            {/* Chat — mobile only */}
+            {/* Chat — DESKTOP only (mobile version lives in BottomNav) */}
             {!isMobileSearchOpen && (
-              <button aria-label="Mở hỗ trợ chat" onClick={() => setIsHelpOpen(true)} className={`md:hidden p-1 transition-colors relative cursor-pointer ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`}>
+              <button aria-label="Mở hỗ trợ chat" onClick={() => setIsHelpOpen(true)} className={`hidden md:block p-1 transition-colors relative cursor-pointer ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`}>
                 <FiMessageCircle className="text-[22px]" />
                 {(!isAdmin && hasUnreadUser) && <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 border border-white rounded-full"></span>}
                 {(isAdmin && totalAdminUnread > 0) && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">{totalAdminUnread}</span>}
               </button>
             )}
 
-            {/* Cart */}
-            <div aria-label="Mở giỏ hàng" className={`flex items-center gap-2 cursor-pointer transition-colors relative group p-1 md:p-2 ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`} onClick={() => setIsCartOpen(true)}>
+            {/* Cart — visible on all screens */}
+            <div aria-label="Mở giỏ hàng" className={`hidden md:flex items-center gap-2 cursor-pointer transition-colors relative group p-1 md:p-2 ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`} onClick={() => setIsCartOpen(true)}>
               <div id="header-cart-icon" className="relative transition-transform duration-300">
                 <FiShoppingCart className={`${currentView === 'home' ? 'text-xl' : 'text-2xl'}`}/>
                 {cartItemCount > 0 && <span className="absolute -top-1 -right-2 bg-sky-500 text-white w-4 h-4 flex items-center justify-center text-[10px] font-bold rounded-full shadow-sm border border-white">{cartItemCount}</span>}
               </div>
             </div>
 
-            {/* Notification Bell */}
-            <NotificationBell user={user} isAdmin={isAdmin} isDarkMode={isDarkMode} />
+            {/* Notification Bell — DESKTOP only (mobile version lives in BottomNav) */}
+            <div className="hidden md:block">
+              <NotificationBell user={user} isAdmin={isAdmin} isDarkMode={isDarkMode} onAcceptFriend={onAcceptFriend} onDeclineFriend={onDeclineFriend} />
+            </div>
 
-            {/* ── PROFILE BUTTON ──────────────────────────────────────────
-                Shows the user's avatar (or a FiUser icon if no avatar).
-                Visible on all screen sizes — direct one-tap access to profile. */}
+            {/* Profile avatar — DESKTOP only (Account tab in BottomNav on mobile) */}
             {user && (
               <button
                 aria-label="Tài khoản"
                 onClick={() => requireLogin(() => navigateTo('profile'))}
-                className={`p-1 md:p-1.5 transition-colors cursor-pointer relative flex items-center justify-center ${
+                className={`hidden md:flex p-1 md:p-1.5 transition-colors cursor-pointer relative items-center justify-center ${
                   currentView === 'profile'
                     ? isDarkMode ? 'text-sky-400' : 'text-sky-600'
                     : isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'
@@ -123,15 +125,12 @@ export default function Header({
                     src={avatarUrl}
                     alt="Tài khoản"
                     className={`w-7 h-7 md:w-8 md:h-8 rounded-full object-cover border-2 transition-colors ${
-                      currentView === 'profile'
-                        ? 'border-sky-500'
-                        : isDarkMode ? 'border-slate-600' : 'border-slate-300'
+                      currentView === 'profile' ? 'border-sky-500' : isDarkMode ? 'border-slate-600' : 'border-slate-300'
                     }`}
                   />
                 ) : (
                   <FiUser className="text-xl md:text-2xl"/>
                 )}
-                {/* Active indicator dot */}
                 {currentView === 'profile' && (
                   <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-sky-500 rounded-full"></span>
                 )}
@@ -145,8 +144,8 @@ export default function Header({
           </div>
         </div>
 
-        {/* ── CATEGORY SUB-NAV ── */}
-        <div className={`overflow-hidden transition-all duration-500 ${currentView === 'home' ? 'max-h-0 opacity-0' : 'max-h-[50px] opacity-100'}`}>
+        {/* ── CATEGORY SUB-NAV — desktop only; mobile version lives in UnifiedMenu ── */}
+        <div className={`hidden md:block overflow-hidden transition-all duration-500 ${currentView === 'home' ? 'max-h-0 opacity-0' : 'max-h-[50px] opacity-100'}`}>
           <nav className="flex overflow-x-auto custom-scrollbar lg:justify-center gap-6 md:gap-2 text-[11px] md:text-[13px] font-bold text-slate-500 uppercase tracking-widest border-t border-slate-100 relative z-30 pb-2 md:pb-0 pt-2 md:pt-0 whitespace-nowrap">
             <div className="relative group cursor-pointer flex-shrink-0">
               <button onClick={() => navigateTo('shop', 'all')} className={`md:px-6 md:py-4 border-b-2 transition-colors uppercase ${currentView === 'shop' && currentCategory === 'all' ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>

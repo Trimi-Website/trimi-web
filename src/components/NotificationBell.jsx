@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
-import { FiBell, FiShoppingBag, FiMessageCircle, FiPackage, FiCheck, FiTrash2 } from 'react-icons/fi';
+import { FiBell, FiShoppingBag, FiMessageCircle, FiPackage, FiCheck, FiTrash2, FiUserPlus, FiUserCheck, FiX } from 'react-icons/fi';
 import { db } from '../firebase';
-import { collection, onSnapshot, doc, setDoc, writeBatch } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 
 const TYPE_META = {
-  new_order:    { icon: FiShoppingBag,   color: 'text-sky-500',    bg: 'bg-sky-50',    border: 'border-sky-100'    },
-  new_message:  { icon: FiMessageCircle, color: 'text-violet-500', bg: 'bg-violet-50', border: 'border-violet-100' },
-  order_status: { icon: FiPackage,       color: 'text-amber-500',  bg: 'bg-amber-50',  border: 'border-amber-100'  },
+  new_order:      { icon: FiShoppingBag,   color: 'text-sky-500',      bg: 'bg-sky-50',      border: 'border-sky-100'      },
+  new_message:    { icon: FiMessageCircle, color: 'text-violet-500',   bg: 'bg-violet-50',   border: 'border-violet-100'   },
+  order_status:   { icon: FiPackage,       color: 'text-amber-500',    bg: 'bg-amber-50',    border: 'border-amber-100'    },
+  friend_request: { icon: FiUserPlus,      color: 'text-emerald-500',  bg: 'bg-emerald-50',  border: 'border-emerald-100'  },
 };
 
 function timeAgo(ts) {
@@ -20,9 +21,10 @@ function timeAgo(ts) {
   return `${Math.floor(h / 24)} ngày trước`;
 }
 
-export default function NotificationBell({ user, isAdmin, isDarkMode }) {
+export default function NotificationBell({ user, isAdmin, isDarkMode, onAcceptFriend, onDeclineFriend }) {
   // Two separate maps: admin bucket + uid bucket (merged for admin users)
-  const [notifsByBucket, setNotifsByBucket] = useState({ admin: [], uid: [] });
+  const [adminNotifs, setAdminNotifs] = useState([]);
+  const [uidNotifs, setUidNotifs] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -35,7 +37,7 @@ export default function NotificationBell({ user, isAdmin, isDarkMode }) {
     const unsub = onSnapshot(ref, (snap) => {
       const items = [];
       snap.forEach(d => items.push({ id: d.id, _bucket: 'uid', ...d.data() }));
-      setNotifsByBucket(prev => ({ ...prev, uid: items }));
+      setUidNotifs(items);
     }, (err) => console.error('[Bell] uid bucket error:', err));
     return () => unsub();
   }, [userUid]);
@@ -43,23 +45,22 @@ export default function NotificationBell({ user, isAdmin, isDarkMode }) {
   // ── Subscribe to ADMIN bucket (admin users only) ──────────────────────────
   useEffect(() => {
     if (!isAdmin) {
-      // Clear admin bucket when not admin
-      setNotifsByBucket(prev => ({ ...prev, admin: [] }));
+      setAdminNotifs([]);
       return;
     }
     const ref = collection(db, 'notifications', 'admin', 'items');
     const unsub = onSnapshot(ref, (snap) => {
       const items = [];
       snap.forEach(d => items.push({ id: d.id, _bucket: 'admin', ...d.data() }));
-      setNotifsByBucket(prev => ({ ...prev, admin: items }));
+      setAdminNotifs(items);
     }, (err) => console.error('[Bell] admin bucket error:', err));
     return () => unsub();
   }, [isAdmin]);
 
   // ── Merge + deduplicate both buckets, sorted newest first ─────────────────
   const notifications = [
-    ...notifsByBucket.admin,
-    ...notifsByBucket.uid,
+    ...adminNotifs,
+    ...uidNotifs,
   ]
     .filter((n, idx, arr) => arr.findIndex(x => x.id === n.id && x._bucket === n._bucket) === idx)
     .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
@@ -104,6 +105,18 @@ export default function NotificationBell({ user, isAdmin, isDarkMode }) {
   };
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  // ── Broadcast unread count so BottomNav badge stays in sync ─────────────
+  useEffect(() => {
+    document.dispatchEvent(new CustomEvent('trimi:bell-count', { detail: unreadCount }));
+  }, [unreadCount]);
+
+  // ── Listen for open-bell event fired by BottomNav bell button ────────────
+  useEffect(() => {
+    const handler = () => setIsOpen(true);
+    document.addEventListener('trimi:open-bell', handler);
+    return () => document.removeEventListener('trimi:open-bell', handler);
+  }, []);
 
   if (!user) return null;
 
@@ -181,36 +194,106 @@ export default function NotificationBell({ user, isAdmin, isDarkMode }) {
               notifications.map(n => {
                 const meta = TYPE_META[n.type] || TYPE_META.order_status;
                 const Icon = meta.icon;
+                const isFriendReq = n.type === 'friend_request' && n.fromUid;
                 return (
                   <div
                     key={`${n._bucket}-${n.id}`}
-                    onClick={() => markRead(n)}
-                    className={`flex gap-3 px-4 py-3.5 cursor-pointer transition-colors border-b last:border-0 ${
+                    onClick={() => {
+                      if (!isFriendReq) {
+                        markRead(n);
+                        if (n.type === 'order_status' || n.type === 'new_order') {
+                          setIsOpen(false);
+                          window.history.pushState({ view: 'profile', category: 'all' }, '', '?view=profile');
+                          window.dispatchEvent(new PopStateEvent('popstate', { state: { view: 'profile', category: 'all' } }));
+                          
+                          setTimeout(() => {
+                            // Cố gắng tìm phần tử đơn hàng có ID khớp với mã đơn (Vd: id="order-TRIMI12345")
+                            const orderEl = document.getElementById(`order-${n.orderId}`) || document.getElementById(n.orderId);
+                            if (orderEl) {
+                              orderEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                              // Hiệu ứng nháy viền xanh để user biết mình đang xem đơn nào
+                              orderEl.classList.add('ring-4', 'ring-sky-500', 'transition-all');
+                              setTimeout(() => orderEl.classList.remove('ring-4', 'ring-sky-500'), 2500);
+                            } else {
+                              // Nếu chưa tìm thấy (do mạng chậm/DOM chưa load kịp), ở yên vị trí an toàn trên cùng chứ ko tụt đáy
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }
+                          }, 800);
+                        }
+                      }
+                    }}
+                    className={`flex gap-3 px-4 py-3.5 transition-colors border-b last:border-0 ${
+                      isFriendReq ? '' : 'cursor-pointer'
+                    } ${
                       isDarkMode ? 'border-slate-700/50' : 'border-slate-50'
                     } ${
                       !n.isRead
-                        ? isDarkMode ? 'bg-sky-500/5 hover:bg-sky-500/10' : 'bg-sky-50/60 hover:bg-sky-50'
-                        : isDarkMode ? 'hover:bg-white/5' : 'hover:bg-slate-50'
+                        ? isDarkMode ? 'bg-sky-500/5' : 'bg-sky-50/60'
+                        : isDarkMode ? '' : ''
                     }`}
                   >
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border ${meta.bg} ${meta.border}`}>
-                      <Icon className={`text-lg ${meta.color}`}/>
-                    </div>
+                    {/* Avatar or icon */}
+                    {isFriendReq && n.fromAvatar ? (
+                      <img 
+                        src={n.fromAvatar} 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          document.dispatchEvent(new CustomEvent('trimi:open-profile', { detail: { uid: n.fromUid, nickname: n.fromName, avatar: n.fromAvatar } }));
+                          setIsOpen(false);
+                        }}
+                        className="w-10 h-10 rounded-full object-cover flex-shrink-0 border-2 border-emerald-200 cursor-pointer hover:opacity-80" 
+                        alt=""
+                      />
+                    ) : (
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border ${meta.bg} ${meta.border}`}>
+                        <Icon className={`text-lg ${meta.color}`}/>
+                      </div>
+                    )}
+
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
-                        <p className={`text-sm font-bold leading-snug line-clamp-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                        <p className={`text-sm font-bold leading-snug ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                           {n.title}
                         </p>
-                        {!n.isRead && <span className="w-2 h-2 rounded-full bg-sky-500 flex-shrink-0 mt-1"></span>}
+                        {!n.isRead && !isFriendReq && <span className="w-2 h-2 rounded-full bg-sky-500 flex-shrink-0 mt-1"></span>}
                       </div>
                       {n.body && (
                         <p className={`text-xs mt-0.5 line-clamp-2 leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                           {n.body}
                         </p>
                       )}
-                      <p className={`text-[10px] mt-1.5 font-medium ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                      <p className={`text-[10px] mt-1 font-medium ${isDarkMode ? 'text-slate-600' : 'text-slate-400'}`}>
                         {timeAgo(n.createdAt)}
                       </p>
+
+                      {/* ── Inline Accept / Decline for friend requests ── */}
+                      {isFriendReq && (
+                        <div className="flex gap-2 mt-2.5">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onAcceptFriend?.(n.fromUid);
+                              markRead(n);
+                            }}
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black transition-colors cursor-pointer"
+                          >
+                            <FiUserCheck className="text-xs"/> Chấp nhận
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDeclineFriend?.(n.fromUid);
+                            }}
+                            className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-black transition-colors cursor-pointer ${
+                              isDarkMode
+                                ? 'bg-slate-700 hover:bg-slate-600 text-slate-300'
+                                : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                            }`}
+                          >
+                            <FiX className="text-xs"/> Từ chối
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );

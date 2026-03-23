@@ -14,7 +14,7 @@ export default function CheckoutModal({
   const finalPayAmount = paymentMode === 'deposit' ? depositAmount : cartFinalTotal;
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 md:p-6 animate-fade-in">
+    <div className="fixed inset-0 z-[80000] flex items-center justify-center p-4 pb-[85px] md:p-6 md:pb-6 animate-fade-in">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"
