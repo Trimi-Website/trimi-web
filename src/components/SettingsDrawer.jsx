@@ -8,6 +8,7 @@ export default function SettingsDrawer({
   setNickname, setPhone, setAddress, setDistrict,
   handleThemeToggle, setLang, showToast,
   daNangDistricts, db,
+  littleTrimiConfig, updateLittleTrimiConfig
 }) {
   if (!isSettingsDrawerOpen || !isAuthenticated || !user) return null;
 
@@ -63,7 +64,50 @@ export default function SettingsDrawer({
 
         {/* ── BODY ── */}
         <div className="flex-grow p-6 flex flex-col gap-8">
+        {/* ── LITTLE TRIMI CUSTOMIZATION ─── */}
+          <div className="p-5 bg-slate-50 dark:bg-[#111111] rounded-3xl border border-slate-100 dark:border-white/10 mt-2">
+            <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full magic-sphere effect-${littleTrimiConfig.effect}`} /> Customize Little Trimi
+            </p>
 
+            {/* Màu sắc & Hiệu ứng */}
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Màu quả cầu</label>
+                <div className={`flex items-center gap-2 rounded-xl p-1 border ${isDarkMode ? 'bg-black/30 border-white/10' : 'bg-white border-black/10'}`}>
+                  <input 
+                    type="color" 
+                    value={littleTrimiConfig.color}
+                    onChange={(e) => updateLittleTrimiConfig({ color: e.target.value })}
+                    className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0"
+                  />
+                  <span className="text-[10px] font-mono text-slate-500">{littleTrimiConfig.color}</span>
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Hiệu ứng</label>
+                <select 
+                  value={littleTrimiConfig.effect}
+                  onChange={(e) => updateLittleTrimiConfig({ effect: e.target.value })}
+                  className={`w-full border rounded-xl px-3 py-2 outline-none focus:border-sky-500 text-xs font-bold ${isDarkMode ? 'bg-black/30 border-white/10' : 'bg-white border-black/10'}`}
+                >
+                  <option value="spin">Xoay gradient</option>
+                  <option value="wave">Sóng dâng</option>
+                  <option value="relax">Lướt nhẹ</option>
+                  <option value="heartbeat">Nhịp tim đập</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Minh họa */}
+            <div className="text-center pt-3 border-t border-slate-200 dark:border-white/10">
+              <p className="text-[10px] font-bold text-slate-400 mb-3 uppercase tracking-widest">Minh họa trực tiếp</p>
+              <div className="flex justify-center items-center h-16">
+                <div className={`w-12 h-12 rounded-full magic-sphere effect-${littleTrimiConfig.effect}`} />
+              </div>
+              <p className="text-[9px] text-slate-400 mt-2">Kéo thả quả cầu ở đáy màn hình để xem nha!</p>
+            </div>
+          </div>
           {/* BLOCK 1: Personal info */}
           <div>
             <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">

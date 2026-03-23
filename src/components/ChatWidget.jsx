@@ -153,7 +153,7 @@ export default function ChatWidget({
 
       {/* ── USER: HELP HUB ── */}
       {!isAdmin && isHelpOpen && !isChatBoxOpen && (
-        <div className={`relative bg-white flex flex-col overflow-hidden border border-slate-200 animate-fade-in-up ${'w-full h-full md:w-[340px] md:h-auto md:max-h-[70vh] md:rounded-2xl md:shadow-[0_10px_40px_rgba(0,0,0,0.15)] md:mb-4 md:origin-bottom-right'}`}>
+        <div className={`relative bg-white flex flex-col overflow-hidden border border-slate-200 animate-fade-in-up ${'w-full h-full pb-[75px] md:pb-0 md:w-[340px] md:h-auto md:max-h-[70vh] md:rounded-2xl md:shadow-[0_10px_40px_rgba(0,0,0,0.15)] md:mb-4 md:origin-bottom-right'}`}>
           <div className="bg-slate-900 text-white p-5 pr-4 flex justify-between items-start flex-shrink-0">
             <div>
               <h2 className="font-bold text-[17px] mb-1">{t('chatHelp')}</h2>
@@ -268,7 +268,7 @@ export default function ChatWidget({
       {/* ── CHAT BOX ── */}
       {isChatBoxOpen && activeChatTarget && (
         <div className={`relative bg-white overflow-hidden border border-slate-200 animate-fade-in-up flex flex-col ${
-          'w-full h-full md:w-[340px] md:h-[480px] md:rounded-2xl md:shadow-[0_10px_40px_rgba(0,0,0,0.15)] md:mb-4 md:origin-bottom-right'
+          'w-full h-full pb-[75px] md:pb-0 md:w-[340px] md:h-[480px] md:rounded-2xl md:shadow-[0_10px_40px_rgba(0,0,0,0.15)] md:mb-4 md:origin-bottom-right'
         }`} style={{ isolation: 'isolate' }}>
           {/* Header */}
           <div className="bg-slate-900 text-white px-4 py-3 flex justify-between items-center flex-shrink-0 md:rounded-t-2xl shadow-md z-10">
@@ -377,7 +377,7 @@ export default function ChatWidget({
               onChange={e => setChatInput(e.target.value)}
               onKeyPress={e => e.key === 'Enter' && handleUserSendMessage()}
               placeholder={t('chatInput')}
-              className="flex-grow bg-slate-100 text-slate-800 rounded-full px-4 py-2.5 text-sm outline-none focus:ring-1 focus:ring-slate-300 min-w-0"
+              className="flex-grow bg-slate-100 text-slate-800 rounded-full px-4 py-2.5 text-[16px] md:text-sm outline-none focus:ring-1 focus:ring-slate-300 min-w-0"
             />
             <button
               onClick={handleUserSendMessage}

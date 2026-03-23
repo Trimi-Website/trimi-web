@@ -190,6 +190,7 @@ export default function UnifiedMenuDrawer({
   onAcceptFriend, onDeclineFriend, onAddFriend,
   // ── NEW: guest login ──
   setShowLoginModal,
+  littleTrimiConfig, updateLittleTrimiConfig
 }) {
   if (!isUnifiedMenuOpen) return null;
   const [sentRequests, setSentRequests] = useState([]); 
@@ -250,7 +251,39 @@ export default function UnifiedMenuDrawer({
 
         {/* ── MENU BODY ── */}
         <div className="flex-grow flex flex-col px-5 py-4 gap-1.5">
-
+          {/* ── LITTLE TRIMI CUSTOMIZATION Ở TRONG MENU ─── */}
+          {littleTrimiConfig && updateLittleTrimiConfig && (
+            <div className={`mt-4 p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+              <p className="text-[11px] font-black text-sky-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Màu sắc</label>
+                  <div className={`flex items-center gap-2 rounded-xl p-1 border ${isDarkMode ? 'bg-black/30 border-white/10' : 'bg-white border-black/10'}`}>
+                    <input 
+                      type="color" 
+                      value={littleTrimiConfig.color}
+                      onChange={(e) => updateLittleTrimiConfig({ color: e.target.value })}
+                      className="w-full h-8 rounded-lg cursor-pointer bg-transparent border-0"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Hiệu ứng</label>
+                  <select 
+                    value={littleTrimiConfig.effect}
+                    onChange={(e) => updateLittleTrimiConfig({ effect: e.target.value })}
+                    className={`w-full border rounded-xl px-2 py-2 outline-none focus:border-sky-500 text-xs font-bold ${isDarkMode ? 'bg-black/30 border-white/10' : 'bg-white border-black/10'}`}
+                  >
+                    <option value="spin">Xoay tròn</option>
+                    <option value="wave">Sóng dâng</option>
+                    <option value="relax">Lướt nhẹ</option>
+                    <option value="heartbeat">Nhịp đập</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
           {/* SECTION: Display */}
           <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 mt-2 ml-1">Giao diện</p>
           <div className="grid grid-cols-2 gap-3">

@@ -16,7 +16,7 @@ export default function CartModal({
       {/* Mobile: full-screen backdrop to close on tap outside */}
       <div
         className="absolute inset-0 bg-black/30 md:hidden pointer-events-auto"
-        onClick={() => setIsCartOpen(false)}
+        onClick={() => navigateTo('shop', 'all')}
       ></div>
 
       {/* Cart panel

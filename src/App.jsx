@@ -42,6 +42,7 @@ import AdminProductModals from './components/AdminProductModals';
 import InfoModals from './components/InfoModals';
 
 // Views
+import FriendsView from "./views/FriendsView";
 import HomeView from './views/HomeView';
 import ShopView from './views/ShopView';
 import ProductDetailView from './views/ProductDetailView';
@@ -68,6 +69,20 @@ export default function App() {
   const [district, setDistrict] = useState('Hải Châu');
   const [friendsList, setFriendsList] = useState([]);
   const [pendingRequests, setPendingRequests] = useState([]); // incoming friend requests
+
+  // ─── THÊM CẤU HÌNH CHO LITTLE TRIMI ───
+  const [littleTrimiConfig, setLittleTrimiConfig] = useState({
+    color: localStorage.getItem('trimi_sphere_color') || '#d946ef', // Màu mặc định
+    effect: localStorage.getItem('trimi_sphere_effect') || 'spin'    // Hiệu ứng mặc định: 'spin', 'wave', 'heartbeat', 'relax'
+  });
+
+  // Hàm để lưu cấu hình vào localStorage (Chuyền hàm này xuống SettingsDrawer)
+  const updateLittleTrimiConfig = (newConfig) => {
+    const config = { ...littleTrimiConfig, ...newConfig };
+    setLittleTrimiConfig(config);
+    if (config.color) localStorage.setItem('trimi_sphere_color', config.color);
+    if (config.effect) localStorage.setItem('trimi_sphere_effect', config.effect);
+  };
 
   // ─── NAVIGATION ───────────────────────────────────────────────────────────
   const [currentView, setCurrentView] = useState('home');
@@ -500,7 +515,22 @@ export default function App() {
   const requireLogin = (action) => { if (!isAuthenticated) { setShowLoginModal(true); return; } action(); };
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
+  // ── 1. THÊM HÀM ĐÓNG SẠCH SẼ MỌI MODAL/TAB ĐANG MỞ ───
+  const closeAllModals = () => {
+    setIsCartOpen(false);
+    setIsChatBoxOpen(false); 
+    setIsHelpOpen(false);     
+    setShowFriendsModal(false);
+    setIsUnifiedMenuOpen(false); 
+    setIsSettingsDrawerOpen(false);
+  };
+
   const navigateTo = (view, category = 'all', product = null) => {
+    closeAllModals(); // Gọi hàm dọn dẹp ở đây
+    setIsCartOpen(false);
+    setIsChatBoxOpen(false);
+    setShowFriendsModal(false);
+
     // ── Home → Shop: circular bloom identical to the theme toggle ─────────
     if (currentView === 'home' && view === 'shop') {
       const x = lastClickPos.current.x;
@@ -986,6 +1016,50 @@ export default function App() {
   return (
     <>
       <style>{`
+                    /* ── 1. CÁC HIỆU ỨNG CỦA LITTLE TRIMI ─── */
+        
+        /* Hiệu ứng 1: Xoay vòng (Gốc) - spin */
+        @keyframes spin-gradient {
+          0% { transform: rotate(0deg); filter: hue-rotate(0deg); }
+          100% { transform: rotate(360deg); filter: hue-rotate(360deg); }
+        }
+
+        /* Hiệu ứng 2: Sóng - wave */
+        @keyframes wave-gradient {
+          0%, 100% { clip-path: polygon(0% 45%, 16% 44%, 33% 50%, 54% 60%, 70% 61%, 84% 59%, 100% 52%, 100% 100%, 0% 100%); }
+          50% { clip-path: polygon(0% 60%, 15% 65%, 34% 66%, 51% 62%, 67% 50%, 84% 45%, 100% 46%, 100% 100%, 0% 100%); }
+        }
+
+        /* Hiệu ứng 3: Thư giãn (Lướt nhẹ) - relax */
+        @keyframes relax-gradient {
+          0%, 100% { background-size: 200% 200%; background-position: left bottom; }
+          50% { background-size: 150% 150%; background-position: right top; }
+        }
+
+        /* Hiệu ứng 4: Nhịp tim (Đập) - heartbeat */
+        @keyframes heartbeat {
+          0% { transform: scale(1); box-shadow: 0 0 15px rgba(var(--sphere-color-rgb), 0.5); }
+          15% { transform: scale(1.15); box-shadow: 0 0 25px rgba(var(--sphere-color-rgb), 0.7); }
+          30% { transform: scale(1); }
+          45% { transform: scale(1.08); }
+          100% { transform: scale(1); }
+        }
+
+        /* ── 2. CLASS CHÍNH CHO QUẢ CẦU ─── */
+        .magic-sphere {
+          /* Sử dụng màu từ state làm biến CSS */
+          background: linear-gradient(135deg, #38bdf8, var(--sphere-color), #6366f1);
+          background-size: 200% 200%;
+          /* Thêm shadow động theo màu */
+          box-shadow: 0 0 20px rgba(var(--sphere-color-rgb), 0.6), inset 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        /* ── 3. ÁP DỤNG HIỆU ỨNG ĐỘNG (Dựa trên class effect-*) ─── */
+        .effect-spin { animation: spin-gradient 4s linear infinite; }
+        .effect-wave { animation: relax-gradient 8s ease infinite; position: relative; }
+        .effect-wave::after { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.2); animation: wave-gradient 4s ease-in-out infinite; }
+        .effect-relax { animation: relax-gradient 6s ease-in-out infinite; }
+        .effect-heartbeat { animation: heartbeat 1.5s ease-in-out infinite; }
         .cartoon-ease { transition-timing-function: cubic-bezier(0.68, -0.6, 0.27, 1.55) !important; }
         .font-brush { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 800; }
         html, body, #root { overflow-x: hidden !important; overflow-y: auto !important; height: auto !important; min-height: 100vh !important; }
@@ -1016,7 +1090,20 @@ export default function App() {
         .page-fade-in { animation: pageFadeIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
       `}</style>
 
-      <div className={`min-h-screen w-full font-sans flex flex-col relative transition-colors duration-300 ${isDarkMode ? 'dark-mode text-white bg-[#111111]' : 'text-slate-900 bg-[#f8fafc]'}`}>
+      <div 
+        className={`min-h-screen w-full font-sans flex flex-col relative transition-colors duration-300 ${isDarkMode ? 'dark-mode text-white bg-[#111111]' : 'text-slate-900 bg-[#f8fafc]'}`}
+        // TRUYỀN BIẾN CSS VÀO ĐÂY ĐỂ ĐỔI MÀU QUẢ CẦU
+        style={{ 
+          '--sphere-color': littleTrimiConfig.color,
+          '--sphere-color-rgb': (() => {
+            const hex = littleTrimiConfig.color.replace('#', '');
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+            return `${r}, ${g}, ${b}`;
+          })()
+        }}
+      >
 
         {/* SCROLL TO TOP BUTTON */}
         <div className="fixed bottom-[80px] left-1/2 -translate-x-1/2 md:bottom-28 md:left-auto md:-translate-x-0 md:right-8 z-[8500] flex flex-col gap-3">
@@ -1064,8 +1151,11 @@ export default function App() {
         />
 
         {/* ── MAIN CONTENT ───────────────────────────────────────────────────── */}
-        <main ref={mainRef} className={`flex-grow block relative w-full overflow-x-hidden pb-[65px] md:pb-0 ${currentView === 'home' ? 'pt-0' : 'pt-[100px] md:pt-[130px]'}`}>
-
+        <main ref={mainRef} className={`flex-grow block relative w-full overflow-x-hidden pb-[65px] md:pb-0 ${
+          currentView === 'home' ? 'pt-0' : 
+          currentView === 'friends' ? 'pt-[55px] md:pt-[70px]' : 
+          'pt-[100px] md:pt-[130px]'
+        }`}>
           {/* HOME — NO fade-in wrapper: the hero uses position:fixed which breaks
               inside any element that has a CSS transform applied to it.
               The scroll-reveal parallax effect is purely CSS/scroll-native. */}
@@ -1150,6 +1240,8 @@ export default function App() {
             <BottomNav
               isDarkMode={isDarkMode}
               currentView={currentView}
+              // TRUYỀN CẤU HÌNH TRIMI
+              littleTrimiConfig={littleTrimiConfig}
               navigateTo={navigateTo}
               requireLogin={requireLogin}
               cartItemCount={cartItemCount}
@@ -1158,12 +1250,37 @@ export default function App() {
               isAdmin={isAdmin}
               unreadBellCount={unreadBellCount}
               pendingRequestsCount={pendingRequests.length}
-              setIsHelpOpen={setIsHelpOpen}
-              setIsCartOpen={setIsCartOpen}
-              setShowFriendsModal={setShowFriendsModal}
+              
+              // Sửa 3 dòng dưới đây: Đóng tab cũ trước khi mở tab mới
+              setIsHelpOpen={(val) => { if(val) closeAllModals(); setIsHelpOpen(val); }}
+              setIsCartOpen={(val) => { if(val) closeAllModals(); setIsCartOpen(val); }}
+              setShowFriendsModal={() => navigateTo('friends')}
+              
+              // Thêm dòng này cho nút Thông báo (Chuông)
+              // Sửa dòng này cho nút Thông báo (Chuông)
+              // Dòng 512 trong App.jsx (Code đã sửa)
+              // Thêm dòng này cho nút Thông báo (Chuông)
+              // Lệnh này phát tín hiệu để mở Popup Thông báo
+              onNotificationClick={() => { closeAllModals(); document.dispatchEvent(new CustomEvent('trimi:open-bell')); }}
             />
           </div>
         )}
+
+        {currentView === 'friends' && user && (
+            <div key="friends" className="page-fade-in">
+              <FriendsView
+                isDarkMode={isDarkMode}
+                user={user}
+                usersList={usersList}
+                friendsList={friendsList}
+                pendingRequests={pendingRequests}
+                onAcceptFriend={handleAcceptFriend}
+                onDeclineFriend={handleDeclineFriend}
+                onAddFriend={handleAddFriend}
+                littleTrimiConfig={littleTrimiConfig} // Truyền cấu hình Little Trimi
+              />
+            </div>
+          )}
 
         {/* ── FRIENDS MODAL (mobile) ── */}
         {showFriendsModal && (
@@ -1230,6 +1347,9 @@ export default function App() {
           setNickname={setNickname} setPhone={setPhone} setAddress={setAddress} setDistrict={setDistrict}
           handleThemeToggle={handleThemeToggle} setLang={setLang} showToast={showToast}
           daNangDistricts={daNangDistricts} db={db}
+          // THÊM 2 DÒNG NÀY:
+          littleTrimiConfig={littleTrimiConfig}
+          updateLittleTrimiConfig={updateLittleTrimiConfig}
         />
 
         <SurveyModal
@@ -1285,6 +1405,8 @@ export default function App() {
           onDeclineFriend={handleDeclineFriend}
           onAddFriend={handleAddFriend}
           setShowLoginModal={setShowLoginModal}
+          littleTrimiConfig={littleTrimiConfig}
+          updateLittleTrimiConfig={updateLittleTrimiConfig}
           onUserClick={(u) => {
             setIsUnifiedMenuOpen(false);
             if (isAdmin) {
