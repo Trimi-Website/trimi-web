@@ -1,4 +1,4 @@
-import { FiRefreshCcw, FiArchive, FiPlus, FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiRefreshCcw, FiArchive, FiPlus, FiX, FiChevronLeft, FiChevronRight, FiTruck } from 'react-icons/fi';
 import { useState, useRef, useEffect } from 'react';
 
 // ── Shop Banner Carousel ──────────────────────────────────────────────────────
@@ -100,13 +100,34 @@ function BannerCarousel() {
 export default function ShopView({
   isDarkMode, t, t_prod, currentCategory, selectedTag, setSelectedTag,
   sortOrder, setSortOrder, isLoadingShop, displayedProducts,
-  navigateTo, handleAddToCart, translateTag, fakeColorSpheres,
+  navigateTo, handleAddToCart, translateTag, fakeColorSpheres, isShipper // <--- Thêm isShipper vào đây
 }) {
   return (
     <div className="max-w-[1400px] mx-auto w-full px-4 md:px-8 pt-2 pb-8 md:pt-6 md:pb-10 animate-fade-in">
 
       {/* SHOP BANNER CAROUSEL */}
       {currentCategory === 'all' && <BannerCarousel />}
+
+      {/* BANNER DÀNH RIÊNG CHO SHIPPER */}
+      {isShipper && (
+        <div 
+          onClick={() => navigateTo('shipper')}
+          className="w-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-[28px] p-5 mb-8 cursor-pointer shadow-lg hover:shadow-emerald-500/30 transition-all flex items-center justify-between group border-2 border-emerald-300"
+        >
+          <div className="flex items-center gap-4 text-white">
+            <div className="bg-white/20 p-3 rounded-2xl group-hover:scale-110 transition-transform">
+              <FiTruck className="text-3xl" />
+            </div>
+            <div>
+              <h3 className="font-black text-xl tracking-wide">Khu Vực Shipper</h3>
+              <p className="text-sm font-medium opacity-90 mt-0.5">Bấm vào đây để đi đến trang quản lý giao hàng</p>
+            </div>
+          </div>
+          <FiChevronRight className="text-white text-3xl opacity-70 group-hover:opacity-100 group-hover:translate-x-2 transition-all" />
+        </div>
+      )}
+
+      {/* HEADER ROW: TITLE + SORT */}
 
       {/* HEADER ROW: TITLE + SORT */}
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">

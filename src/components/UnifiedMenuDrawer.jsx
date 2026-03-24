@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { FiX, FiMoon, FiSun, FiGlobe, FiLogOut, FiUser, FiInstagram, FiLinkedin, FiYoutube, FiShoppingBag, FiHeadphones, FiInfo, FiUsers, FiUserCheck, FiUserPlus, FiTruck, FiMessageCircle } from 'react-icons/fi';import { FaFacebook } from 'react-icons/fa';
+import { FiX, FiMoon, FiSun, FiGlobe, FiLogOut, FiUser, FiInstagram, FiLinkedin, FiYoutube, FiShoppingBag, FiHeadphones, FiInfo, FiUsers, FiUserCheck, FiUserPlus, FiTruck, FiMessageCircle, FiSettings } from 'react-icons/fi';
+import { FaFacebook } from 'react-icons/fa';
 
 // ── Friends section — extracted as real component so hooks work correctly ───
 // ── Friends section — extracted as real component so hooks work correctly ───
@@ -189,7 +190,7 @@ export default function UnifiedMenuDrawer({
   user, usersList, friendsList, pendingRequests,
   onAcceptFriend, onDeclineFriend, onAddFriend,
   // ── NEW: guest login ──
-  setShowLoginModal,
+  setShowLoginModal,setIsSettingsDrawerOpen,
   littleTrimiConfig, updateLittleTrimiConfig
 }) {
   if (!isUnifiedMenuOpen) return null;
@@ -251,9 +252,9 @@ export default function UnifiedMenuDrawer({
 
         {/* ── MENU BODY ── */}
         <div className="flex-grow flex flex-col px-5 py-4 gap-1.5">
-          {/* ── LITTLE TRIMI CUSTOMIZATION Ở TRONG MENU ─── */}
+          {/* ── LITTLE TRIMI CUSTOMIZATION Ở TRONG MENU (Chỉ Mobile mới thấy) ─── */}
           {littleTrimiConfig && updateLittleTrimiConfig && (
-            <div className={`mt-4 p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+            <div className={`md:hidden mt-4 p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
               <p className="text-[11px] font-black text-sky-500 uppercase tracking-widest mb-3 flex items-center gap-2">
               </p>
               <div className="grid grid-cols-2 gap-3">
@@ -284,32 +285,37 @@ export default function UnifiedMenuDrawer({
               </div>
             </div>
           )}
-          {/* SECTION: Display */}
-          <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 mt-2 ml-1">Giao diện</p>
-          <div className="grid grid-cols-2 gap-3">
-            <button onClick={(e) => handleThemeToggle(e)} className={`flex flex-col items-center justify-center p-4 rounded-2xl font-bold transition-colors border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-sky-400' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
-              {isDarkMode ? <FiSun className="text-2xl mb-2"/> : <FiMoon className="text-2xl mb-2"/>}
-              <span className="text-xs">Giao diện</span>
+          {/* SECTION: Display & Settings */}
+          <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 mt-2 ml-1">Giao diện & Cài đặt</p>
+          <div className="grid grid-cols-3 gap-2">
+            <button onClick={(e) => handleThemeToggle(e)} className={`flex flex-col items-center justify-center p-3 rounded-2xl font-bold transition-colors border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-sky-400' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
+              {isDarkMode ? <FiSun className="text-xl mb-2"/> : <FiMoon className="text-xl mb-2"/>}
+              <span className="text-[10px]">Giao diện</span>
             </button>
-            <button onClick={() => setLang(lang === 'VI' ? 'EN' : 'VI')} className={`flex flex-col items-center justify-center p-4 rounded-2xl font-bold transition-colors border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
-              <FiGlobe className="text-2xl mb-2"/>
-              <span className="text-xs">{lang === 'VI' ? 'Tiếng Việt' : 'English'}</span>
+            <button onClick={() => setLang(lang === 'VI' ? 'EN' : 'VI')} className={`flex flex-col items-center justify-center p-3 rounded-2xl font-bold transition-colors border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
+              <FiGlobe className="text-xl mb-2"/>
+              <span className="text-[10px]">{lang === 'VI' ? 'EN' : 'VI'}</span>
+            </button>
+            <button onClick={() => { close(); setIsSettingsDrawerOpen?.(true); }} className={`flex flex-col items-center justify-center p-3 rounded-2xl font-bold transition-colors border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'}`}>
+              <FiSettings className="text-xl mb-2"/>
+              <span className="text-[10px]">Cài đặt</span>
             </button>
           </div>
 
-          {/* ── FRIENDS SECTION — visible on ALL screen sizes ──────────────────
-               Previously was inside md:hidden which hid it on desktop. */}
+          {/* ── FRIENDS SECTION — (Chỉ PC mới thấy) ────────────────── */}
           {isAuthenticated && user && (
-            <FriendsSection
-              isDarkMode={isDarkMode}
-              usersList={usersList}
-              friendsList={friendsList || []}
-              pendingRequests={pendingRequests || []}
-              onAcceptFriend={onAcceptFriend}
-              onDeclineFriend={onDeclineFriend}
-              onAddFriend={onAddFriend}
-              user={user}
-            />
+            <div className="hidden md:block">
+              <FriendsSection
+                isDarkMode={isDarkMode}
+                usersList={usersList}
+                friendsList={friendsList || []}
+                pendingRequests={pendingRequests || []}
+                onAcceptFriend={onAcceptFriend}
+                onDeclineFriend={onDeclineFriend}
+                onAddFriend={onAddFriend}
+                user={user}
+              />
+            </div>
           )}
 
           {/* SECTION: Footer links — mobile only (md:hidden)

@@ -925,14 +925,14 @@ export default function App() {
             hasUnreadUser: true 
           }, { merge: true });
         } else {
-          // 2. Nếu còn lượt -> Chuẩn bị mảng 5 API Key (DÁN KEY CỦA TOÀN VÀO ĐÂY)
-          const apiKeys = [
-            "AIzaSyCEgQb0wyHTuxRVlfbKH1Wzu48eLde2TMI",
-            "AIzaSyBbMXo3kPSBqLZ_4kXfljk13LKyrlbl3aw",
-            "AIzaSyAQls4j7mpFU3FbmisR2rPqWHd62Zvh7AE",
-            "AIzaSyCgjNWb2EsJjLAz15MMVuOAKSHyomT3g4cz",
-            "AIzaSyCRNAFWKeuUHYErcrJJitHJrjtK6zhs4PQ"
-          ];
+          // 2. Lấy API Key từ biến môi trường để bảo mật (Không ghi trực tiếp)
+        const apiKeys = [
+          import.meta.env.VITE_GEMINI_KEY_1,
+          import.meta.env.VITE_GEMINI_KEY_2,
+          import.meta.env.VITE_GEMINI_KEY_3,
+          import.meta.env.VITE_GEMINI_KEY_4,
+          import.meta.env.VITE_GEMINI_KEY_5
+        ].filter(Boolean); // Lọc bỏ đi những key rỗng nếu cậu chưa nhập đủ 5 cái
 
           const productsInfo = localProducts.map(p => `- ${p.name}: ${p.price.toLocaleString('vi-VN')}đ`).join('\n');
           const systemPrompt = `Bạn tên là "Trimi-ni" - một Gen Z chính hiệu, stylist cực chất và là chuyên viên tư vấn của thương hiệu thời trang local brand Trimi.
@@ -1152,7 +1152,7 @@ export default function App() {
 
         {/* ── MAIN CONTENT ───────────────────────────────────────────────────── */}
         <main ref={mainRef} className={`flex-grow block relative w-full overflow-x-hidden pb-[65px] md:pb-0 ${
-          currentView === 'home' ? 'pt-0' : 
+          currentView === 'home' || currentView === 'profile' ? 'pt-0' : 
           currentView === 'friends' ? 'pt-[55px] md:pt-[70px]' : 
           'pt-[100px] md:pt-[130px]'
         }`}>
@@ -1172,6 +1172,7 @@ export default function App() {
                 isLoadingShop={isLoadingShop} displayedProducts={displayedProducts}
                 navigateTo={navigateTo} handleAddToCart={handleAddToCart}
                 translateTag={translateTag} fakeColorSpheres={fakeColorSpheres}
+                isShipper={isShipper} /* THÊM DÒNG NÀY */
               />
             </div>
           )}
@@ -1405,6 +1406,7 @@ export default function App() {
           onDeclineFriend={handleDeclineFriend}
           onAddFriend={handleAddFriend}
           setShowLoginModal={setShowLoginModal}
+          setIsSettingsDrawerOpen={setIsSettingsDrawerOpen}
           littleTrimiConfig={littleTrimiConfig}
           updateLittleTrimiConfig={updateLittleTrimiConfig}
           onUserClick={(u) => {

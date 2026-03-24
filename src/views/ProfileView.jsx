@@ -308,9 +308,7 @@ export default function ProfileView({
   };
 
   return (
-    <div className="max-w-5xl mx-auto w-full px-4 pt-8 pb-[100px] md:pb-8 animate-fade-in-up relative z-30">
-
-      {/* Rating modal */}
+    <div className="max-w-5xl mx-auto w-full px-4 pt-0 pb-[100px] md:pb-8 animate-fade-in-up relative z-30">
       {ratingOrder && (
         <RatingModal
           order={ratingOrder}
@@ -348,8 +346,10 @@ export default function ProfileView({
           </div>
         </div>
 
-        {/* Avatar + Actions */}
+        {/* Avatar + Actions + Info */}
         <div className="px-6 md:px-12 pb-8 relative">
+          
+          {/* Avatar (Giữ nguyên) */}
           <div className="w-32 h-32 md:w-44 md:h-44 bg-white rounded-full p-1.5 absolute -top-16 md:-top-24 border border-slate-100 shadow-xl z-10">
             <div className="w-full h-full bg-slate-900 text-white rounded-full flex items-center justify-center text-5xl font-black relative overflow-hidden group">
               {avatarUrl ? <img src={avatarUrl} className="w-full h-full object-cover" alt="Avatar"/> : nickname.charAt(0).toUpperCase() || 'U'}
@@ -360,38 +360,12 @@ export default function ProfileView({
             </div>
           </div>
 
-          <div className="flex justify-end pt-6 pb-2 gap-3 relative z-20 flex-wrap">
-            <button onClick={handleLogout} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-3 rounded-full font-bold text-sm transition-colors flex items-center gap-2 border border-slate-200">
-              <FiLogOut/> {t('logout')}
-            </button>
-            {isAdmin && (
-              <>
-                <button onClick={() => { setSurveyStep(1); setShowSurveyModal(true); }} className="bg-sky-500 hover:bg-sky-600 text-white px-6 py-3 rounded-full font-bold text-sm transition-colors flex items-center gap-2 shadow-md">
-                  <FiMonitor/> Test Khảo sát
-                </button>
-                <button onClick={() => navigateTo('admin')} className="bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-full font-bold text-sm transition-colors flex items-center gap-2 shadow-md">
-                  <FiSettings/> {t('adminMenu')}
-                </button>
-              </>
-            )}
-            {/* Shipper Dashboard button — only shown to authorized shipper emails */}
-            {isShipper && (
-              <button
-                onClick={() => navigateTo('shipper')}
-                className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-full font-bold text-sm transition-colors flex items-center gap-2 shadow-md"
-              >
-                <FiTruck/> Trang Shipper
-              </button>
-            )}
-          </div>
-
-          {/* Name + Badges */}
-          <div className="mt-4 md:mt-0 relative z-20">
+          {/* Name + UID + Badges (Đẩy xuống dưới Avatar) */}
+          <div className="pt-20 md:pt-24 relative z-20">
             {!isEditingName ? (
               <h2 className="text-3xl md:text-4xl font-black text-slate-900 flex items-center gap-3">
                 {nickname}
                 <button onClick={() => { setTempName(nickname); setIsEditingName(true); }} className="text-sm text-slate-400 hover:text-sky-500 transition-colors p-1.5 bg-slate-50 rounded-full border border-slate-100"><FiEdit3/></button>
-                <button onClick={() => { setTempSettings({ nickname, phone, address, district, theme: isDarkMode ? 'dark' : 'light', lang }); setIsSettingsDrawerOpen(true); }} className="text-sm text-slate-400 hover:text-sky-500 transition-colors p-1.5 bg-slate-50 rounded-full border border-slate-100 ml-1"><FiSettings/></button>
               </h2>
             ) : (
               <div className="flex items-center gap-3 mb-2">
@@ -400,33 +374,41 @@ export default function ProfileView({
                 <button onClick={() => setIsEditingName(false)} className="bg-slate-100 text-slate-500 p-2 rounded-full hover:bg-red-500 hover:text-white shadow-md transition-colors"><FiX className="text-lg"/></button>
               </div>
             )}
-            <p className="text-slate-500 font-medium mb-2 mt-2">{user?.email}</p>
-            {/* UID display for sharing — needed for Shipper role assignment */}
+            <p className="text-slate-500 font-medium mb-3 mt-1">{user?.email}</p>
+            
             <div className={`flex items-center gap-2 mb-4 px-3 py-1.5 rounded-xl w-fit text-xs ${isDarkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
               <span className={`font-bold ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>UID:</span>
               <span className={`font-mono ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{user?.uid?.slice(0, 16)}…</span>
-              <button
-                onClick={() => { navigator.clipboard?.writeText(user?.uid || ''); showToast('Đã sao chép UID!'); }}
-                className="text-sky-500 hover:text-sky-600 font-bold cursor-pointer"
-                title="Sao chép UID"
-              >
-                📋
-              </button>
+              <button onClick={() => { navigator.clipboard?.writeText(user?.uid || ''); showToast('Đã sao chép UID!'); }} className="text-sky-500 hover:text-sky-600 font-bold cursor-pointer" title="Sao chép UID">📋</button>
             </div>
-            <div className="flex flex-wrap gap-2 mb-8">
+
+            <div className="flex flex-wrap gap-2 mb-6">
               <span className="bg-slate-100 text-slate-700 px-4 py-1.5 rounded-full text-xs font-bold border border-slate-200">{t('roleCustomer')}</span>
               <span className="bg-sky-100 text-sky-700 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1"><FiCheckCircle/> {t('roleVerified')}</span>
               {isAdmin && <span className="bg-amber-100 text-amber-700 px-4 py-1.5 rounded-full text-xs font-bold">Admin</span>}
-              {isShipper && !isAdmin && (
-                <span className="bg-emerald-100 text-emerald-700 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1">
-                  <FiTruck className="text-xs"/> Shipper
-                </span>
-              )}
+              {isShipper && !isAdmin && <span className="bg-emerald-100 text-emerald-700 px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1"><FiTruck className="text-xs"/> Shipper</span>}
             </div>
           </div>
 
+          {/* Dàn nút bấm Action ngang hàng */}
+          <div className="flex flex-wrap gap-3 relative z-20">
+            <button onClick={handleLogout} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-3 rounded-full font-bold text-sm transition-colors flex items-center gap-2 border border-slate-200">
+              <FiLogOut/> Đăng xuất
+            </button>
+            {isAdmin && (
+              <>
+                <button onClick={() => { setSurveyStep(1); setShowSurveyModal(true); }} className="bg-sky-500 hover:bg-sky-600 text-white px-6 py-3 rounded-full font-bold text-sm transition-colors flex items-center gap-2 shadow-md">
+                  <FiMonitor/> Test Khảo sát
+                </button>
+                <button onClick={() => navigateTo('admin')} className="bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-full font-bold text-sm transition-colors flex items-center gap-2 shadow-md">
+                  <FiSettings/> Quản trị kho
+                </button>
+              </>
+            )}
+          </div>
+
           {/* Tab bar */}
-          <div className={`flex gap-8 border-b pt-6 overflow-x-auto custom-scrollbar relative z-20 ${isDarkMode ? 'border-slate-800' : 'border-slate-100'}`}>
+          <div className={`flex gap-8 border-b pt-8 overflow-x-auto custom-scrollbar relative z-20 ${isDarkMode ? 'border-slate-800' : 'border-slate-100'}`}>
             <button className={`pb-3 whitespace-nowrap font-bold text-sm tracking-wide transition-colors ${isDarkMode ? 'text-white border-b-2 border-white' : 'text-slate-900 border-b-2 border-slate-900'}`}>
               Đơn hàng của tôi
             </button>
@@ -434,7 +416,6 @@ export default function ProfileView({
         </div>
       </div>
 
-      {/* ── ORDERS LIST ── */}
       {/* ── ORDERS LIST ── */}
       {myOrders.length === 0 ? (
         <div className={`rounded-[40px] p-8 border shadow-sm text-center py-24 ${isDarkMode ? 'bg-[#1e293b] border-slate-800' : 'bg-white border-slate-200'}`}>
