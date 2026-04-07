@@ -1,5 +1,7 @@
 # 🛍️ Trimi - Nền tảng E-Commerce Local Brand Thế Hệ Mới
 
+website: trimi.id.vn
+
 Trimi không chỉ là một website bán quần áo Local Brand thông thường, mà là một trải nghiệm mua sắm tích hợp Mạng xã hội và Trợ lý Trí tuệ Nhân tạo (AI). Dự án được thiết kế với giao diện mang hơi hướng tương lai, tối ưu hóa cực tốt cho cả Mobile và Desktop.
 
 ## ✨ Tính năng nổi bật

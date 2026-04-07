@@ -64,9 +64,10 @@ export default function SettingsDrawer({
 
         {/* ── BODY ── */}
         <div className="flex-grow p-6 flex flex-col gap-8">
-        {/* ── LITTLE TRIMI CUSTOMIZATION ─── */}
-          <div className="p-5 bg-slate-50 dark:bg-[#111111] rounded-3xl border border-slate-100 dark:border-white/10 mt-2">
-            <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+          {/* ── LITTLE TRIMI CUSTOMIZATION ─── */}
+          {/* THÊM md:hidden ĐỂ ẨN TRÊN PC */}
+          <div className="md:hidden p-5 bg-slate-50 dark:bg-[#111111] rounded-3xl border border-slate-100 dark:border-white/10 mt-2 mb-4">
+            <p className="text-[10px] font-black text-sky-500 uppercase tracking-widest mb-4 flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full magic-sphere effect-${littleTrimiConfig.effect}`} /> Customize Little Trimi
             </p>
 

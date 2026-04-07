@@ -1,6 +1,19 @@
 import { FiRefreshCcw, FiArchive, FiPlus, FiX, FiChevronLeft, FiChevronRight, FiTruck } from 'react-icons/fi';
 import { useState, useRef, useEffect } from 'react';
-
+// Component Khung xương (Skeleton)
+const ProductSkeleton = ({ isDarkMode }) => (
+  <div className={`p-4 rounded-[32px] border ${isDarkMode ? 'bg-slate-800/40 border-slate-700/50' : 'bg-white border-slate-100'} animate-pulse`}>
+    {/* Khung Ảnh */}
+    <div className={`w-full aspect-square rounded-[24px] mb-4 ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`}></div>
+    {/* Khung Tên SP */}
+    <div className={`h-4 w-3/4 rounded-full mb-2 ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`}></div>
+    {/* Khung Giá & Nút */}
+    <div className="flex justify-between items-end mt-4">
+      <div className={`h-5 w-1/3 rounded-full ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`}></div>
+      <div className={`h-10 w-10 rounded-full ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`}></div>
+    </div>
+  </div>
+);
 // ── Shop Banner Carousel ──────────────────────────────────────────────────────
 const BANNERS = [
   '/shop_banner.webp',
@@ -173,8 +186,8 @@ export default function ShopView({
 
       {/* PRODUCT GRID */}
       {isLoadingShop ? (
-        <div className="flex justify-center py-32">
-          <FiRefreshCcw className="text-4xl text-sky-500 animate-spin" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-5 px-1 md:px-0 w-full">
+          {Array(10).fill(0).map((_, i) => <ProductSkeleton key={i} isDarkMode={isDarkMode} />)}
         </div>
       ) : displayedProducts.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">

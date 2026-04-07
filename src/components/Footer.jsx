@@ -1,8 +1,12 @@
 import { FiInstagram, FiLinkedin, FiYoutube } from 'react-icons/fi';
 import { FaFacebook } from 'react-icons/fa';
 
-// CHANGE 2: footer is hidden on mobile (hidden), visible on desktop (md:block)
-export default function Footer({ t, navigateTo, showToast, setShowPrivacyModal, setShowTermsModal, setShowStoryModal, setShowCareerModal, setShowContactModal, requireLogin }) {
+export default function Footer({ 
+  t, navigateTo, showToast, requireLogin,
+  setShowPrivacyModal, setShowTermsModal, 
+  setShowStoryModal, setShowCareerModal, 
+  setShowContactModal, setShowSizeGuideModal 
+}) {
   return (
     <footer className="hidden md:block bg-[#111111] text-white pt-16 pb-8 mt-auto border-t border-slate-800 flex-shrink-0 z-30 relative transition-colors duration-300">
       <div className="max-w-[1400px] mx-auto px-4 md:px-8">
@@ -19,27 +23,27 @@ export default function Footer({ t, navigateTo, showToast, setShowPrivacyModal, 
           <div>
             <h4 className="font-bold text-lg mb-6">{t('f_prod')}</h4>
             <ul className="space-y-4 text-sm text-slate-400 font-medium">
-              <li className="hover:text-white cursor-pointer transition-colors" onClick={() => navigateTo('shop', 'all')}>{t('f_all')}</li>
-              <li className="hover:text-white cursor-pointer transition-colors" onClick={() => navigateTo('shop', 'shirt_all')}>{t('f_men')}</li>
-              <li className="hover:text-white cursor-pointer transition-colors" onClick={() => navigateTo('shop', 'pants_all')}>{t('f_women')}</li>
-              <li className="hover:text-white cursor-pointer transition-colors" onClick={() => navigateTo('shop', 'acc_all')}>{t('f_acc')}</li>
+              <li><button onClick={() => navigateTo('shop', 'all')} className="hover:text-white transition-colors cursor-pointer">{t('f_all')}</button></li>
+              <li><button onClick={() => navigateTo('shop', 'shirt_all')} className="hover:text-white transition-colors cursor-pointer">{t('f_men')}</button></li>
+              <li><button onClick={() => navigateTo('shop', 'pants_all')} className="hover:text-white transition-colors cursor-pointer">{t('f_women')}</button></li>
+              <li><button onClick={() => navigateTo('shop', 'acc_all')} className="hover:text-white transition-colors cursor-pointer">{t('f_acc')}</button></li>
             </ul>
           </div>
           <div>
             <h4 className="font-bold text-lg mb-6">{t('f_sup')}</h4>
             <ul className="space-y-4 text-sm text-slate-400 font-medium">
-              <li className="hover:text-white cursor-pointer transition-colors" onClick={() => requireLogin(() => navigateTo('profile'))}>{t('f_track')}</li>
-              <li className="hover:text-white cursor-pointer transition-colors" onClick={() => setShowTermsModal(true)}>{t('f_ret')}</li>
-              <li className="hover:text-white cursor-pointer transition-colors" onClick={() => setShowTermsModal(true)}>{t('f_ship')}</li>
-              <li className="hover:text-white cursor-pointer transition-colors" onClick={() => showToast('Tính năng Bảng Size đang được cập nhật!')}>{t('f_size')}</li>
+              <li><button onClick={() => requireLogin(() => navigateTo('profile'))} className="hover:text-white transition-colors cursor-pointer">{t('f_track')}</button></li>
+              <li><button onClick={() => setShowTermsModal(true)} className="hover:text-white transition-colors cursor-pointer">{t('f_ret')}</button></li>
+              <li><button onClick={() => setShowTermsModal(true)} className="hover:text-white transition-colors cursor-pointer">{t('f_ship')}</button></li>
+              <li><button onClick={() => setShowSizeGuideModal(true)} className="hover:text-white transition-colors cursor-pointer">{t('f_size')}</button></li>
             </ul>
           </div>
           <div>
             <h4 className="font-bold text-lg mb-6">{t('f_about')}</h4>
             <ul className="space-y-4 text-sm text-slate-400 font-medium">
-              <li className="hover:text-white cursor-pointer transition-colors" onClick={() => setShowStoryModal(true)}>{t('f_story')}</li>
-              <li className="hover:text-white cursor-pointer transition-colors" onClick={() => setShowCareerModal(true)}>{t('f_career')}</li>
-              <li className="hover:text-white cursor-pointer transition-colors" onClick={() => setShowContactModal(true)}>{t('f_contact')}</li>
+              <li><button onClick={() => setShowStoryModal(true)} className="hover:text-white transition-colors cursor-pointer">{t('f_story')}</button></li>
+              <li><button onClick={() => setShowCareerModal(true)} className="hover:text-white transition-colors cursor-pointer">{t('f_career')}</button></li>
+              <li><button onClick={() => setShowContactModal(true)} className="hover:text-white transition-colors cursor-pointer">{t('f_contact')}</button></li>
             </ul>
           </div>
         </div>

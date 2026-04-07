@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FiStar, FiTruck, FiShield, FiShoppingCart, FiCheckCircle, FiEdit3 } from 'react-icons/fi';
+import { FiChevronDown, FiChevronUp, FiHeart, FiEdit3 } from 'react-icons/fi';
 
 export default function ProductDetailView({
   isDarkMode, t, t_prod, isAdmin,
@@ -7,8 +7,10 @@ export default function ProductDetailView({
   handleAddToCart, setIsCartOpen,
   setEditFormData, setShowEditModal,
 }) {
-  // Internal state — only needed inside this view
   const [activeImgIdx, setActiveImgIdx] = useState(0);
+  const [selectedSize, setSelectedSize] = useState('M');
+  const [isDescOpen, setIsDescOpen] = useState(false); // Đóng sẵn cho gọn
+  const [isShipOpen, setIsShipOpen] = useState(false);
 
   if (!selectedProduct) return null;
 
@@ -17,45 +19,38 @@ export default function ProductDetailView({
       ? selectedProduct.images[activeImgIdx]
       : selectedProduct.imageUrl;
 
+  const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
+
   return (
-    <div className="max-w-[1200px] mx-auto w-full px-4 md:px-8 pt-2 pb-[100px] md:py-4 animate-fade-in flex items-center justify-center min-h-[calc(100vh-120px)]">
-      <div className="bg-white rounded-3xl md:rounded-[40px] border border-slate-100 p-4 md:p-6 lg:p-8 flex flex-col md:flex-row gap-6 lg:gap-10 shadow-sm w-full">
+    <div className={`max-w-[1100px] mx-auto w-full px-4 md:px-8 py-4 animate-fade-in ${isDarkMode ? 'text-white' : 'text-[#1a1a1a]'}`}>
+      
+      {/* Breadcrumb - Nhỏ gọn hơn */}
+      <div className="flex items-center gap-2 text-xs text-gray-500 mb-4 font-medium">
+        <span className="cursor-pointer hover:text-black transition-colors" onClick={() => window.history.back()}>← Home</span>
+        <span>·</span>
+        <span>Product details</span>
+      </div>
 
-        {/* ── IMAGE COLUMN ── */}
-        <div className="w-full md:w-[45%] lg:w-[40%] flex flex-col gap-3 flex-shrink-0">
-
-          {/* Main image with zoom-on-hover */}
-          <div
-            className="w-full h-[300px] md:h-[350px] lg:h-[450px] bg-slate-50 border border-slate-100 rounded-2xl md:rounded-[32px] flex items-center justify-center relative overflow-hidden cursor-crosshair group shadow-inner"
-            onMouseMove={(e) => {
-              const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
-              const x = ((e.clientX - left) / width) * 100;
-              const y = ((e.clientY - top) / height) * 100;
-              e.currentTarget.querySelector('img').style.transformOrigin = `${x}% ${y}%`;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.querySelector('img').style.transformOrigin = 'center center';
-            }}
-          >
+      <div className="flex flex-col md:flex-row gap-8 lg:gap-12 items-start">
+        
+        {/* ── LEFT: IMAGE GALLERY (Thu nhỏ lại) ── */}
+        <div className="w-full md:w-[45%] flex flex-col gap-3">
+          <div className="w-full h-[350px] md:h-[450px] bg-gray-50 rounded-2xl overflow-hidden relative border border-gray-100">
             <img
-              id="detail-main-image"
               src={mainImageSrc}
-              className="w-full h-full object-cover transition-transform duration-[0.4s] ease-out group-hover:scale-[2.5]"
+              className="w-full h-full object-contain object-center"
               alt={selectedProduct.name}
             />
           </div>
-
-          {/* Thumbnail strip */}
+          {/* Thumbnails */}
           {selectedProduct.images && selectedProduct.images.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto custom-scrollbar py-1">
+            <div className="flex gap-2 overflow-x-auto custom-scrollbar">
               {selectedProduct.images.map((img, idx) => (
                 <div
                   key={idx}
                   onClick={() => setActiveImgIdx(idx)}
-                  className={`w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 cursor-pointer border-2 transition-all ${
-                    activeImgIdx === idx
-                      ? 'border-sky-500 shadow-md'
-                      : 'border-transparent hover:border-slate-300'
+                  className={`w-14 h-14 rounded-lg overflow-hidden cursor-pointer transition-all border-2 ${
+                    activeImgIdx === idx ? 'border-black' : 'border-transparent hover:border-gray-300'
                   }`}
                 >
                   <img src={img} className="w-full h-full object-cover" alt="" />
@@ -65,78 +60,81 @@ export default function ProductDetailView({
           )}
         </div>
 
-        {/* ── INFO COLUMN ── */}
-        <div className="w-full md:w-[55%] lg:w-[60%] flex flex-col justify-center relative">
-
-          {/* Admin edit button */}
+        {/* ── RIGHT: PRODUCT INFO (Ép lề, giảm margin) ── */}
+        <div className="w-full md:w-[55%] flex flex-col relative">
+          
           {isAdmin && (
-            <button
-              onClick={() => {
-                setEditFormData({
-                  ...selectedProduct,
-                  images: selectedProduct.images || [selectedProduct.imageUrl],
-                });
-                setShowEditModal(true);
-              }}
-              className="absolute top-0 right-0 bg-white border border-slate-200 text-slate-800 p-2.5 rounded-full hover:text-sky-600 hover:border-sky-300 shadow-sm transition-all cursor-pointer z-10"
-              title="Chỉnh sửa sản phẩm"
-            >
-              <FiEdit3 className="text-lg" />
+            <button onClick={() => { setEditFormData({ ...selectedProduct, images: selectedProduct.images || [selectedProduct.imageUrl] }); setShowEditModal(true); }} className="absolute -top-2 right-0 text-gray-400 hover:text-black p-2">
+              <FiEdit3 className="text-xl" />
             </button>
           )}
 
-          {/* Name */}
-          <h1 className="text-2xl md:text-3xl font-black text-slate-900 mb-2 leading-tight pr-10">
+          <p className="text-xs text-gray-500 font-bold mb-1 uppercase tracking-wider">
+            {(selectedProduct.category || '').includes('shirt') ? 'Trimi Fashion' : 'Trimi Collection'}
+          </p>
+          <h1 className="text-2xl md:text-3xl font-bold mb-2 tracking-tight pr-8">
             {t_prod(selectedProduct.id, 'name', selectedProduct.name)}
           </h1>
-
-          {/* Rating */}
-          <div className="flex items-center text-xs gap-3 mb-4">
-            <span className="text-amber-400 font-bold flex items-center gap-1 text-sm">
-              <FiStar className="fill-current"/> {selectedProduct.rating}
-            </span>
-            <span className="text-slate-300">|</span>
-            <span className="text-slate-500 font-medium underline underline-offset-4">
-              {selectedProduct.reviews} Đánh giá
-            </span>
-          </div>
-
-          {/* Price */}
-          <div className="text-3xl font-black text-sky-600 mb-6">
+          
+          <div className="text-xl font-black mb-4 text-sky-600">
             {(Number(selectedProduct.price) || 0).toLocaleString('vi-VN')}đ
           </div>
 
-          {/* CTA Buttons */}
-          <div className="flex gap-3 mb-6 w-full">
-            <button
-              onClick={(e) => handleAddToCart(selectedProduct, e)}
-              className="flex-1 md:flex-none md:px-6 bg-sky-50 text-sky-600 border border-sky-200 py-3 rounded-2xl font-black text-xs tracking-widest uppercase hover:bg-sky-100 transition-transform active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm cursor-pointer"
-            >
-              <FiShoppingCart className="text-lg"/> Thêm
+          <div className="w-full bg-gray-50 border border-gray-100 text-[11px] text-gray-500 p-2.5 rounded-lg mb-5 flex items-center gap-2">
+            <span className="w-4 h-4 rounded-full border border-gray-400 flex items-center justify-center text-[8px] font-bold">i</span>
+            Order in 02:30:25 to get next day delivery
+          </div>
+
+          {/* Size Selector */}
+          <div className="mb-6">
+            <p className="text-xs font-bold mb-2">Select Size</p>
+            <div className="flex gap-2">
+              {sizes.map(size => (
+                <button
+                  key={size}
+                  onClick={() => setSelectedSize(size)}
+                  className={`w-10 h-10 rounded-full text-xs font-bold flex items-center justify-center transition-all ${
+                    selectedSize === size ? 'bg-[#1a1a1a] text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 mb-6">
+            <button onClick={(e) => { handleAddToCart(selectedProduct, e); setIsCartOpen(true); }} className="flex-1 bg-[#1a1a1a] text-white py-3 rounded-full font-bold text-xs uppercase tracking-wider transition-transform hover:bg-black active:scale-[0.98]">
+              Add to Cart
             </button>
-            <button
-              onClick={(e) => { handleAddToCart(selectedProduct, e); setIsCartOpen(true); }}
-              className="flex-[2] bg-slate-900 text-white py-3 rounded-2xl font-black text-xs tracking-widest uppercase hover:bg-black transition-transform active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg shadow-slate-900/20 cursor-pointer"
-            >
-              <FiCheckCircle className="text-lg"/> Mua Ngay
+            <button className="w-12 h-12 flex-shrink-0 border border-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors">
+              <FiHeart className="text-lg" />
             </button>
           </div>
 
-          {/* Shipping / Returns */}
-          <div className="space-y-2 text-xs font-medium text-slate-700 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-            <div className="flex items-center gap-2"><FiTruck className="text-lg text-sky-500"/> {t('ship')}</div>
-            <div className="flex items-center gap-2"><FiShield className="text-lg text-emerald-500"/> {t('return')}</div>
+          {/* Accordions (Thu gọn) */}
+          <div className="border-t border-gray-200">
+            <div className="border-b border-gray-200 py-3">
+              <button className="w-full flex justify-between items-center text-left font-bold text-xs uppercase" onClick={() => setIsDescOpen(!isDescOpen)}>
+                Description & Fit {isDescOpen ? <FiChevronUp /> : <FiChevronDown />}
+              </button>
+              {isDescOpen && <p className="mt-2 text-xs text-gray-500 leading-relaxed whitespace-pre-line">{t_prod(selectedProduct.id, 'desc', selectedProduct.description)}</p>}
+            </div>
+            <div className="border-b border-gray-200 py-3">
+              <button className="w-full flex justify-between items-center text-left font-bold text-xs uppercase" onClick={() => setIsShipOpen(!isShipOpen)}>
+                Shipping {isShipOpen ? <FiChevronUp /> : <FiChevronDown />}
+              </button>
+              {isShipOpen && (
+                <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-gray-500">
+                   <div><p className="font-bold text-gray-800">Discount</p><p>Freeship Đà Nẵng</p></div>
+                   <div><p className="font-bold text-gray-800">Package</p><p>Hộp tiêu chuẩn</p></div>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Description */}
-          <div>
-            <p className="text-xs font-bold text-slate-900 mb-1.5 uppercase tracking-wider">{t('desc')}</p>
-            <p className="text-xs text-slate-600 leading-relaxed font-medium whitespace-pre-line line-clamp-3 hover:line-clamp-none transition-all">
-              {t_prod(selectedProduct.id, 'desc', selectedProduct.description)}
-            </p>
-          </div>
         </div>
-
       </div>
     </div>
   );

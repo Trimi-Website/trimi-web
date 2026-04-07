@@ -15,6 +15,7 @@ export default function Header({
   avatarUrl,       // ← shows user's avatar if available
   onAcceptFriend,  // ← passed through to NotificationBell
   onDeclineFriend, // ← passed through to NotificationBell
+  setShowVirtualRoom // <--- THÊM ĐÚNG CHỮ NÀY VÀO ĐÂY
 }) {
   const handleSearchChange = (value) => {
     setSearchQuery(value);
@@ -36,13 +37,13 @@ export default function Header({
             >
               <FiMenu className="text-[26px]" />
             </button>
-            <h1
-              className={`hidden md:block font-brush tracking-wide cursor-pointer transition-all duration-500 text-4xl md:text-[52px] ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`}
+            {/* THAY LOGO ẢNH VÀO ĐÂY */}
+            <img 
+              src={isDarkMode ? '/logo_dark.png' : '/logo.png'} 
+              alt="Trimi Logo" 
               onClick={() => navigateTo('home', 'all')}
-              style={{ lineHeight: '1' }}
-            >
-              Trimi
-            </h1>
+              className="hidden md:block h-14 md:h-20 w-auto object-contain cursor-pointer transition-transform hover:scale-105" 
+            />
           </div>
 
           {/* CENTER: Search */}
@@ -86,7 +87,13 @@ export default function Header({
 
           {/* RIGHT: Chat (mobile) + Cart + Bell + Profile + Desktop menu */}
           <div className="flex items-center gap-1 md:gap-1.5 text-sm font-semibold text-slate-700 flex-shrink-0 relative z-[1001]">
-
+            {/* ── NÚT MỞ PHÒNG THỬ ĐỒ 3D CỰC CHẤT Ở ĐÂY ── */}
+            <button
+              onClick={() => setShowVirtualRoom(true)}
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 md:mr-2 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-bold text-[11px] uppercase tracking-wider shadow-lg hover:scale-105 hover:shadow-fuchsia-500/30 transition-all cursor-pointer"
+            >
+              ✨ Phòng 3D
+            </button>
             {/* Chat — DESKTOP only (mobile version lives in BottomNav) */}
             {!isMobileSearchOpen && (
               <button aria-label="Mở hỗ trợ chat" onClick={() => setIsHelpOpen(true)} className={`hidden md:block p-1 transition-colors relative cursor-pointer ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`}>

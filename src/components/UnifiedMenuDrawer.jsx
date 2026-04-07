@@ -186,6 +186,7 @@ export default function UnifiedMenuDrawer({
   showToast,
   setShowPrivacyModal, setShowTermsModal,
   setShowStoryModal, setShowCareerModal, setShowContactModal,
+  setShowSizeGuideModal,
   // ── NEW: friend system ──
   user, usersList, friendsList, pendingRequests,
   onAcceptFriend, onDeclineFriend, onAddFriend,
@@ -252,9 +253,10 @@ export default function UnifiedMenuDrawer({
 
         {/* ── MENU BODY ── */}
         <div className="flex-grow flex flex-col px-5 py-4 gap-1.5">
-          {/* ── LITTLE TRIMI CUSTOMIZATION Ở TRONG MENU (Chỉ Mobile mới thấy) ─── */}
+          {/* ── LITTLE TRIMI CUSTOMIZATION Ở TRONG MENU ─── */}
           {littleTrimiConfig && updateLittleTrimiConfig && (
-            <div className={`md:hidden mt-4 p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+            // Thêm md:hidden để ẩn khối này từ màn hình PC trở lên
+            <div className={`md:hidden mt-4 p-4 rounded-2xl border ${isDarkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'}`}> 
               <p className="text-[11px] font-black text-sky-500 uppercase tracking-widest mb-3 flex items-center gap-2">
               </p>
               <div className="grid grid-cols-2 gap-3">
@@ -351,7 +353,7 @@ export default function UnifiedMenuDrawer({
                   { label: t('f_track'), action: () => { close(); requireLogin(() => navigateTo('profile')); } },
                   { label: t('f_ret'),   action: () => { close(); setShowTermsModal(true); } },
                   { label: t('f_ship'),  action: () => { close(); setShowTermsModal(true); } },
-                  { label: t('f_size'),  action: () => { close(); showToast('Tính năng Bảng Size đang được cập nhật!'); } },
+                  { label: t('f_size'),  action: () => { close(); setShowSizeGuideModal(true); } },
                 ].map(item => (
                   <button key={item.label} onClick={item.action} className={`px-4 py-2 rounded-full text-xs font-bold border transition-colors ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-sky-50 hover:border-sky-300 hover:text-sky-600'}`}>
                     {item.label}

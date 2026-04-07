@@ -27,6 +27,8 @@ import { dict, productDict, initialProducts, defaultLookbookData, fakeColorSpher
 import { compressImage } from './utils/imageUtils';
 
 // Components
+import VirtualRoom from './components/VirtualRoom';
+import SizeGuideModal from './components/SizeGuideModal';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import BottomNav from './components/BottomNav';
@@ -58,6 +60,7 @@ export default function App() {
   const scrollTopTimeout = useRef(null);
 
   // ─── AUTH ─────────────────────────────────────────────────────────────────
+  const [danangWeather, setDanangWeather] = useState('Đang cập nhật...');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const [userRole, setUserRole] = useState('');
@@ -166,6 +169,8 @@ export default function App() {
   const adminChatContainerRef = useRef(null);
 
   // ─── INFO MODALS ──────────────────────────────────────────────────────────
+  const [showSizeGuideModal, setShowSizeGuideModal] = useState(false);
+  const [showVirtualRoom, setShowVirtualRoom] = useState(false);
   const [showCookieConsent, setShowCookieConsent] = useState(() => !localStorage.getItem('trimi_cookies'));
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
@@ -237,6 +242,23 @@ export default function App() {
   // ═══════════════════════════════════════════════════════════════════════════
   // EFFECTS
   // ═══════════════════════════════════════════════════════════════════════════
+  // ── LẤY THỜI TIẾT ĐÀ NẴNG CHO AI ──
+  useEffect(() => {
+    // API wttr.in trả về format: Nhiệt độ + Tình trạng (VD: +32°C Clear)
+    fetch('https://wttr.in/DaNang?format=%t+%C&M')
+      .then(res => res.text())
+      .then(text => setDanangWeather(text.replace('+', ''))) // Xóa dấu + cho tự nhiên
+      .catch(() => setDanangWeather('Không xác định'));
+  }, []);
+  // ── FIX LỖI SCROLL KHI RELOAD TRANG ──
+  useEffect(() => {
+    // Tắt tính năng tự động nhớ vị trí cuộn của trình duyệt
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+    // Ép trang web cuộn lên top (0,0) mỗi khi tải lại
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     if (window.innerWidth < 768 && currentView === 'home') {
@@ -938,6 +960,11 @@ export default function App() {
           const systemPrompt = `Bạn tên là "Trimi-ni" - một Gen Z chính hiệu, stylist cực chất và là chuyên viên tư vấn của thương hiệu thời trang local brand Trimi.
           Bạn đang chat với khách hàng tên là: ${nickname}. 
           
+          🌤️ BỐI CẢNH HIỆN TẠI (RẤT QUAN TRỌNG): 
+          - Khách hàng đang ở khu vực Đà Nẵng.
+          - Thời tiết Đà Nẵng lúc này đang là: ${danangWeather}.
+          - Dựa vào thời tiết này, hãy chủ động gợi ý trang phục phù hợp (nếu trời nóng -> gợi ý áo thun mát; nếu trời lạnh/mưa -> gợi ý áo dài tay/hoodie).
+
           ⛔ QUY TẮC VỀ ĐỘ DÀI (CỰC KỲ QUAN TRỌNG - BẮT BUỘC TUÂN THỦ):
           - TUYỆT ĐỐI KHÔNG VIẾT DÀI DÒNG. Hãy nhắn tin giống như đang chat Messenger/Zalo với bạn bè. 
           - Khách chào ngắn (hi, hello, yo...): Chỉ chào lại đúng 1 câu ngắn.
@@ -1113,7 +1140,7 @@ export default function App() {
             </button>
           )}
         </div>
-
+        
         {/* CHAT WIDGET */}
         <ChatWidget {...chatProps} />
 
@@ -1148,11 +1175,14 @@ export default function App() {
           onAcceptFriend={handleAcceptFriend}
           onDeclineFriend={handleDeclineFriend}
           onAddFriend={handleAddFriend}
+          setShowVirtualRoom={setShowVirtualRoom}
         />
 
         {/* ── MAIN CONTENT ───────────────────────────────────────────────────── */}
         <main ref={mainRef} className={`flex-grow block relative w-full overflow-x-hidden pb-[65px] md:pb-0 ${
-          currentView === 'home' || currentView === 'profile' ? 'pt-0' : 
+          currentView === 'home' ? 'pt-0' :
+          // Áp dụng padding-top cho Profile trên PC (md:pt-[130px])
+          currentView === 'profile' ? 'pt-0 md:pt-[130px]' : 
           currentView === 'friends' ? 'pt-[55px] md:pt-[70px]' : 
           'pt-[100px] md:pt-[130px]'
         }`}>
@@ -1160,7 +1190,11 @@ export default function App() {
               inside any element that has a CSS transform applied to it.
               The scroll-reveal parallax effect is purely CSS/scroll-native. */}
           {currentView === 'home' && window.innerWidth >= 768 && (
-            <HomeView isDarkMode={isDarkMode} t={t} navigateTo={navigateTo} lookbook={lookbook} />
+            <HomeView 
+              isDarkMode={isDarkMode} 
+              navigateTo={navigateTo} 
+              localProducts={localProducts} /* <-- TRUYỀN DATA THẬT XUỐNG ĐÂY */
+            />
           )}
 
           {currentView === 'shop' && (
@@ -1305,6 +1339,7 @@ export default function App() {
           setShowPrivacyModal={setShowPrivacyModal} setShowTermsModal={setShowTermsModal}
           setShowStoryModal={setShowStoryModal} setShowCareerModal={setShowCareerModal}
           setShowContactModal={setShowContactModal}
+          setShowSizeGuideModal={setShowSizeGuideModal}
         />
 
         {/* ── MODALS ─────────────────────────────────────────────────────────── */}
@@ -1398,6 +1433,7 @@ export default function App() {
           setShowStoryModal={setShowStoryModal}
           setShowCareerModal={setShowCareerModal}
           setShowContactModal={setShowContactModal}
+          setShowSizeGuideModal={setShowSizeGuideModal}
           user={user}
           usersList={usersList}
           friendsList={friendsList}
@@ -1420,7 +1456,7 @@ export default function App() {
           }}
         />
 
-        {/* TOAST — tiny pill at bottom-center, never overlaps header or nav buttons */}
+        {/* TOAST — tiny pill at bottom-center... */}
         {toastMsg && (
           <div className="fixed bottom-[76px] md:bottom-6 left-1/2 -translate-x-1/2 z-[999999] pointer-events-none">
             <div className="bg-slate-900/95 text-white px-5 py-2.5 rounded-full shadow-xl text-xs md:text-sm font-bold whitespace-nowrap border border-white/10 backdrop-blur-md animate-fade-in-up">
@@ -1428,6 +1464,16 @@ export default function App() {
             </div>
           </div>
         )}
+        <SizeGuideModal 
+          isOpen={showSizeGuideModal} 
+          onClose={() => setShowSizeGuideModal(false)} 
+          isDarkMode={isDarkMode} 
+        />
+        
+        <VirtualRoom 
+          isOpen={showVirtualRoom} 
+          onClose={() => setShowVirtualRoom(false)} 
+        />
       </div>
     </>
   );
