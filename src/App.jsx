@@ -533,8 +533,34 @@ export default function App() {
   const showToast = (msg, type = 'default') => {
     setToastMsg(typeof msg === 'string' ? { title: msg, body: null, type } : msg);
     setTimeout(() => setToastMsg(null), 3000);
-  };
-  const requireLogin = (action) => { if (!isAuthenticated) { setShowLoginModal(true); return; } action(); };
+  };const requireLogin = (action) => {
+  if (!isAuthenticated) {
+    setShowLoginModal(true);
+    return;
+  }
+  action();
+};
+
+const openSettingsDrawer = () => {
+  if (!isAuthenticated) {
+    setAuthMode('login');
+    setShowLoginModal(true);
+    showToast('Vui lòng đăng nhập để dùng tính năng Cài đặt.');
+    return;
+  }
+
+  setTempSettings({
+    nickname,
+    phone,
+    address,
+    district,
+    theme: isDarkMode ? 'dark' : 'light',
+    lang,
+  });
+
+  setIsSettingsDrawerOpen(true);
+};
+  
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   // ── 1. THÊM HÀM ĐÓNG SẠCH SẼ MỌI MODAL/TAB ĐANG MỞ ───
@@ -725,7 +751,9 @@ export default function App() {
       if (!address || !phone) {
         showToast("Vui lòng điền Số điện thoại và Địa chỉ để chúng tôi giao hàng!");
         navigateTo('profile');
-        setTimeout(() => { setTempSettings({ nickname, phone, address, district }); setIsSettingsDrawerOpen(true); }, 800);
+        setTimeout(() => {
+  openSettingsDrawer();
+}, 800);
       } else {
         const newOrderId = 'TRIMI' + Date.now().toString().slice(-5) + Math.floor(Math.random() * 1000);
         setCurrentOrderId(newOrderId); setReceiptImg(null);
@@ -1147,36 +1175,38 @@ export default function App() {
         {/* ── HEADER ─────────────────────────────────────────────────────────── */}
         {/* FIX: setCurrentView is now passed so the search bar can switch to
             the shop view WITHOUT calling navigateTo (which would clear the query) */}
-        <Header
-          currentView={currentView}
-          isDarkMode={isDarkMode}
-          isHeaderVisible={isHeaderVisible}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          isMobileSearchOpen={isMobileSearchOpen}
-          setIsMobileSearchOpen={setIsMobileSearchOpen}
-          cartItemCount={cartItemCount}
-          isAdmin={isAdmin}
-          hasUnreadUser={hasUnreadUser}
-          totalAdminUnread={totalAdminUnread}
-          currentCategory={currentCategory}
-          lang={lang}
-          t={t}
-          navigateTo={navigateTo}
-          setCurrentView={setCurrentView}
-          setIsCartOpen={setIsCartOpen}
-          setIsUnifiedMenuOpen={setIsUnifiedMenuOpen}
-          setIsHelpOpen={setIsHelpOpen}
-          displayedProducts={displayedProducts}
-          t_prod={t_prod}
-          user={user}
-          requireLogin={requireLogin}
-          avatarUrl={avatarUrl}
-          onAcceptFriend={handleAcceptFriend}
-          onDeclineFriend={handleDeclineFriend}
-          onAddFriend={handleAddFriend}
-          setShowVirtualRoom={setShowVirtualRoom}
-        />
+        {currentView === 'shop' && (
+          <Header
+            currentView={currentView}
+            isDarkMode={isDarkMode}
+            isHeaderVisible={isHeaderVisible}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            isMobileSearchOpen={isMobileSearchOpen}
+            setIsMobileSearchOpen={setIsMobileSearchOpen}
+            cartItemCount={cartItemCount}
+            isAdmin={isAdmin}
+            hasUnreadUser={hasUnreadUser}
+            totalAdminUnread={totalAdminUnread}
+            currentCategory={currentCategory}
+            lang={lang}
+            t={t}
+            navigateTo={navigateTo}
+            setCurrentView={setCurrentView}
+            setIsCartOpen={setIsCartOpen}
+            setIsUnifiedMenuOpen={setIsUnifiedMenuOpen}
+            setIsHelpOpen={setIsHelpOpen}
+            displayedProducts={displayedProducts}
+            t_prod={t_prod}
+            user={user}
+            requireLogin={requireLogin}
+            avatarUrl={avatarUrl}
+            onAcceptFriend={handleAcceptFriend}
+            onDeclineFriend={handleDeclineFriend}
+            onAddFriend={handleAddFriend}
+            setShowVirtualRoom={setShowVirtualRoom}
+          />
+        )}
 
         {/* ── MAIN CONTENT ───────────────────────────────────────────────────── */}
         <main ref={mainRef} className={`flex-grow block relative w-full overflow-x-hidden pb-[65px] md:pb-0 ${
