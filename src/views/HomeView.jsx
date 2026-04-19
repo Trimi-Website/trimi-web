@@ -1,370 +1,657 @@
-import { useState } from 'react';
-import { FiShoppingBag, FiTruck, FiMessageCircle, FiShield, FiArrowRight, FiInstagram, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import {
+  FiShoppingBag,
+  FiTruck,
+  FiMessageCircle,
+  FiShield,
+  FiArrowRight,
+  FiInstagram,
+  FiStar,
+} from 'react-icons/fi';
+
+/* ─── CSS injected once ─────────────────────────────────────────── */
+const CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+.trimi-hero-img { transition: transform 0.7s ease; }
+.trimi-hero-wrap:hover .trimi-hero-img { transform: scale(1.03); }
+
+/* buttons */
+.trimi-btn-primary {
+  display:inline-flex;align-items:center;gap:8px;
+  background:#fff;color:#1a4fa0;
+  border:none;border-radius:999px;
+  padding:14px 28px;font-size:14px;font-weight:800;
+  cursor:pointer;
+  transition:transform .25s ease,box-shadow .25s ease,background .25s ease;
+  will-change:transform;
+}
+.trimi-btn-primary:hover {
+  transform:translateY(-3px);
+  box-shadow:0 16px 36px rgba(0,0,0,0.28);
+  background:#f0f7ff;
+}
+.trimi-btn-ghost {
+  display:inline-flex;align-items:center;gap:8px;
+  background:transparent;color:#fff;
+  border:1.5px solid rgba(255,255,255,0.38);border-radius:999px;
+  padding:14px 26px;font-size:14px;font-weight:700;
+  cursor:pointer;
+  transition:background .25s ease,border-color .25s ease,transform .25s ease;
+  will-change:transform;
+}
+.trimi-btn-ghost:hover {
+  background:rgba(255,255,255,0.14);
+  border-color:#fff;
+  transform:translateY(-2px);
+}
+.trimi-btn-accent {
+  display:inline-flex;align-items:center;gap:8px;
+  background:#2f80ed;color:#fff;
+  border:none;border-radius:999px;
+  padding:13px 26px;font-size:14px;font-weight:800;
+  cursor:pointer;
+  transition:transform .25s ease,box-shadow .25s ease,background .2s ease;
+  will-change:transform;
+}
+.trimi-btn-accent:hover {
+  transform:translateY(-3px);
+  background:#1a66cc;
+  box-shadow:0 12px 28px rgba(47,128,237,0.35);
+}
+.trimi-btn-outline {
+  display:inline-flex;align-items:center;gap:8px;
+  background:transparent;
+  border-radius:999px;
+  padding:13px 22px;font-size:14px;font-weight:700;
+  cursor:pointer;
+  transition:background .2s ease,border-color .2s ease,transform .2s ease;
+  will-change:transform;
+}
+.trimi-btn-outline:hover {
+  transform:translateY(-2px);
+}
+
+/* service cards */
+.trimi-service-card {
+  border-radius:22px;padding:20px 18px;
+  display:flex;align-items:center;gap:14px;
+  transition:transform .25s ease,box-shadow .25s ease;
+  will-change:transform;
+}
+.trimi-service-card:hover {
+  transform:translateY(-5px);
+}
+
+/* product cards */
+.trimi-product-card {
+  border-radius:22px;overflow:hidden;cursor:pointer;
+  transition:transform .28s ease,box-shadow .28s ease;
+  will-change:transform;
+}
+.trimi-product-card:hover {
+  transform:translateY(-9px);
+}
+.trimi-product-img {
+  width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform .45s ease;
+  will-change:transform;
+}
+.trimi-product-card:hover .trimi-product-img {
+  transform:scale(1.07);
+}
+
+/* category buttons */
+.trimi-cat-btn {
+  border-radius:18px;padding:15px 16px;text-align:left;
+  font-size:14px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;
+  transition:border-color .22s ease,transform .22s ease,background .22s ease;
+  will-change:transform;
+}
+.trimi-cat-btn:hover {
+  transform:translateX(5px);
+}
+
+/* promo cards */
+.trimi-promo-card {
+  border-radius:28px;overflow:hidden;
+  transition:transform .3s ease,box-shadow .3s ease;
+  will-change:transform;
+}
+.trimi-promo-card:hover {
+  transform:translateY(-6px);
+}
+`;
+
+function injectCSS(id, css) {
+  if (typeof document !== 'undefined' && !document.getElementById(id)) {
+    const el = document.createElement('style');
+    el.id = id;
+    el.textContent = css;
+    document.head.appendChild(el);
+  }
+}
 
 export default function HomeView({ isDarkMode, navigateTo, localProducts }) {
+  injectCSS('trimi-home-css', CSS);
+
   const products = Array.isArray(localProducts) ? localProducts : [];
-  const featuredProducts = products.slice(0, 4);
   const newArrivals = products.slice(0, 8);
-  const [heroSlide, setHeroSlide] = useState(0);
-
-  const heroSlides = [
-    {
-      image: '/cover-trimi.jpg',
-      badge: 'NEW COLLECTION 2026',
-      title: 'Dám Khác Biệt',
-      subtitle: 'Dám TRIMI',
-      desc: 'Phong cách riêng — không cần theo ai',
-    },
-    {
-      image: featuredProducts[0]?.imageUrl || '/1.jpg',
-      badge: 'FASHION DROP',
-      title: 'Style Của Bạn',
-      subtitle: 'Là Câu Chuyện',
-      desc: 'Mỗi bộ outfit là một ngôn ngữ không lời',
-    },
-  ];
-
-  const currentSlide = heroSlides[heroSlide];
-
-  const services = [
-    { icon: <FiShoppingBag />, title: 'Dễ Mua Sắm', desc: 'Chọn đồ theo gu' },
-    { icon: <FiTruck />, title: 'Giao Hàng Nhanh', desc: 'Nội thành Đà Nẵng' },
-    { icon: <FiMessageCircle />, title: 'Hỗ Trợ 24/7', desc: 'Gợi ý mix đồ' },
-    { icon: <FiShield />, title: 'An Toàn', desc: 'Thanh toán bảo mật' },
-  ];
 
   const categories = [
-    { label: 'Áo Thun', key: 'shirt_1' },
-    { label: 'Áo Sơ Mi', key: 'shirt_2' },
-    { label: 'Áo Khoác', key: 'shirt_3' },
-    { label: 'Quần Jeans', key: 'pants_1' },
+    { label: 'Áo Thun — Form chuẩn, vải cotton mềm', key: 'shirt_1' },
+    { label: 'Áo Sơ Mi — Nhẹ, thoáng, dễ phối', key: 'shirt_2' },
+    { label: 'Áo Khoác — Ấm nhẹ, phong cách thu đông', key: 'shirt_3' },
+    { label: 'Quần Jeans — Co giãn 4 chiều, bền màu', key: 'pants_1' },
+  ];
+
+  const services = [
+    { icon: <FiShoppingBag />, title: 'Dễ mua sắm', desc: 'Giao diện gọn, chọn đồ nhanh' },
+    { icon: <FiTruck />, title: 'Giao hàng nhanh', desc: 'Nội thành Đà Nẵng linh hoạt' },
+    { icon: <FiMessageCircle />, title: 'Tư vấn mix đồ', desc: 'Theo phong cách và vóc dáng bạn' },
+    { icon: <FiShield />, title: 'Thanh toán an toàn', desc: 'Bảo mật, nhiều hình thức' },
+  ];
+
+  const stats = [
+    { label: 'Chất liệu', value: 'Premium' },
+    { label: 'Phong cách', value: 'Minimalist' },
+    { label: 'Form dáng', value: 'Chuẩn Âu' },
+    { label: 'Màu sắc', value: 'Trung tính' },
   ];
 
   const formatPrice = (price) => `${(Number(price) || 0).toLocaleString('vi-VN')} đ`;
 
-  const bg = isDarkMode ? '#0d1117' : '#ffffff';
-  const surface = isDarkMode ? '#161b22' : '#f8f9fa';
-  const border = isDarkMode ? '#30363d' : '#e9ecef';
-  const textPrimary = isDarkMode ? '#f0f6fc' : '#0d1b2a';
-  const textMuted = isDarkMode ? '#8b949e' : '#6c757d';
-  const accent = '#1a5c8f';
-  const accentLight = isDarkMode ? '#1f3f5e' : '#e8f1f8';
+  const bg = isDarkMode ? '#080e1a' : '#f4f7fc';
+  const surface = isDarkMode ? '#0f1824' : '#ffffff';
+  const surfaceSoft = isDarkMode ? '#16202e' : '#edf2fb';
+  const border = isDarkMode ? 'rgba(255,255,255,0.07)' : '#e2e9f5';
+  const borderHover = '#2f80ed';
+  const textPrimary = isDarkMode ? '#f1f5fc' : '#0c1525';
+  const textMuted = isDarkMode ? '#8aa0be' : '#5a7090';
+  const accent = '#2f80ed';
+  const accentDeep = '#1a4fa0';
 
   return (
     <div style={{ background: bg, color: textPrimary, minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
 
-      {/* ── HERO ── */}
-      <section style={{ position: 'relative', width: '100%', height: '92vh', minHeight: 500, overflow: 'hidden' }}>
-        <img
-          src={currentSlide.image}
-          alt="TRIMI hero"
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', transition: 'opacity 0.6s ease' }}
-          onError={(e) => { e.currentTarget.src = '/1.jpg'; }}
-        />
-        {/* Dark overlay */}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(10,30,50,0.78) 0%, rgba(10,30,50,0.45) 60%, transparent 100%)' }} />
+      {/* ── HERO ───────────────────────────────────────── */}
+      <section style={{ padding: '24px 20px 0' }}>
+        <div
+          className="trimi-hero-wrap"
+          style={{
+            maxWidth: 1280,
+            margin: '0 auto',
+            position: 'relative',
+            borderRadius: 32,
+            overflow: 'hidden',
+            border: `1px solid ${border}`,
+            boxShadow: isDarkMode
+              ? '0 28px 80px rgba(0,0,0,0.45)'
+              : '0 28px 80px rgba(12,21,37,0.13)',
+            /* Fixed frame — 16:9 aspect ratio, no overflow */
+            aspectRatio: '16 / 7',
+            maxHeight: '88vh',
+            background: '#0a1220',
+          }}
+        >
+          <img
+            className="trimi-hero-img"
+            src="/cover-trimi.jpg"
+            alt="TRIMI cover"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center top',
+            }}
+            onError={(e) => { e.currentTarget.src = '/1.jpg'; }}
+          />
 
-        {/* Floating brand badge - top right */}
-        <div style={{
-          position: 'absolute', top: 32, right: 32,
-          background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(16px)',
-          border: '1px solid rgba(255,255,255,0.25)',
-          borderRadius: 50, padding: '10px 20px',
-          display: 'flex', alignItems: 'center', gap: 10,
-          color: '#fff', fontSize: 13, fontWeight: 700, letterSpacing: '0.08em',
-        }}>
-          <div style={{ width: 32, height: 32, borderRadius: '50%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900 }}>T</div>
-          TRIMI BRAND
-        </div>
-
-        {/* Floating label - bottom right */}
-        <div style={{
-          position: 'absolute', bottom: 40, right: 32,
-          background: 'rgba(255,255,255,0.95)',
-          borderRadius: 8, padding: '8px 18px',
-          color: accent, fontSize: 12, fontWeight: 800, letterSpacing: '0.18em',
-        }}>
-          TRIMI
-        </div>
-
-        {/* Hero text */}
-        <div style={{ position: 'absolute', bottom: 100, left: '6%', maxWidth: 560, color: '#fff' }}>
+          {/* gradient overlay */}
           <div style={{
-            display: 'inline-block', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255,255,255,0.3)', borderRadius: 50,
-            padding: '5px 16px', fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', marginBottom: 20,
-          }}>
-            {currentSlide.badge}
-          </div>
-          <h1 style={{ fontSize: 'clamp(2.4rem, 5vw, 4rem)', fontWeight: 900, lineHeight: 1.08, margin: 0, letterSpacing: '-0.03em' }}>
-            {currentSlide.title}<br />
-            <span style={{ color: '#60a5fa' }}>{currentSlide.subtitle}</span>
-          </h1>
-          <p style={{ marginTop: 16, fontSize: 16, opacity: 0.8, fontWeight: 400, lineHeight: 1.6 }}>
-            {currentSlide.desc}
-          </p>
-          <div style={{ display: 'flex', gap: 12, marginTop: 28, flexWrap: 'wrap' }}>
-            <button
-              onClick={() => navigateTo('shop', 'all')}
-              style={{
-                background: '#fff', color: accent,
-                border: 'none', borderRadius: 50, padding: '13px 28px',
-                fontSize: 14, fontWeight: 700, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 8,
-                transition: 'transform 0.2s, box-shadow 0.2s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.2)'; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
-            >
-              Khám Phá Ngay <FiArrowRight />
-            </button>
-            <button
-              onClick={() => navigateTo('shop', 'shirt_all')}
-              style={{
-                background: 'transparent', color: '#fff',
-                border: '1.5px solid rgba(255,255,255,0.5)', borderRadius: 50, padding: '13px 28px',
-                fontSize: 14, fontWeight: 600, cursor: 'pointer',
-                transition: 'border-color 0.2s, background 0.2s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = '#fff'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)'; }}
-            >
-              Sưu Tập
-            </button>
-          </div>
-        </div>
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(100deg, rgba(6,12,26,0.88) 0%, rgba(6,12,26,0.55) 45%, rgba(6,12,26,0.10) 100%)',
+          }} />
 
-        {/* Slide controls */}
-        <div style={{ position: 'absolute', bottom: 40, left: '6%', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <button onClick={() => setHeroSlide((heroSlide - 1 + heroSlides.length) % heroSlides.length)}
-            style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer' }}>
-            <FiChevronLeft />
-          </button>
-          <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: 600 }}>
-            {String(heroSlide + 1).padStart(2, '0')} / {String(heroSlides.length).padStart(2, '0')}
-          </span>
-          <button onClick={() => setHeroSlide((heroSlide + 1) % heroSlides.length)}
-            style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer' }}>
-            <FiChevronRight />
-          </button>
+          {/* ── TRIMI badge — RIGHT SIDE ── */}
+          <div style={{
+            position: 'absolute',
+            top: 24,
+            right: 24,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 10,
+            padding: '10px 20px 10px 10px',
+            borderRadius: 999,
+            background: 'rgba(255,255,255,0.12)',
+            border: '1px solid rgba(255,255,255,0.20)',
+            backdropFilter: 'blur(16px)',
+            color: '#fff',
+            fontSize: 13,
+            fontWeight: 800,
+            letterSpacing: '0.09em',
+            zIndex: 3,
+          }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: '50%',
+              background: accent,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 900, fontSize: 15,
+            }}>T</div>
+            TRIMI
+          </div>
+
+          {/* ── NEW COLLECTION chip — bottom right ── */}
+          <div style={{
+            position: 'absolute',
+            right: 24,
+            bottom: 24,
+            background: 'rgba(255,255,255,0.12)',
+            border: '1px solid rgba(255,255,255,0.20)',
+            backdropFilter: 'blur(16px)',
+            borderRadius: 20,
+            padding: '14px 20px',
+            color: '#fff',
+            minWidth: 210,
+            zIndex: 3,
+          }}>
+            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.2em', opacity: 0.8, marginBottom: 6 }}>
+              BST MỚI — XUÂN HÈ 2026
+            </div>
+            <div style={{ fontSize: 18, fontWeight: 900, lineHeight: 1.25 }}>Dám Khác Biệt</div>
+            <div style={{ fontSize: 13, marginTop: 4, opacity: 0.85 }}>Bộ sưu tập giới hạn từ TRIMI</div>
+          </div>
+
+          {/* ── Hero text — LEFT ── */}
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 2,
+            display: 'flex',
+            alignItems: 'center',
+          }}>
+            <div style={{
+              maxWidth: 600,
+              padding: '0 28px 0 36px',
+              color: '#fff',
+            }}>
+              {/* eyebrow */}
+              <div style={{
+                display: 'inline-block',
+                padding: '7px 16px',
+                borderRadius: 999,
+                background: 'rgba(47,128,237,0.22)',
+                border: '1px solid rgba(47,128,237,0.45)',
+                fontSize: 11,
+                fontWeight: 800,
+                letterSpacing: '0.18em',
+                marginBottom: 20,
+                color: '#7cc4ff',
+              }}>
+                TRIMI FASHION 2026
+              </div>
+
+              <h1 style={{
+                margin: 0,
+                fontSize: 'clamp(2rem, 4.5vw, 4.2rem)',
+                lineHeight: 1.05,
+                fontWeight: 900,
+                letterSpacing: '-0.04em',
+              }}>
+                Chất liệu cao cấp.
+                <br />
+                <span style={{ color: '#7cc4ff' }}>Thiết kế tối giản.</span>
+              </h1>
+
+              <p style={{
+                marginTop: 8,
+                marginBottom: 0,
+                fontSize: 'clamp(1rem, 1.8vw, 1.15rem)',
+                fontWeight: 700,
+                color: 'rgba(255,255,255,0.75)',
+                letterSpacing: '-0.01em',
+              }}>
+                Thời trang hàng ngày — nhẹ, thoáng, dễ phối đồ.
+              </p>
+
+              <p style={{
+                marginTop: 14,
+                marginBottom: 0,
+                fontSize: 14,
+                lineHeight: 1.85,
+                color: 'rgba(255,255,255,0.72)',
+                maxWidth: 480,
+              }}>
+                Vải premium co giãn 4 chiều, form chuẩn Âu, màu sắc trung tính —&nbsp;
+                TRIMI tạo ra những bộ đồ bạn muốn mặc mỗi ngày.
+              </p>
+
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 28 }}>
+                <button className="trimi-btn-primary" onClick={() => navigateTo('shop', 'all')}>
+                  Khám phá ngay <FiArrowRight />
+                </button>
+                <button className="trimi-btn-ghost" onClick={() => navigateTo('shop', 'shirt_all')}>
+                  Xem bộ sưu tập
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 22 }}>
+                {['Vải Premium', 'Co giãn 4 chiều', 'Form chuẩn Âu', 'Dễ phối đồ'].map((tag) => (
+                  <span key={tag} style={{
+                    padding: '8px 14px',
+                    borderRadius: 999,
+                    background: 'rgba(255,255,255,0.09)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    fontSize: 12,
+                    fontWeight: 600,
+                  }}>{tag}</span>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ── SERVICES STRIP ── */}
-      <section style={{ background: surface, borderTop: `1px solid ${border}`, borderBottom: `1px solid ${border}` }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 }}>
-          {services.map((s) => (
-            <div key={s.title} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '16px 12px', borderRadius: 12, transition: 'background 0.2s', cursor: 'default' }}
-              onMouseEnter={e => e.currentTarget.style.background = isDarkMode ? '#1f2937' : '#edf4fb'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-              <div style={{ fontSize: 22, color: accent }}>{s.icon}</div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: textPrimary, textAlign: 'center' }}>{s.title}</div>
-              <div style={{ fontSize: 12, color: textMuted, textAlign: 'center' }}>{s.desc}</div>
+      {/* ── SERVICES ──────────────────────────────────── */}
+      <section style={{ padding: '28px 20px 0' }}>
+        <div style={{
+          maxWidth: 1280, margin: '0 auto',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: 14,
+        }}>
+          {services.map((item) => (
+            <div
+              key={item.title}
+              className="trimi-service-card"
+              style={{
+                background: surface,
+                border: `1px solid ${border}`,
+                boxShadow: isDarkMode ? 'none' : '0 2px 12px rgba(12,21,37,0.05)',
+              }}
+            >
+              <div style={{
+                width: 48, height: 48, borderRadius: 16, flexShrink: 0,
+                background: isDarkMode ? 'rgba(47,128,237,0.14)' : '#e8f1ff',
+                color: accent,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 22,
+              }}>
+                {item.icon}
+              </div>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: textPrimary }}>{item.title}</div>
+                <div style={{ fontSize: 13, color: textMuted, marginTop: 3 }}>{item.desc}</div>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── FEATURE SECTION ── */}
-      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '64px 24px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'center' }}>
-
-          {/* Left: image with slide counter */}
-          <div style={{ position: 'relative', borderRadius: 20, overflow: 'hidden', background: surface, aspectRatio: '4/3' }}>
+      {/* ── STYLE / COLLECTION SPLIT ─────────────────── */}
+      <section style={{ padding: '36px 20px 0' }}>
+        <div style={{
+          maxWidth: 1280, margin: '0 auto',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: 22,
+        }}>
+          {/* Left — editorial image card */}
+          <div
+            className="trimi-promo-card"
+            style={{
+              position: 'relative',
+              minHeight: 520,
+              border: `1px solid ${border}`,
+              background: surface,
+            }}
+          >
             <img
-              src={featuredProducts[0]?.imageUrl || '/1.jpg'}
-              alt="TRIMI feature"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.6s ease' }}
-              onError={e => { e.currentTarget.src = '/1.jpg'; }}
-              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'}
-              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+              src={products[1]?.imageUrl || '/2.jpg'}
+              alt="TRIMI lookbook"
+              style={{
+                width: '100%', height: '100%',
+                position: 'absolute', inset: 0,
+                objectFit: 'cover',
+                transition: 'transform 0.5s ease',
+              }}
+              onError={(e) => { e.currentTarget.src = '/2.jpg'; }}
             />
             <div style={{
-              position: 'absolute', bottom: 16, right: 16,
-              background: 'rgba(255,255,255,0.95)', borderRadius: 50,
-              padding: '6px 14px', fontSize: 12, fontWeight: 700, color: accent,
-            }}>
-              208 +
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(180deg, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.65) 100%)',
+            }} />
+            <div style={{ position: 'absolute', left: 28, right: 28, bottom: 28, color: '#fff' }}>
+              <div style={{
+                display: 'inline-block', padding: '6px 14px', borderRadius: 999,
+                background: 'rgba(255,255,255,0.13)', border: '1px solid rgba(255,255,255,0.2)',
+                fontSize: 10, fontWeight: 800, letterSpacing: '0.18em', marginBottom: 14,
+              }}>
+                TRIMI LOOKBOOK
+              </div>
+              <div style={{ fontSize: 28, fontWeight: 900, lineHeight: 1.15 }}>
+                Tối giản,<br />vẫn có điểm nhấn.
+              </div>
+              <p style={{
+                margin: '12px 0 0', fontSize: 14, lineHeight: 1.75,
+                color: 'rgba(255,255,255,0.82)', maxWidth: 420,
+              }}>
+                Mỗi sản phẩm TRIMI được chọn lọc kỹ — từ chất vải mềm mịn, đường may chuẩn
+                đến bảng màu trung tính dễ phối với bất kỳ trang phục nào.
+              </p>
             </div>
-            {/* Nav dots */}
-            <div style={{ position: 'absolute', bottom: 16, left: 16, display: 'flex', gap: 6 }}>
-              {[0, 1, 2].map(i => (
-                <div key={i} style={{ width: i === 0 ? 20 : 6, height: 6, borderRadius: 3, background: i === 0 ? '#fff' : 'rgba(255,255,255,0.4)', transition: 'width 0.3s' }} />
+          </div>
+
+          {/* Right — collection info + stats */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {/* Collection card */}
+            <div style={{
+              background: surface, border: `1px solid ${border}`,
+              borderRadius: 28, padding: 30,
+              boxShadow: isDarkMode ? 'none' : '0 4px 20px rgba(12,21,37,0.06)',
+            }}>
+              <div style={{
+                display: 'inline-block', padding: '7px 14px', borderRadius: 999,
+                background: isDarkMode ? 'rgba(47,128,237,0.16)' : '#e8f1ff',
+                color: accent, fontSize: 11, fontWeight: 800, letterSpacing: '0.16em',
+                marginBottom: 16,
+              }}>
+                BỘ SƯU TẬP
+              </div>
+
+              <h2 style={{
+                margin: 0,
+                fontSize: 'clamp(1.8rem, 2.8vw, 2.5rem)',
+                fontWeight: 900, lineHeight: 1.1, letterSpacing: '-0.03em',
+              }}>
+                Mặc đẹp mỗi ngày,<br />
+                <span style={{ color: accent }}>không cần cố gắng.</span>
+              </h2>
+
+              <p style={{
+                marginTop: 14, marginBottom: 24,
+                color: textMuted, fontSize: 14.5, lineHeight: 1.85,
+              }}>
+                Bộ sưu tập TRIMI 2026 lấy cảm hứng từ phong cách Âu châu hiện đại — thiết kế
+                tinh gọn, chất liệu thở được, và form dáng tôn vóc dáng mọi người mặc.
+              </p>
+
+              <div style={{ display: 'grid', gap: 10 }}>
+                {categories.map((item) => (
+                  <button
+                    key={item.key}
+                    className="trimi-cat-btn"
+                    onClick={() => navigateTo('shop', item.key)}
+                    style={{
+                      background: surfaceSoft,
+                      color: textPrimary,
+                      border: `1.5px solid ${border}`,
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = borderHover; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = border; }}
+                  >
+                    {item.label}
+                    <FiArrowRight style={{ flexShrink: 0, opacity: 0.6 }} />
+                  </button>
+                ))}
+              </div>
+
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 24 }}>
+                <button className="trimi-btn-accent" onClick={() => navigateTo('shop', 'all')}>
+                  Xem tất cả <FiArrowRight />
+                </button>
+                <button
+                  className="trimi-btn-outline"
+                  onClick={() => navigateTo('shop', 'acc_all')}
+                  style={{ color: textPrimary, border: `1.5px solid ${border}` }}
+                >
+                  <FiInstagram /> Theo dõi TRIMI
+                </button>
+              </div>
+            </div>
+
+            {/* Stats grid */}
+            <div style={{
+              background: surface, border: `1px solid ${border}`,
+              borderRadius: 28, padding: 24,
+              display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14,
+              boxShadow: isDarkMode ? 'none' : '0 4px 20px rgba(12,21,37,0.06)',
+            }}>
+              {stats.map((s) => (
+                <div key={s.label} style={{
+                  background: surfaceSoft, borderRadius: 18, padding: '18px 20px',
+                  border: `1px solid ${border}`,
+                }}>
+                  <div style={{ fontSize: 11, color: textMuted, fontWeight: 700, letterSpacing: '0.1em' }}>
+                    {s.label.toUpperCase()}
+                  </div>
+                  <div style={{ fontSize: 20, fontWeight: 900, marginTop: 8, color: textPrimary }}>
+                    {s.value}
+                  </div>
+                </div>
               ))}
             </div>
           </div>
-
-          {/* Right: text */}
-          <div>
-            <div style={{
-              display: 'inline-block', background: accentLight, color: accent,
-              borderRadius: 50, padding: '5px 16px', fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', marginBottom: 20,
-            }}>
-              TRIMI STYLE CONCEPT
-            </div>
-            <h2 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.6rem)', fontWeight: 900, lineHeight: 1.15, margin: '0 0 20px', letterSpacing: '-0.03em', color: textPrimary }}>
-              Phụ kiện tinh tế<br />giúp outfit nổi bật hơn
-            </h2>
-            <p style={{ fontSize: 15, lineHeight: 1.8, color: textMuted, maxWidth: 420 }}>
-              Khám phá bộ sưu tập phụ kiện & thời trang được chọn lọc kỹ càng — kết hợp hiện đại và cá tính, dễ phối mọi outfit.
-            </p>
-            <div style={{ display: 'flex', gap: 12, marginTop: 32, flexWrap: 'wrap' }}>
-              <button
-                onClick={() => navigateTo('shop', 'all')}
-                style={{
-                  background: accent, color: '#fff', border: 'none', borderRadius: 50,
-                  padding: '12px 26px', fontSize: 14, fontWeight: 700, cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: 8, transition: 'transform 0.2s, box-shadow 0.2s',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 24px rgba(26,92,143,0.3)`; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
-              >
-                Shop Now <FiArrowRight />
-              </button>
-              <button
-                onClick={() => navigateTo('shop', 'acc_all')}
-                style={{
-                  background: 'transparent', color: textPrimary,
-                  border: `1.5px solid ${border}`, borderRadius: 50,
-                  padding: '12px 26px', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: 8, transition: 'border-color 0.2s',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = accent; e.currentTarget.style.color = accent; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = border; e.currentTarget.style.color = textPrimary; }}
-              >
-                <FiInstagram /> Follow Instagram
-              </button>
-            </div>
-          </div>
         </div>
       </section>
 
-      {/* ── CATEGORIES + PRODUCTS ── */}
-      <section style={{ background: surface, borderTop: `1px solid ${border}` }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '64px 24px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'start' }}>
-
-            {/* Left: big product image */}
-            <div style={{ position: 'relative', borderRadius: 20, overflow: 'hidden', aspectRatio: '3/4', background: isDarkMode ? '#1e293b' : '#f1f5f9' }}>
-              <img
-                src={featuredProducts[1]?.imageUrl || '/2.jpg'}
-                alt="TRIMI product"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.6s' }}
-                onError={e => { e.currentTarget.src = '/2.jpg'; }}
-                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-              />
-              <button
-                onClick={() => navigateTo('shop', 'all')}
-                style={{
-                  position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)',
-                  background: 'rgba(255,255,255,0.95)', color: accent,
-                  border: 'none', borderRadius: 50, padding: '10px 22px',
-                  fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  whiteSpace: 'nowrap',
-                }}>
-                View All <FiArrowRight />
-              </button>
-            </div>
-
-            {/* Right: category list + product grid */}
-            <div>
-              <div style={{
-                background: isDarkMode ? '#1e293b' : '#fff',
-                border: `1px solid ${border}`, borderRadius: 20, padding: 28, marginBottom: 24,
-              }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: accent, letterSpacing: '0.18em', marginBottom: 8 }}>200+ items</div>
-                <h3 style={{ fontSize: '2rem', fontWeight: 900, margin: '0 0 20px', letterSpacing: '-0.04em', color: textPrimary }}>Bộ Sưu Tập</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {categories.map((c) => (
-                    <button key={c.key} onClick={() => navigateTo('shop', c.key)}
-                      style={{
-                        background: 'none', border: 'none', padding: '8px 0',
-                        borderBottom: `1px solid ${border}`, display: 'flex', alignItems: 'center',
-                        justifyContent: 'space-between', cursor: 'pointer', color: textMuted,
-                        fontSize: 14, fontWeight: 500, textAlign: 'left', transition: 'color 0.2s',
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.color = accent; }}
-                      onMouseLeave={e => { e.currentTarget.style.color = textMuted; }}>
-                      {c.label}
-                      <FiArrowRight style={{ opacity: 0.5 }} />
-                    </button>
-                  ))}
-                </div>
-                <button onClick={() => navigateTo('shop', 'all')}
-                  style={{
-                    marginTop: 20, background: 'none', border: 'none', color: accent,
-                    fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, padding: 0,
-                  }}>
-                  View All <FiArrowRight />
-                </button>
-              </div>
-
-              {/* Mini product grid */}
-              {featuredProducts[2] && (
-                <div style={{ borderRadius: 20, overflow: 'hidden', aspectRatio: '4/3', background: isDarkMode ? '#1e293b' : '#f1f5f9' }}>
-                  <img
-                    src={featuredProducts[2]?.imageUrl || '/3.jpg'}
-                    alt="TRIMI item"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.6s' }}
-                    onError={e => { e.currentTarget.src = '/3.jpg'; }}
-                    onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.04)'}
-                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── NEW ARRIVALS GRID ── */}
+      {/* ── PRODUCTS ─────────────────────────────────── */}
       {newArrivals.length > 0 && (
-        <section style={{ maxWidth: 1200, margin: '0 auto', padding: '64px 24px' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 32, flexWrap: 'wrap', gap: 12 }}>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: textMuted, letterSpacing: '0.2em', marginBottom: 6 }}>LATEST PIECES</div>
-              <h2 style={{ fontSize: 'clamp(1.6rem, 3vw, 2.4rem)', fontWeight: 900, margin: 0, letterSpacing: '-0.04em', color: textPrimary }}>Sản Phẩm Nổi Bật</h2>
-            </div>
-            <button onClick={() => navigateTo('shop', 'all')}
-              style={{
-                background: 'none', border: `1.5px solid ${border}`, borderRadius: 50,
-                padding: '10px 22px', fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                color: textPrimary, display: 'flex', alignItems: 'center', gap: 6, transition: 'border-color 0.2s, color 0.2s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = accent; e.currentTarget.style.color = accent; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = border; e.currentTarget.style.color = textPrimary; }}>
-              Xem tất cả <FiArrowRight />
-            </button>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 20 }}>
-            {newArrivals.map((product, index) => (
-              <div key={product.id || index}
-                onClick={() => navigateTo('productDetail', product.category || 'all', product)}
-                style={{
-                  background: isDarkMode ? '#161b22' : '#fff',
-                  border: `1px solid ${border}`,
-                  borderRadius: 16, overflow: 'hidden', cursor: 'pointer',
-                  transition: 'transform 0.25s, box-shadow 0.25s',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = `0 16px 40px rgba(0,0,0,${isDarkMode ? 0.3 : 0.1})`; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}>
-                <div style={{ background: isDarkMode ? '#1e293b' : '#f8f9fa', aspectRatio: '4/5', overflow: 'hidden' }}>
-                  <img src={product.imageUrl} alt={product.name}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.5s' }}
-                    onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.06)'}
-                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-                  />
+        <section style={{ padding: '40px 20px 60px' }}>
+          <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+            {/* section header */}
+            <div style={{
+              display: 'flex', alignItems: 'flex-end',
+              justifyContent: 'space-between', gap: 16,
+              flexWrap: 'wrap', marginBottom: 24,
+            }}>
+              <div>
+                <div style={{
+                  fontSize: 11, color: textMuted, fontWeight: 800,
+                  letterSpacing: '0.2em', marginBottom: 8,
+                }}>
+                  SẢN PHẨM NỔI BẬT
                 </div>
-                <div style={{ padding: '14px 16px' }}>
-                  <h4 style={{ margin: '0 0 6px', fontSize: 14, fontWeight: 600, color: textPrimary, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                    {product.name}
-                  </h4>
-                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: accent }}>{formatPrice(product.price)}</p>
-                </div>
+                <h2 style={{
+                  margin: 0,
+                  fontSize: 'clamp(1.8rem, 3vw, 2.5rem)',
+                  fontWeight: 900, letterSpacing: '-0.03em',
+                }}>
+                  Được yêu thích nhất
+                </h2>
               </div>
-            ))}
+              <button
+                className="trimi-btn-outline"
+                onClick={() => navigateTo('shop', 'all')}
+                style={{
+                  color: textPrimary,
+                  border: `1.5px solid ${border}`,
+                  background: surface,
+                  padding: '12px 22px',
+                }}
+              >
+                Xem tất cả <FiArrowRight />
+              </button>
+            </div>
+
+            {/* product grid */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))',
+              gap: 18,
+            }}>
+              {newArrivals.map((product, index) => (
+                <div
+                  key={product.id || index}
+                  className="trimi-product-card"
+                  onClick={() => navigateTo('productDetail', product.category || 'all', product)}
+                  style={{
+                    background: surface,
+                    border: `1px solid ${border}`,
+                    boxShadow: isDarkMode ? 'none' : '0 2px 14px rgba(12,21,37,0.06)',
+                  }}
+                >
+                  {/* image */}
+                  <div style={{
+                    position: 'relative',
+                    background: surfaceSoft,
+                    aspectRatio: '4 / 5',
+                    overflow: 'hidden',
+                  }}>
+                    <img
+                      className="trimi-product-img"
+                      src={product.imageUrl}
+                      alt={product.name}
+                    />
+                    {/* badge */}
+                    <div style={{
+                      position: 'absolute', top: 12, left: 12,
+                      background: 'rgba(255,255,255,0.93)',
+                      color: accentDeep,
+                      padding: '5px 10px', borderRadius: 999,
+                      fontSize: 10, fontWeight: 800, letterSpacing: '0.08em',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+                    }}>
+                      TRIMI
+                    </div>
+                    {/* rating */}
+                    <div style={{
+                      position: 'absolute', top: 12, right: 12,
+                      background: 'rgba(255,255,255,0.93)',
+                      color: '#f59e0b',
+                      padding: '5px 9px', borderRadius: 999,
+                      fontSize: 11, fontWeight: 800,
+                      display: 'flex', alignItems: 'center', gap: 4,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+                    }}>
+                      <FiStar /> 4.9
+                    </div>
+                  </div>
+
+                  {/* info */}
+                  <div style={{ padding: '14px 16px 18px' }}>
+                    <h3 style={{
+                      margin: 0, fontSize: 14, fontWeight: 700,
+                      lineHeight: 1.5, color: textPrimary,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden', minHeight: 42,
+                    }}>
+                      {product.name}
+                    </h3>
+                    <div style={{
+                      marginTop: 10, fontSize: 16,
+                      fontWeight: 900, color: accent,
+                    }}>
+                      {formatPrice(product.price)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       )}
