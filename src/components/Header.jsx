@@ -1,177 +1,354 @@
-import { FiMenu, FiSearch, FiShoppingCart, FiMessageCircle, FiUser } from 'react-icons/fi';
-import NotificationBell from './NotificationBell';
+import React from "react";
 
-export default function Header({
-  currentView, isDarkMode, isHeaderVisible,
-  searchQuery, setSearchQuery,
-  isMobileSearchOpen, setIsMobileSearchOpen,
-  cartItemCount, isAdmin, hasUnreadUser, totalAdminUnread,
-  currentCategory, lang, t,
-  navigateTo, setCurrentView,
-  setIsCartOpen, setIsUnifiedMenuOpen, setIsHelpOpen,
-  displayedProducts, t_prod,
-  user,
-  requireLogin,    // ← needed for profile button
-  avatarUrl,       // ← shows user's avatar if available
-  onAcceptFriend,  // ← passed through to NotificationBell
-  onDeclineFriend, // ← passed through to NotificationBell
-  setShowVirtualRoom // <--- THÊM ĐÚNG CHỮ NÀY VÀO ĐÂY
-}) {
-  const handleSearchChange = (value) => {
-    setSearchQuery(value);
-    setCurrentView('shop');
-  };
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M21 21L16.65 16.65M18 10.5C18 14.6421 14.6421 18 10.5 18C6.35786 18 3 14.6421 3 10.5C3 6.35786 6.35786 3 10.5 3C14.6421 3 18 6.35786 18 10.5Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function MessageIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M8 18.5H7C5.34315 18.5 4 17.1569 4 15.5V8.5C4 6.84315 5.34315 5.5 7 5.5H17C18.6569 5.5 20 6.84315 20 8.5V15.5C20 17.1569 18.6569 18.5 17 18.5H12.5L8.5 21V18.5H8Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function CartIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M3 4H5.2L7 14H18.3L20.2 7H8"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="9" cy="19" r="1.5" fill="currentColor" />
+      <circle cx="17" cy="19" r="1.5" fill="currentColor" />
+    </svg>
+  );
+}
+
+function MenuIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M4 7H20M4 12H20M4 17H20"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+export default function Header() {
+  const categories = ["TẤT CẢ", "ÁO", "QUẦN", "LINH KIỆN"];
 
   return (
-    <header className={`fixed top-0 left-0 w-full z-[100] border-b flex-shrink-0 transition-all duration-500 ease-in-out ${isHeaderVisible ? 'translate-y-0' : '-translate-y-full'} ${currentView === 'home' ? (isDarkMode ? 'bg-[#111111] border-slate-800' : 'bg-white border-slate-200') : (isDarkMode ? 'bg-[#111111] border-slate-800' : 'bg-white border-slate-200 shadow-sm')}`}>
-      <div className={`max-w-[1400px] mx-auto px-4 md:px-8 transition-all duration-500 ${currentView === 'home' ? 'py-2' : 'pt-3 pb-0'}`}>
+    <>
+      <header className="trimi-header">
+        <div className="trimi-header__inner">
+          <div className="trimi-header__top">
+            <a href="/" className="trimi-header__logo" aria-label="TRIMI">
+              <img src="/apple-touch-icon.png" alt="TRIMI" />
+            </a>
 
-        <div className={`flex items-center justify-between gap-3 md:gap-4 transition-all duration-500 ${currentView === 'home' ? 'pb-0' : 'pb-2 md:pb-3'}`}>
+            <div className="trimi-header__search">
+              <input type="text" placeholder="Tìm kiếm..." />
+              <button type="button" aria-label="Tìm kiếm">
+                <SearchIcon />
+              </button>
+            </div>
 
-          {/* LEFT: Mobile hamburger + Logo */}
-          <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-            <button
-              aria-label="Mở menu"
-              onClick={() => setIsUnifiedMenuOpen(true)}
-              className={`md:hidden p-1 transition-colors cursor-pointer ${isDarkMode ? 'text-white' : 'text-slate-900'}`}
-            >
-              <FiMenu className="text-[26px]" />
-            </button>
-            {/* THAY LOGO ẢNH VÀO ĐÂY */}
-            <img 
-              src={isDarkMode ? '/logo_dark.png' : '/logo.png'} 
-              alt="Trimi Logo" 
-              onClick={() => navigateTo('home', 'all')}
-              className="hidden md:block h-14 md:h-20 w-auto object-contain cursor-pointer transition-transform hover:scale-105" 
-            />
+            <div className="trimi-header__actions">
+              <button type="button" className="trimi-icon-btn" aria-label="Tin nhắn">
+                <MessageIcon />
+              </button>
+
+              <button type="button" className="trimi-icon-btn trimi-cart-btn" aria-label="Giỏ hàng">
+                <CartIcon />
+                <span className="trimi-cart-badge">1</span>
+              </button>
+
+              <button type="button" className="trimi-icon-btn" aria-label="Menu">
+                <MenuIcon />
+              </button>
+            </div>
           </div>
 
-          {/* CENTER: Search */}
-          {currentView !== 'home' ? (
-            <div className="flex relative flex-grow justify-end md:justify-center mx-2 md:mx-6 animate-fade-in">
-              <div className="hidden md:flex relative w-full max-w-[400px]">
-                <div className={`flex rounded-full w-full overflow-hidden border shadow-inner z-50 relative h-10 ${isDarkMode ? 'bg-white/10 border-slate-700 text-white focus-within:border-sky-500' : 'bg-slate-100 border-transparent focus-within:border-slate-300 focus-within:bg-white text-slate-800'}`}>
-                  <input type="text" value={searchQuery} onChange={(e) => handleSearchChange(e.target.value)} placeholder={t('search')} className="w-full px-4 text-sm outline-none bg-transparent placeholder-slate-500 font-medium"/>
-                  <button aria-label="Tìm kiếm" className="px-4 text-slate-400 hover:text-sky-500 transition-colors"><FiSearch className="text-lg"/></button>
-                </div>
-                {searchQuery && (
-                  <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 max-h-60 overflow-y-auto animate-fade-in-up">
-                    {displayedProducts.length > 0 ? displayedProducts.map(p => (
-                      <div key={p.id} onClick={() => { setSearchQuery(''); navigateTo('productDetail', p.category, p); }} className="px-4 py-2 hover:bg-slate-50 cursor-pointer flex items-center gap-3 transition-colors">
-                        <img src={p.imageUrl} className="w-10 h-10 object-cover rounded-md border border-slate-100" alt=""/>
-                        <div className="flex-1">
-                          <p className="text-sm font-bold text-slate-800 line-clamp-1">{t_prod(p.id, 'name', p.name)}</p>
-                          <p className="text-xs text-sky-600 font-black">{(Number(p.price) || 0).toLocaleString('vi-VN')}đ</p>
-                        </div>
-                      </div>
-                    )) : <div className="px-4 py-3 text-sm text-slate-500 text-center font-medium">Không tìm thấy sản phẩm</div>}
-                  </div>
-                )}
-              </div>
-              <div className="md:hidden flex items-center justify-end w-full">
-                {isMobileSearchOpen ? (
-                  <div className={`flex rounded-full w-full overflow-hidden border shadow-inner z-50 relative h-9 ${isDarkMode ? 'bg-white/10 border-slate-700 text-white' : 'bg-slate-100 border-transparent text-slate-800'} animate-fade-in-right`}>
-                    <input autoFocus type="text" value={searchQuery} onChange={(e) => handleSearchChange(e.target.value)} onBlur={() => setTimeout(() => setIsMobileSearchOpen(false), 200)} placeholder={t('search')} className="w-full px-4 text-xs outline-none bg-transparent"/>
-                    <button className="px-3 text-slate-400"><FiSearch/></button>
-                  </div>
-                ) : (
-                  <button onClick={() => setIsMobileSearchOpen(true)} className={`p-2 transition-colors ${isDarkMode ? 'text-white' : 'text-slate-600'}`}>
-                    <FiSearch className="text-xl"/>
-                  </button>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="flex-grow"></div>
-          )}
-
-          {/* RIGHT: Chat (mobile) + Cart + Bell + Profile + Desktop menu */}
-          <div className="flex items-center gap-1 md:gap-1.5 text-sm font-semibold text-slate-700 flex-shrink-0 relative z-[1001]">
-            {/* ── NÚT MỞ PHÒNG THỬ ĐỒ 3D CỰC CHẤT Ở ĐÂY ── */}
-            <button
-              onClick={() => setShowVirtualRoom(true)}
-              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 md:mr-2 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-bold text-[11px] uppercase tracking-wider shadow-lg hover:scale-105 hover:shadow-fuchsia-500/30 transition-all cursor-pointer"
-            >
-              ✨ Phòng 3D
-            </button>
-            {/* Chat — DESKTOP only (mobile version lives in BottomNav) */}
-            {!isMobileSearchOpen && (
-              <button aria-label="Mở hỗ trợ chat" onClick={() => setIsHelpOpen(true)} className={`hidden md:block p-1 transition-colors relative cursor-pointer ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`}>
-                <FiMessageCircle className="text-[22px]" />
-                {(!isAdmin && hasUnreadUser) && <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 border border-white rounded-full"></span>}
-                {(isAdmin && totalAdminUnread > 0) && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">{totalAdminUnread}</span>}
-              </button>
-            )}
-
-            {/* Cart — visible on all screens */}
-            <div aria-label="Mở giỏ hàng" className={`hidden md:flex items-center gap-2 cursor-pointer transition-colors relative group p-1 md:p-2 ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`} onClick={() => setIsCartOpen(true)}>
-              <div id="header-cart-icon" className="relative transition-transform duration-300">
-                <FiShoppingCart className={`${currentView === 'home' ? 'text-xl' : 'text-2xl'}`}/>
-                {cartItemCount > 0 && <span className="absolute -top-1 -right-2 bg-sky-500 text-white w-4 h-4 flex items-center justify-center text-[10px] font-bold rounded-full shadow-sm border border-white">{cartItemCount}</span>}
-              </div>
-            </div>
-
-            {/* Notification Bell — DESKTOP only (mobile version lives in BottomNav) */}
-            <div className="hidden md:block">
-              <NotificationBell user={user} isAdmin={isAdmin} isDarkMode={isDarkMode} onAcceptFriend={onAcceptFriend} onDeclineFriend={onDeclineFriend} />
-            </div>
-
-            {/* Profile avatar — DESKTOP only (Account tab in BottomNav on mobile) */}
-            {user && (
+          <nav className="trimi-header__nav">
+            {categories.map((item, index) => (
               <button
-                aria-label="Tài khoản"
-                onClick={() => requireLogin(() => navigateTo('profile'))}
-                className={`hidden md:flex p-1 md:p-1.5 transition-colors cursor-pointer relative items-center justify-center ${
-                  currentView === 'profile'
-                    ? isDarkMode ? 'text-sky-400' : 'text-sky-600'
-                    : isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'
-                }`}
+                key={item}
+                type="button"
+                className={`trimi-nav-btn ${index === 0 ? "active" : ""}`}
               >
-                {avatarUrl ? (
-                  <img
-                    src={avatarUrl}
-                    alt="Tài khoản"
-                    className={`w-7 h-7 md:w-8 md:h-8 rounded-full object-cover border-2 transition-colors ${
-                      currentView === 'profile' ? 'border-sky-500' : isDarkMode ? 'border-slate-600' : 'border-slate-300'
-                    }`}
-                  />
-                ) : (
-                  <FiUser className="text-xl md:text-2xl"/>
-                )}
-                {currentView === 'profile' && (
-                  <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-sky-500 rounded-full"></span>
-                )}
+                {item}
               </button>
-            )}
-
-            {/* Desktop hamburger menu */}
-            <button aria-label="Mở menu" onClick={() => setIsUnifiedMenuOpen(true)} className={`hidden md:block p-1.5 md:p-2 transition-colors cursor-pointer relative z-[1100] ${isDarkMode ? 'text-white hover:text-sky-400' : 'text-slate-900 hover:text-sky-600'}`}>
-              <FiMenu className={`${currentView === 'home' ? 'text-2xl' : 'text-3xl'}`} />
-            </button>
-          </div>
-        </div>
-
-        {/* ── CATEGORY SUB-NAV — desktop only; mobile version lives in UnifiedMenu ── */}
-        <div className={`hidden md:block overflow-hidden transition-all duration-500 ${currentView === 'home' ? 'max-h-0 opacity-0' : 'max-h-[50px] opacity-100'}`}>
-          <nav className="flex overflow-x-auto custom-scrollbar lg:justify-center gap-6 md:gap-2 text-[11px] md:text-[13px] font-bold text-slate-500 uppercase tracking-widest border-t border-slate-100 relative z-30 pb-2 md:pb-0 pt-2 md:pt-0 whitespace-nowrap">
-            <div className="relative group cursor-pointer flex-shrink-0">
-              <button onClick={() => navigateTo('shop', 'all')} className={`md:px-6 md:py-4 border-b-2 transition-colors uppercase ${currentView === 'shop' && currentCategory === 'all' ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>
-                Tất cả
-              </button>
-            </div>
-            <div className="relative group cursor-pointer flex-shrink-0">
-              <button onClick={() => navigateTo('shop', 'shirt_all')} className={`md:px-6 md:py-4 border-b-2 transition-colors uppercase ${currentCategory.includes('shirt') ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('nav_shirt')}</button>
-            </div>
-            <div className="relative group cursor-pointer flex-shrink-0">
-              <button onClick={() => navigateTo('shop', 'pants_all')} className={`md:px-6 md:py-4 border-b-2 transition-colors uppercase ${currentCategory.includes('pants') ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('nav_pants')}</button>
-            </div>
-            <div className="relative group cursor-pointer flex-shrink-0">
-              <button onClick={() => navigateTo('shop', 'acc_all')} className={`md:px-6 md:py-4 border-b-2 transition-colors uppercase ${currentCategory.includes('acc') ? 'border-slate-900 text-slate-900' : 'border-transparent hover:text-slate-900'}`}>{t('nav_acc')}</button>
-            </div>
+            ))}
           </nav>
         </div>
+      </header>
 
-      </div>
-    </header>
+      <style>{`
+        .trimi-header {
+          width: 100%;
+          background: #ffffff;
+          border-bottom: 1px solid #eceff3;
+          position: sticky;
+          top: 0;
+          z-index: 50;
+        }
+
+        .trimi-header__inner {
+          max-width: 1680px;
+          margin: 0 auto;
+          padding: 0 32px;
+        }
+
+        .trimi-header__top {
+          min-height: 128px;
+          display: grid;
+          grid-template-columns: 180px minmax(360px, 520px) 180px;
+          align-items: center;
+          justify-content: space-between;
+          gap: 24px;
+          border-bottom: 1px solid #eef1f5;
+        }
+
+        .trimi-header__logo {
+          display: inline-flex;
+          align-items: center;
+          justify-content: flex-start;
+          text-decoration: none;
+        }
+
+        .trimi-header__logo img {
+          width: 112px;
+          height: auto;
+          display: block;
+          object-fit: contain;
+        }
+
+        .trimi-header__search {
+          width: 100%;
+          max-width: 520px;
+          justify-self: center;
+          position: relative;
+        }
+
+        .trimi-header__search input {
+          width: 100%;
+          height: 52px;
+          border: 1px solid #e8edf4;
+          outline: none;
+          border-radius: 999px;
+          background: #f3f6fa;
+          padding: 0 58px 0 22px;
+          font-size: 16px;
+          font-weight: 500;
+          color: #1f2937;
+          transition: all 0.2s ease;
+        }
+
+        .trimi-header__search input::placeholder {
+          color: #9aa4b2;
+        }
+
+        .trimi-header__search input:focus {
+          background: #ffffff;
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.08);
+        }
+
+        .trimi-header__search button {
+          position: absolute;
+          top: 50%;
+          right: 16px;
+          transform: translateY(-50%);
+          width: 28px;
+          height: 28px;
+          border: 0;
+          background: transparent;
+          color: #9aa4b2;
+          padding: 0;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .trimi-header__search button svg {
+          width: 22px;
+          height: 22px;
+        }
+
+        .trimi-header__actions {
+          justify-self: end;
+          display: flex;
+          align-items: center;
+          gap: 18px;
+        }
+
+        .trimi-icon-btn {
+          position: relative;
+          width: 34px;
+          height: 34px;
+          border: 0;
+          background: transparent;
+          color: #111827;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0;
+          transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .trimi-icon-btn:hover {
+          transform: translateY(-1px);
+          opacity: 0.9;
+        }
+
+        .trimi-icon-btn svg {
+          width: 27px;
+          height: 27px;
+        }
+
+        .trimi-cart-btn svg {
+          width: 29px;
+          height: 29px;
+        }
+
+        .trimi-cart-badge {
+          position: absolute;
+          top: 1px;
+          right: -1px;
+          min-width: 18px;
+          height: 18px;
+          border-radius: 999px;
+          background: #2f80ed;
+          color: #ffffff;
+          font-size: 10px;
+          font-weight: 700;
+          line-height: 18px;
+          text-align: center;
+          padding: 0 4px;
+          box-shadow: 0 0 0 2px #ffffff;
+        }
+
+        .trimi-header__nav {
+          min-height: 58px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 56px;
+          overflow-x: auto;
+          scrollbar-width: none;
+        }
+
+        .trimi-header__nav::-webkit-scrollbar {
+          display: none;
+        }
+
+        .trimi-nav-btn {
+          border: 0;
+          background: transparent;
+          padding: 0;
+          font-size: 14px;
+          font-weight: 800;
+          letter-spacing: 0.16em;
+          color: #7d8795;
+          cursor: pointer;
+          transition: color 0.2s ease, transform 0.2s ease;
+          white-space: nowrap;
+        }
+
+        .trimi-nav-btn:hover {
+          color: #1f2937;
+          transform: translateY(-1px);
+        }
+
+        .trimi-nav-btn.active {
+          color: #111827;
+        }
+
+        @media (max-width: 1024px) {
+          .trimi-header__top {
+            grid-template-columns: 1fr;
+            min-height: auto;
+            gap: 18px;
+            padding: 20px 0;
+          }
+
+          .trimi-header__logo {
+            justify-content: center;
+          }
+
+          .trimi-header__search {
+            max-width: 100%;
+          }
+
+          .trimi-header__actions {
+            justify-self: center;
+          }
+
+          .trimi-header__nav {
+            justify-content: flex-start;
+            gap: 32px;
+            min-height: 54px;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .trimi-header__inner {
+            padding: 0 16px;
+          }
+
+          .trimi-header__logo img {
+            width: 96px;
+          }
+
+          .trimi-header__search input {
+            height: 48px;
+            font-size: 15px;
+          }
+
+          .trimi-header__actions {
+            gap: 14px;
+          }
+
+          .trimi-icon-btn svg {
+            width: 24px;
+            height: 24px;
+          }
+
+          .trimi-header__nav {
+            gap: 24px;
+          }
+
+          .trimi-nav-btn {
+            font-size: 13px;
+            letter-spacing: 0.12em;
+          }
+        }
+      `}</style>
+    </>
   );
 }

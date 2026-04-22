@@ -35,8 +35,9 @@ export default function ProductDetailView({
         
         {/* ── LEFT: IMAGE GALLERY (Thu nhỏ lại) ── */}
         <div className="w-full md:w-[45%] flex flex-col gap-3">
-          <div className="w-full h-[350px] md:h-[450px] bg-gray-50 rounded-2xl overflow-hidden relative border border-gray-100">
+          <div className={`w-full h-[350px] md:h-[450px] rounded-2xl overflow-hidden relative border ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-gray-50 border-gray-100'}`}>
             <img
+              id="detail-main-image"
               src={mainImageSrc}
               className="w-full h-full object-contain object-center"
               alt={selectedProduct.name}
@@ -80,8 +81,8 @@ export default function ProductDetailView({
             {(Number(selectedProduct.price) || 0).toLocaleString('vi-VN')}đ
           </div>
 
-          <div className="w-full bg-gray-50 border border-gray-100 text-[11px] text-gray-500 p-2.5 rounded-lg mb-5 flex items-center gap-2">
-            <span className="w-4 h-4 rounded-full border border-gray-400 flex items-center justify-center text-[8px] font-bold">i</span>
+          <div className={`w-full border text-[11px] p-2.5 rounded-lg mb-5 flex items-center gap-2 ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-gray-50 border-gray-100 text-gray-500'}`}>
+            <span className={`w-4 h-4 rounded-full border flex items-center justify-center text-[8px] font-bold ${isDarkMode ? 'border-slate-500' : 'border-gray-400'}`}>i</span>
             Order in 02:30:25 to get next day delivery
           </div>
 
@@ -105,10 +106,23 @@ export default function ProductDetailView({
 
           {/* Action Buttons */}
           <div className="flex gap-3 mb-6">
-            <button onClick={(e) => { handleAddToCart(selectedProduct, e); setIsCartOpen(true); }} className="flex-1 bg-[#1a1a1a] text-white py-3 rounded-full font-bold text-xs uppercase tracking-wider transition-transform hover:bg-black active:scale-[0.98]">
+            <button
+              onClick={(e) => { handleAddToCart(selectedProduct, e); setIsCartOpen(true); }}
+              className={`flex-1 py-3 rounded-full font-bold text-xs uppercase tracking-wider trimi-btn-lift ${
+                isDarkMode
+                  ? 'bg-white text-slate-900 hover:bg-slate-100'
+                  : 'bg-[#1a1a1a] text-white hover:bg-black'
+              }`}
+            >
               Add to Cart
             </button>
-            <button className="w-12 h-12 flex-shrink-0 border border-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors">
+            <button
+              className={`w-12 h-12 flex-shrink-0 border rounded-full flex items-center justify-center trimi-btn-lift ${
+                isDarkMode
+                  ? 'border-slate-600 text-slate-300 hover:bg-slate-700'
+                  : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+              }`}
+            >
               <FiHeart className="text-lg" />
             </button>
           </div>

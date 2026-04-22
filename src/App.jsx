@@ -27,7 +27,7 @@ import { dict, productDict, initialProducts, defaultLookbookData, fakeColorSpher
 import { compressImage } from './utils/imageUtils';
 
 // Components
-import VirtualRoom from './components/VirtualRoom';
+// VirtualRoom removed — 3D feature disabled for performance
 import SizeGuideModal from './components/SizeGuideModal';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -170,7 +170,7 @@ export default function App() {
 
   // ─── INFO MODALS ──────────────────────────────────────────────────────────
   const [showSizeGuideModal, setShowSizeGuideModal] = useState(false);
-  const [showVirtualRoom, setShowVirtualRoom] = useState(false);
+  // showVirtualRoom removed — 3D feature disabled
   const [showCookieConsent, setShowCookieConsent] = useState(() => !localStorage.getItem('trimi_cookies'));
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
@@ -1143,6 +1143,50 @@ const openSettingsDrawer = () => {
         @keyframes toastProgress { from { width: 100%; } to { width: 0%; } }
         @keyframes pageFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .page-fade-in { animation: pageFadeIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+        /* ── PRODUCT CARD FADE-IN ENTRANCE ── */
+        @keyframes trimi-card-enter {
+          from { opacity: 0; transform: translateY(22px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0)   scale(1); }
+        }
+        .trimi-card-enter {
+          animation: trimi-card-enter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        /* ── PRODUCT CARD HOVER — premium lift + glow ── */
+        .trimi-product-hover {
+          transition: transform 0.28s cubic-bezier(0.22,1,0.36,1),
+                      box-shadow 0.28s cubic-bezier(0.22,1,0.36,1),
+                      border-color 0.22s ease !important;
+          will-change: transform;
+        }
+        .trimi-product-hover:hover {
+          transform: translateY(-8px) scale(1.025) !important;
+          box-shadow: 0 24px 56px rgba(0,0,0,0.16), 0 0 0 2px #38bdf8 !important;
+          border-color: #38bdf8 !important;
+        }
+        .trimi-product-hover:hover img {
+          transform: scale(1.07);
+        }
+
+        /* ── BUTTON LIFT ── */
+        .trimi-btn-lift {
+          transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.2s ease !important;
+          will-change: transform;
+        }
+        .trimi-btn-lift:hover {
+          transform: translateY(-3px) !important;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.18) !important;
+        }
+        .trimi-btn-lift:active { transform: translateY(0) !important; }
+
+        /* ── ADD-TO-CART fly animation ── */
+        @keyframes add-to-cart-fly {
+          0%   { opacity: 1; transform: scale(1) translate(0, 0); }
+          80%  { opacity: 0.8; transform: scale(0.5) translate(var(--diff-x), var(--diff-y)); }
+          100% { opacity: 0; transform: scale(0.2) translate(var(--diff-x), var(--diff-y)); }
+        }
+        .animate-add-to-cart-fly { animation: add-to-cart-fly 0.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
       `}</style>
 
       <div 
@@ -1175,7 +1219,7 @@ const openSettingsDrawer = () => {
         {/* ── HEADER ─────────────────────────────────────────────────────────── */}
         {/* FIX: setCurrentView is now passed so the search bar can switch to
             the shop view WITHOUT calling navigateTo (which would clear the query) */}
-        {currentView === 'shop' && (
+        {(currentView === 'shop' || currentView === 'productDetail') && (
           <Header
             currentView={currentView}
             isDarkMode={isDarkMode}
@@ -1204,7 +1248,7 @@ const openSettingsDrawer = () => {
             onAcceptFriend={handleAcceptFriend}
             onDeclineFriend={handleDeclineFriend}
             onAddFriend={handleAddFriend}
-            setShowVirtualRoom={setShowVirtualRoom}
+            handleThemeToggle={handleThemeToggle}
           />
         )}
 
@@ -1213,7 +1257,8 @@ const openSettingsDrawer = () => {
           currentView === 'home' ? 'pt-0' :
           // Áp dụng padding-top cho Profile trên PC (md:pt-[130px])
           currentView === 'profile' ? 'pt-0 md:pt-[130px]' : 
-          currentView === 'friends' ? 'pt-[55px] md:pt-[70px]' : 
+          currentView === 'friends' ? 'pt-[55px] md:pt-[70px]' :
+          (currentView === 'shop' || currentView === 'productDetail') ? 'pt-[108px] md:pt-[120px]' :
           'pt-[100px] md:pt-[130px]'
         }`}>
           {/* HOME — NO fade-in wrapper: the hero uses position:fixed which breaks
@@ -1236,7 +1281,9 @@ const openSettingsDrawer = () => {
                 isLoadingShop={isLoadingShop} displayedProducts={displayedProducts}
                 navigateTo={navigateTo} handleAddToCart={handleAddToCart}
                 translateTag={translateTag} fakeColorSpheres={fakeColorSpheres}
-                isShipper={isShipper} /* THÊM DÒNG NÀY */
+                isShipper={isShipper}
+                searchQuery={searchQuery}
+                setSearchQuery={(q) => { setSearchQuery(q); }}
               />
             </div>
           )}
@@ -1500,10 +1547,7 @@ const openSettingsDrawer = () => {
           isDarkMode={isDarkMode} 
         />
         
-        <VirtualRoom 
-          isOpen={showVirtualRoom} 
-          onClose={() => setShowVirtualRoom(false)} 
-        />
+        {/* VirtualRoom removed — 3D feature disabled for performance */}
       </div>
     </>
   );
